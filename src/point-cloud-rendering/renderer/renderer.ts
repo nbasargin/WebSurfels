@@ -1,4 +1,4 @@
-import * as glMatrix from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 import { fragmentShader, vertexShader } from './shaders';
 import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
@@ -17,7 +17,8 @@ export class Renderer {
 
     private readonly uniforms: {
         progress: WebGLUniformLocation,
-        projectionMatrix: WebGLUniformLocation
+        projectionMatrix: WebGLUniformLocation,
+        modelViewMatrix: WebGLUniformLocation
     };
 
     private readonly buffers: {
@@ -26,10 +27,10 @@ export class Renderer {
     };
 
     private progress: number = 0;
+    private readonly numPoints = 100000;
 
-    private readonly numPoints = 10000;
-
-    readonly projectionMatrix: glMatrix.mat4;
+    private readonly projectionMatrix: mat4;
+    private readonly modelViewMatrix: mat4;
 
     constructor(public readonly canvas: HTMLCanvasElement) {
         const context = canvas.getContext('webgl');
@@ -48,7 +49,7 @@ export class Renderer {
         this.uniforms = {
             progress: this.gl.getUniformLocation(this.program, 'progress') as WebGLUniformLocation,
             projectionMatrix: this.gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
-            // modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix'),
+            modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
         };
 
         this.buffers = {
@@ -56,7 +57,10 @@ export class Renderer {
             to: this.gl.createBuffer() as WebGLBuffer
         };
 
-        this.projectionMatrix = glMatrix.mat4.create();
+        this.projectionMatrix = mat4.create();
+        this.modelViewMatrix = mat4.create();
+
+        mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [0, 0, -2.5]);
 
         const dataGen = new PointCloudDataGenerator();
         const data = dataGen.generateSphere(this.numPoints);
@@ -76,9 +80,12 @@ export class Renderer {
         this.progress = Math.min(1, this.progress + 0.005);
         this.gl.uniform1f(this.uniforms.progress, this.progress);
 
+
+        mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, 0.001, [1, 1, 1]);
         const aspectRatio = this.canvas.width / Math.max(this.canvas.height, 1);
-        glMatrix.mat4.perspective(this.projectionMatrix, Math.PI / 3, aspectRatio, 0.01, 100);
+        mat4.perspective(this.projectionMatrix, Math.PI / 3, aspectRatio, 0.01, 100);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
+        this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
 
         this.gl.clearColor(0,0,0,0);
         this.gl.clearDepth(1.0);
