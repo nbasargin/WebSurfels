@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { Renderer } from "../point-cloud-rendering/renderer/renderer";
 
 @Component({
     selector: 'app-root',
@@ -15,8 +16,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     @ViewChild('wrapper', {static: true}) wrapperRef: ElementRef<HTMLDivElement>;
 
     private animationRequest;
+    private renderer: Renderer;
 
     ngAfterViewInit(): void {
+        this.renderer = new Renderer(this.canvasRef.nativeElement);
         this.renderLoop();
     }
 
@@ -27,6 +30,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     renderLoop() {
         this.animationRequest = requestAnimationFrame(() => this.renderLoop());
         this.checkCanvasSize();
+        this.renderer.render();
     }
 
     checkCanvasSize() {
