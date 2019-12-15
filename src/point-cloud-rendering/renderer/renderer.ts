@@ -1,5 +1,8 @@
-import { fragmentShader, vertexShader } from "./shaders";
-import { PointCloudDataGenerator } from "../data/point-cloud-data-generator";
+import * as glMatrix from 'gl-matrix';
+
+import { fragmentShader, vertexShader } from './shaders';
+import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
+
 
 export class Renderer {
 
@@ -26,6 +29,8 @@ export class Renderer {
 
     private readonly numPoints = 10000;
 
+    readonly projectionMatrix: glMatrix.mat4;
+
     constructor(public readonly canvas: HTMLCanvasElement) {
         const context = canvas.getContext('webgl');
         if (!context || !(context instanceof WebGLRenderingContext)) {
@@ -51,6 +56,8 @@ export class Renderer {
             to: this.gl.createBuffer() as WebGLBuffer
         };
 
+        this.projectionMatrix = glMatrix.mat4.create();
+
         const dataGen = new PointCloudDataGenerator();
         const data = dataGen.generateSphere(this.numPoints);
         const data2 = dataGen.generateSphere(this.numPoints);
@@ -64,14 +71,14 @@ export class Renderer {
     }
 
     render() {
-        this.progress = Math.min(1, this.progress + 0.005);
-        const aspectRatio = this.canvas.width / Math.max(this.canvas.height, 1);
-
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
+        this.progress = Math.min(1, this.progress + 0.005);
         this.gl.uniform1f(this.uniforms.progress, this.progress);
-        this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false,
-            new Float32Array(Renderer.perspectiveMatrix(Math.PI / 3, aspectRatio, 0.01, 100)));
+
+        const aspectRatio = this.canvas.width / Math.max(this.canvas.height, 1);
+        glMatrix.mat4.perspective(this.projectionMatrix, Math.PI / 3, aspectRatio, 0.01, 100);
+        this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
 
         this.gl.clearColor(0,0,0,0);
         this.gl.clearDepth(1.0);
@@ -132,17 +139,5 @@ export class Renderer {
             throw new Error('An error occurred compiling the shader: ' + this.gl.getShaderInfoLog(shader));
         }
         return shader;
-    }
-
-    private static perspectiveMatrix(fieldOfViewInRadians, aspectRatio, near, far) {
-        const f = 1.0 / Math.tan(fieldOfViewInRadians / 2);
-        const rangeInv = 1 / (near - far);
-
-        return [
-            f / aspectRatio, 0,                          0,   0,
-            0,               f,                          0,   0,
-            0,               0,    (near + far) * rangeInv,  -1,
-            0,               0,  near * far * rangeInv * 2,   0
-        ];
     }
 }
