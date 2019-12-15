@@ -64,7 +64,7 @@ export class Renderer {
     }
 
     render() {
-        this.progress =  Math.min(1, this.progress + 0.01);
+        this.progress = Math.min(1, this.progress + 0.005);
         const aspectRatio = this.canvas.width / Math.max(this.canvas.height, 1);
 
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -88,7 +88,7 @@ export class Renderer {
 
 
     private setBufferAttrib() {
-        const numComponents = 2;
+        const numComponents = 3;
         const type = this.gl.FLOAT;
         const normalize = false;
         const stride = 0;
