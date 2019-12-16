@@ -12,18 +12,20 @@ export class Renderer {
 
     private readonly attributes: {
         from: GLint,
-        to: GLint
+        to: GLint,
+        color: GLint,
     };
 
     private readonly uniforms: {
         progress: WebGLUniformLocation,
         projectionMatrix: WebGLUniformLocation,
-        modelViewMatrix: WebGLUniformLocation
+        modelViewMatrix: WebGLUniformLocation,
     };
 
     private readonly buffers: {
         from: WebGLBuffer,
         to: WebGLBuffer,
+        color: WebGLBuffer,
     };
 
     private progress: number = 0;
@@ -44,6 +46,7 @@ export class Renderer {
         this.attributes = {
             from: this.gl.getAttribLocation(this.program, 'from'),
             to: this.gl.getAttribLocation(this.program, 'to'),
+            color: this.gl.getAttribLocation(this.program, 'color'),
         };
 
         this.uniforms = {
@@ -54,7 +57,8 @@ export class Renderer {
 
         this.buffers = {
             from: this.gl.createBuffer() as WebGLBuffer,
-            to: this.gl.createBuffer() as WebGLBuffer
+            to: this.gl.createBuffer() as WebGLBuffer,
+            color: this.gl.createBuffer() as WebGLBuffer,
         };
 
         this.projectionMatrix = mat4.create();
@@ -68,6 +72,7 @@ export class Renderer {
 
         this.setBufferData(this.buffers.from, data.positions);
         this.setBufferData(this.buffers.to, data2.positions);
+        this.setBufferData(this.buffers.color, data2.colors);
 
         this.setBufferAttrib();
 
@@ -80,8 +85,7 @@ export class Renderer {
         this.progress = Math.min(1, this.progress + 0.005);
         this.gl.uniform1f(this.uniforms.progress, this.progress);
 
-
-        mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, 0.001, [1, 1, 1]);
+        mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, 0.003, [1, 1, 1]);
         const aspectRatio = this.canvas.width / Math.max(this.canvas.height, 1);
         mat4.perspective(this.projectionMatrix, Math.PI / 3, aspectRatio, 0.01, 100);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
@@ -115,6 +119,10 @@ export class Renderer {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.to);
         this.gl.vertexAttribPointer(this.attributes.to, numComponents, type, normalize, stride, offset);
         this.gl.enableVertexAttribArray(this.attributes.to);
+
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.color);
+        this.gl.vertexAttribPointer(this.attributes.color, numComponents, type, normalize, stride, offset);
+        this.gl.enableVertexAttribArray(this.attributes.color);
     }
 
     private initShaderProgram(vsSource: string, fsSource: string): WebGLProgram {
