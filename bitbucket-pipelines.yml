@@ -1,0 +1,12 @@
+image: node:10.16.0
+
+pipelines:
+  branches:
+    live:
+      - step:
+          name: build
+          caches:
+            - node
+          script:
+            - npm install
+            - npm run build:prod
