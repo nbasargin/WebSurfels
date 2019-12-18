@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 
 import { fragmentShader, vertexShader } from './shaders';
 import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
@@ -64,7 +64,7 @@ export class Renderer {
         this.projectionMatrix = mat4.create();
         this.modelViewMatrix = mat4.create();
 
-        mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [0, 0, -2.5]);
+        this.lookAt([0,0,2.5], [0,0,0], [0, 1, 0]);
 
         const dataGen = new PointCloudDataGenerator();
         const data = dataGen.generateSphere(this.numPoints);
@@ -77,6 +77,10 @@ export class Renderer {
         this.setBufferAttrib();
 
         this.gl.useProgram(this.program);
+    }
+
+    lookAt(eye: vec3 | number[], center: vec3 | number[], up: vec3 | number[]) {
+        mat4.lookAt(this.modelViewMatrix, eye, center, up);
     }
 
     render() {
