@@ -79,19 +79,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         if (this.pressedKeys.has('KeyW')) {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, this.viewDirection, movementSpeed);
-            console.log('moving!');
         }
         if (this.pressedKeys.has('KeyA')) {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, -movementSpeed);
-            console.log('moving!');
         }
         if (this.pressedKeys.has('KeyS')) {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, this.viewDirection, -movementSpeed);
-            console.log('moving!');
         }
         if (this.pressedKeys.has('KeyD')) {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
-            console.log('moving!');
+            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
         }
 
         const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.viewDirection);
