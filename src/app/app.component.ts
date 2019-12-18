@@ -37,10 +37,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const c = this.canvasRef.nativeElement;
         const w = this.wrapperRef.nativeElement;
         const bb = w.getBoundingClientRect();
-        if (c.width !== bb.width || c.height !== bb.height) {
-            c.width = bb.width;
-            c.height = bb.height;
-            console.debug(`resizing canvas to ${bb.width} x ${bb.height}`);
+        const width = Math.round(bb.width);
+        const height = Math.round(bb.height);
+
+        if (c.width !== width || c.height !== height) {
+            c.width = width;
+            c.height = height;
+            console.debug(`resizing canvas to ${width} x ${height}`);
         }
     }
 }
