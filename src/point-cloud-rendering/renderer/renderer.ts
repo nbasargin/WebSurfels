@@ -83,15 +83,18 @@ export class Renderer {
         mat4.lookAt(this.modelViewMatrix, eye, center, up);
     }
 
+    perspective(fovRadians: number = Math.PI / 3, near: number = 0.01, far: number = 100) {
+        const aspectRatio = this.canvas.width / Math.max(this.canvas.height, 1);
+        mat4.perspective(this.projectionMatrix, fovRadians, aspectRatio, near, far);
+    }
+
     render() {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
         this.progress = Math.min(1, this.progress + 0.005);
         this.gl.uniform1f(this.uniforms.progress, this.progress);
 
-        mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, 0.003, [1, 1, 1]);
-        const aspectRatio = this.canvas.width / Math.max(this.canvas.height, 1);
-        mat4.perspective(this.projectionMatrix, Math.PI / 3, aspectRatio, 0.01, 100);
+        this.perspective();
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
 
