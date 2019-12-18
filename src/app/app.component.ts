@@ -51,6 +51,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.pressedKeys.delete(e.code);
     }
 
+    @HostListener('mousemove', ['$event'])
+    mouseMove(e: MouseEvent) {
+        if ((e.buttons & 1) !== 1) {
+            return;  // left mouse button not pressed
+        }
+        const degreesPerPixel = -0.1;
+        const radians = Math.PI / 180 * degreesPerPixel * e.movementX;
+        vec3.rotateY(this.viewDirection, this.viewDirection, vec3.create(), radians);
+    }
+
     renderLoop() {
         this.animationRequest = requestAnimationFrame(() => this.renderLoop());
         this.checkCanvasSize();
