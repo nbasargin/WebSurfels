@@ -20,14 +20,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private renderer: Renderer;
 
     private readonly cameraPos: vec3;
-    private readonly viewTarget: vec3;
+    private readonly viewDirection: vec3;
     private readonly up: vec3;
 
     private pressedKeys: Set<string>;
 
     constructor() {
         this.cameraPos = vec3.fromValues(0, 0, 2.5);
-        this.viewTarget = vec3.create();
+        this.viewDirection = vec3.fromValues(0, 0, -1);
         this.up = vec3.fromValues(0,1, 0);
         this.pressedKeys = new Set();
     }
@@ -59,27 +59,24 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     checkCamera() {
-        //console.log([...this.pressedKeys.values()]);
         const movementSpeed = 0.05;
+        const right = vec3.cross(vec3.create(), this.viewDirection, this.up);
 
         if (this.pressedKeys.has('KeyW')) {
-            this.cameraPos[2] -= movementSpeed;
-            this.viewTarget[2] -= movementSpeed;
+            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, this.viewDirection, movementSpeed);
         }
         if (this.pressedKeys.has('KeyA')) {
-            this.cameraPos[0] -= movementSpeed;
-            this.viewTarget[0] -= movementSpeed;
+            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, -movementSpeed);
         }
         if (this.pressedKeys.has('KeyS')) {
-            this.cameraPos[2] += movementSpeed;
-            this.viewTarget[2] += movementSpeed;
+            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, this.viewDirection, -movementSpeed);
         }
         if (this.pressedKeys.has('KeyD')) {
-            this.cameraPos[0] += movementSpeed;
-            this.viewTarget[0] += movementSpeed;
+            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
         }
 
-        this.renderer.lookAt(this.cameraPos, this.viewTarget, [0, 1, 0]);
+        const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.viewDirection);
+        this.renderer.lookAt(this.cameraPos, viewTarget, [0, 1, 0]);
     }
 
     checkCanvasSize() {
