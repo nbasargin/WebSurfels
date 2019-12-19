@@ -4,7 +4,7 @@ pipelines:
   branches:
     live:
       - step:
-          name: build
+          name: Build & Deploy
           caches:
             - node
           script:
@@ -12,9 +12,6 @@ pipelines:
             - npm run build:prod
             - apt-get update
             - apt-get install --yes zip
-            - ls
             - cd ./dist/point-cloud-rendering/
-            - ls
             - zip -r app.zip .
-            - ls
             - curl -X POST -u "$DEPLOYMENT_USER:$DEPLOYMENT_PW" -T "app.zip" $DEPLOYMENT_URL
