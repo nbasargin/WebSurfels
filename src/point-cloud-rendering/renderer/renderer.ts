@@ -28,7 +28,7 @@ export class Renderer {
         color: WebGLBuffer,
     };
 
-    private progress: number = 0;
+    private progress: number = 1;
     private readonly numPoints = 100000;
 
     private readonly projectionMatrix: mat4;
