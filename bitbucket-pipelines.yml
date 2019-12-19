@@ -10,3 +10,6 @@ pipelines:
           script:
             - npm install
             - npm run build:prod
+            - cd ./dist/point-cloud-rendering/
+            - zip -r app.zip .
+            - curl -X POST -u "$DEPLOYMENT_USER:$DEPLOYMENT_PW" -T "app.zip" $DEPLOYMENT_URL
