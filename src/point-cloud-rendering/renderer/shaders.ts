@@ -21,8 +21,8 @@ export const vertexShader = `
       v_color = color;
       v_normal = normal;
       
-      float world_point_size = 2.0;  // 250 equals a square with world size of 1x1
-      float height_ratio = uScreenHeight / 500.0;
+      float world_point_size = 0.5 * 0.01;  // 0.5 equals a square with world size of 1x1
+      float height_ratio = uScreenHeight ;
       
       gl_PointSize = world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w;
       
