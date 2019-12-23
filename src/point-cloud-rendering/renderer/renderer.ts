@@ -6,7 +6,7 @@ import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
 
 export class Renderer {
 
-    private gl: WebGLRenderingContext;
+    private gl: WebGL2RenderingContext;
 
     private readonly program: WebGLProgram;
 
@@ -33,8 +33,9 @@ export class Renderer {
     private readonly modelViewMatrix: mat4;
 
     constructor(public readonly canvas: HTMLCanvasElement) {
-        const context = canvas.getContext('webgl');
-        if (!context || !(context instanceof WebGLRenderingContext)) {
+        const context = canvas.getContext('webgl2');
+        if (!context || !(context instanceof WebGL2RenderingContext)) {
+            console.log(context);
             throw new Error('Could not initialize WebGL2 context');
         }
         this.gl = context;
