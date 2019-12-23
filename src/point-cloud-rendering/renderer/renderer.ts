@@ -11,24 +11,20 @@ export class Renderer {
     private readonly program: WebGLProgram;
 
     private readonly attributes: {
-        from: GLint,
-        to: GLint,
+        pos: GLint,
         color: GLint,
     };
 
     private readonly uniforms: {
-        progress: WebGLUniformLocation,
         projectionMatrix: WebGLUniformLocation,
         modelViewMatrix: WebGLUniformLocation,
     };
 
     private readonly buffers: {
-        from: WebGLBuffer,
-        to: WebGLBuffer,
+        pos: WebGLBuffer,
         color: WebGLBuffer,
     };
 
-    private progress: number = 1;
     private readonly numPoints = 100000;
 
     private readonly projectionMatrix: mat4;
@@ -44,20 +40,17 @@ export class Renderer {
         this.program = this.initShaderProgram(vertexShader, fragmentShader);
 
         this.attributes = {
-            from: this.gl.getAttribLocation(this.program, 'from'),
-            to: this.gl.getAttribLocation(this.program, 'to'),
+            pos: this.gl.getAttribLocation(this.program, 'pos'),
             color: this.gl.getAttribLocation(this.program, 'color'),
         };
 
         this.uniforms = {
-            progress: this.gl.getUniformLocation(this.program, 'progress') as WebGLUniformLocation,
             projectionMatrix: this.gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
             modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
         };
 
         this.buffers = {
-            from: this.gl.createBuffer() as WebGLBuffer,
-            to: this.gl.createBuffer() as WebGLBuffer,
+            pos: this.gl.createBuffer() as WebGLBuffer,
             color: this.gl.createBuffer() as WebGLBuffer,
         };
 
@@ -68,11 +61,9 @@ export class Renderer {
 
         const dataGen = new PointCloudDataGenerator();
         const data = dataGen.generateSphere(this.numPoints);
-        const data2 = dataGen.generateSphere(this.numPoints);
 
-        this.setBufferData(this.buffers.from, data.positions);
-        this.setBufferData(this.buffers.to, data2.positions);
-        this.setBufferData(this.buffers.color, data2.colors);
+        this.setBufferData(this.buffers.pos, data.positions);
+        this.setBufferData(this.buffers.color, data.colors);
 
         this.setBufferAttrib();
 
@@ -91,9 +82,6 @@ export class Renderer {
 
     render() {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-
-        this.progress = Math.min(1, this.progress + 0.005);
-        this.gl.uniform1f(this.uniforms.progress, this.progress);
 
         this.perspective();
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
@@ -120,13 +108,9 @@ export class Renderer {
         const stride = 0;
         const offset = 0;
 
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.from);
-        this.gl.vertexAttribPointer(this.attributes.from, numComponents, type, normalize, stride, offset);
-        this.gl.enableVertexAttribArray(this.attributes.from);
-
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.to);
-        this.gl.vertexAttribPointer(this.attributes.to, numComponents, type, normalize, stride, offset);
-        this.gl.enableVertexAttribArray(this.attributes.to);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.pos);
+        this.gl.vertexAttribPointer(this.attributes.pos, numComponents, type, normalize, stride, offset);
+        this.gl.enableVertexAttribArray(this.attributes.pos);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.color);
         this.gl.vertexAttribPointer(this.attributes.color, numComponents, type, normalize, stride, offset);

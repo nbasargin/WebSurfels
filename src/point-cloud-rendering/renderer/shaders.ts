@@ -3,19 +3,18 @@
  */
 
 export const vertexShader = `
-    attribute vec3 from;
-    attribute vec3 to;
+    attribute vec3 pos;
     attribute vec3 color;
     
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
-    uniform float progress;
     
     varying vec3 v_color;
     
     void main() {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(mix(from, to, progress), 1); 
-      gl_PointSize = 1.0;
+      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1); 
+      // mix(from, to, progress)
+      gl_PointSize = 2.0;
       v_color = color;
     }
 `;
