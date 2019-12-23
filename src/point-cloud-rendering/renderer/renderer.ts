@@ -77,6 +77,7 @@ export class Renderer {
         this.setBufferAttrib();
 
         this.gl.useProgram(this.program);
+        this.gl.enable(this.gl.DEPTH_TEST);
     }
 
     lookAt(eye: vec3 | number[], center: vec3 | number[], up: vec3 | number[]) {
