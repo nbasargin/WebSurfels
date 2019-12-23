@@ -19,6 +19,7 @@ export class Renderer {
     private readonly uniforms: {
         projectionMatrix: WebGLUniformLocation,
         modelViewMatrix: WebGLUniformLocation,
+        screenHeight: WebGLUniformLocation,
     };
 
     private readonly buffers: {
@@ -27,7 +28,7 @@ export class Renderer {
         normal: WebGLBuffer,
     };
 
-    private readonly numPoints = 1000;
+    private readonly numPoints = 100000;
 
     private readonly projectionMatrix: mat4;
     private readonly modelViewMatrix: mat4;
@@ -51,6 +52,7 @@ export class Renderer {
         this.uniforms = {
             projectionMatrix: this.gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
             modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
+            screenHeight: this.gl.getUniformLocation(this.program, 'uScreenHeight') as WebGLUniformLocation,
         };
 
         this.buffers = {
@@ -92,6 +94,8 @@ export class Renderer {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
         this.perspective();
+        // noinspection JSSuspiciousNameCombination
+        this.gl.uniform1f(this.uniforms.screenHeight, this.canvas.height);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
 

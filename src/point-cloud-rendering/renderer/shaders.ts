@@ -3,22 +3,29 @@
  */
 
 export const vertexShader = `
+    // precision highp float;
+    
     attribute vec3 pos;
     attribute vec3 color;
     attribute vec3 normal; 
     
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
+    uniform float uScreenHeight;
     
     varying vec3 v_color;
     varying vec3 v_normal;
     
     void main() {
-      vec4 pos2 = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1);      
-      gl_Position = pos2;       
-      gl_PointSize = 50.0 / pos2.w;
+      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1);
       v_color = color;
       v_normal = normal;
+      
+      float world_point_size = 2.0;  // 250 equals a square with world size of 1x1
+      float height_ratio = uScreenHeight / 500.0;
+      
+      gl_PointSize = world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w;
+      
     }
 `;
 
