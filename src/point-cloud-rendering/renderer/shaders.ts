@@ -14,9 +14,9 @@ export const vertexShader = `
     varying vec3 v_normal;
     
     void main() {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1); 
-      // mix(from, to, progress)
-      gl_PointSize = 2.0;
+      vec4 pos2 = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1);      
+      gl_Position = pos2;       
+      gl_PointSize = 50.0 / pos2.w;
       v_color = color;
       v_normal = normal;
     }

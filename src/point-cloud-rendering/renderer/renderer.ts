@@ -27,7 +27,7 @@ export class Renderer {
         normal: WebGLBuffer,
     };
 
-    private readonly numPoints = 100000;
+    private readonly numPoints = 1000;
 
     private readonly projectionMatrix: mat4;
     private readonly modelViewMatrix: mat4;
