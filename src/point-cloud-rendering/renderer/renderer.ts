@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 
-import { fragmentShader, vertexShader } from './shaders';
+import { fragmentShader, normalFragmentShader, normalVertexShader, vertexShader } from './shaders';
 import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
 
 
@@ -9,11 +9,16 @@ export class Renderer {
     private gl: WebGL2RenderingContext;
 
     private readonly program: WebGLProgram;
+    private readonly programNormalVis: WebGLProgram;
 
     private readonly attributes: {
         pos: GLint,
         color: GLint,
         normal: GLint,
+    };
+
+    private readonly attributesNormalVis: {
+        pos: GLint,
     };
 
     private readonly uniforms: {
@@ -22,10 +27,19 @@ export class Renderer {
         screenHeight: WebGLUniformLocation,
     };
 
+    private readonly uniformsNormalVis: {
+        projectionMatrix: WebGLUniformLocation,
+        modelViewMatrix: WebGLUniformLocation,
+    };
+
     private readonly buffers: {
         pos: WebGLBuffer,
         color: WebGLBuffer,
         normal: WebGLBuffer,
+    };
+
+    private readonly buffersNormalVis: {
+        pos: WebGLBuffer,
     };
 
     private readonly numPoints = 100000;
@@ -42,11 +56,16 @@ export class Renderer {
         this.gl = context;
 
         this.program = this.initShaderProgram(vertexShader, fragmentShader);
+        this.programNormalVis = this.initShaderProgram(normalVertexShader, normalFragmentShader);
 
         this.attributes = {
             pos: this.gl.getAttribLocation(this.program, 'pos'),
             color: this.gl.getAttribLocation(this.program, 'color'),
             normal: this.gl.getAttribLocation(this.program, 'normal'),
+        };
+
+        this.attributesNormalVis = {
+            pos: this.gl.getAttribLocation(this.programNormalVis, 'pos'),
         };
 
         this.uniforms = {
@@ -55,10 +74,19 @@ export class Renderer {
             screenHeight: this.gl.getUniformLocation(this.program, 'uScreenHeight') as WebGLUniformLocation,
         };
 
+        this.uniformsNormalVis = {
+            projectionMatrix: this.gl.getUniformLocation(this.programNormalVis, 'uProjectionMatrix') as WebGLUniformLocation,
+            modelViewMatrix: this.gl.getUniformLocation(this.programNormalVis, 'uModelViewMatrix') as WebGLUniformLocation,
+        };
+
         this.buffers = {
             pos: this.gl.createBuffer() as WebGLBuffer,
             color: this.gl.createBuffer() as WebGLBuffer,
             normal: this.gl.createBuffer() as WebGLBuffer,
+        };
+
+        this.buffersNormalVis = {
+            pos: this.gl.createBuffer() as WebGLBuffer,
         };
 
         this.projectionMatrix = mat4.create();
@@ -69,16 +97,17 @@ export class Renderer {
         const dataGen = new PointCloudDataGenerator();
         const data = dataGen.generateSphere(this.numPoints);
 
+        const normalLines = dataGen.computeNormalLines(data.positions, data.normals);
+
         this.setBufferData(this.buffers.pos, data.positions);
         this.setBufferData(this.buffers.color, data.colors);
         this.setBufferData(this.buffers.normal, data.normals);
 
-        this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
-        this.enableBuffer3f(this.buffers.color, this.attributes.color);
-        this.enableBuffer3f(this.buffers.normal, this.attributes.normal);
+        this.setBufferData(this.buffersNormalVis.pos, normalLines);
 
-        this.gl.useProgram(this.program);
         this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
     }
 
     lookAt(eye: vec3 | number[], center: vec3 | number[], up: vec3 | number[]) {
@@ -91,20 +120,35 @@ export class Renderer {
     }
 
     render() {
-        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        const offset = 0;
 
+        // general setup
+
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        this.gl.clearColor(0,0,0,0);
+        this.gl.clearDepth(1.0);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.perspective();
+
+        // draw points
+
+        this.gl.useProgram(this.program);
         // noinspection JSSuspiciousNameCombination
         this.gl.uniform1f(this.uniforms.screenHeight, this.canvas.height);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
-
-        this.gl.clearColor(0,0,0,0);
-        this.gl.clearDepth(1.0);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-
-        const offset = 0;
+        this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
+        this.enableBuffer3f(this.buffers.color, this.attributes.color);
+        this.enableBuffer3f(this.buffers.normal, this.attributes.normal);
         this.gl.drawArrays(this.gl.POINTS, offset, this.numPoints);
+
+        // normal visualization
+
+        this.gl.useProgram(this.programNormalVis);
+        this.gl.uniformMatrix4fv(this.uniformsNormalVis.projectionMatrix, false, this.projectionMatrix);
+        this.gl.uniformMatrix4fv(this.uniformsNormalVis.modelViewMatrix, false, this.modelViewMatrix);
+        this.enableBuffer3f(this.buffersNormalVis.pos, this.attributesNormalVis.pos);
+        this.gl.drawArrays(this.gl.LINES, offset, this.numPoints * 2);
     }
 
     private setBufferData(buffer: WebGLBuffer, data: Float32Array) {

@@ -40,3 +40,20 @@ export const fragmentShader = `
       gl_FragColor = vec4(v_color, 1.0);
     }
 `;
+
+export const normalVertexShader = `
+    attribute vec3 pos;
+    
+    uniform mat4 uModelViewMatrix;
+    uniform mat4 uProjectionMatrix;
+
+    void main() {
+      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1);      
+    }
+`;
+
+export const normalFragmentShader = `
+    void main() {
+      gl_FragColor = vec4(1.0, 1.0, 1.0, 0.25);
+    }
+`;
