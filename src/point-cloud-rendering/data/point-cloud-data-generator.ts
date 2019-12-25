@@ -28,28 +28,6 @@ export class PointCloudDataGenerator {
         return data;
     }
 
-
-    computeNormalLines(positions: Float32Array, normals: Float32Array): Float32Array {
-        const normalLines = new Float32Array(positions.length * 2);
-        const pointNumber = positions.length / 3;
-
-        for (let i = 0; i < pointNumber; i++) {
-            const offsetSource = i * 3;
-            const offsetTarget = i * 6;
-
-            normalLines[offsetTarget] = positions[offsetSource];
-            normalLines[offsetTarget + 1] = positions[offsetSource + 1];
-            normalLines[offsetTarget + 2] = positions[offsetSource + 2];
-
-            normalLines[offsetTarget + 3] = positions[offsetSource] + normals[offsetSource] * 0.1;
-            normalLines[offsetTarget + 4] = positions[offsetSource + 1] + normals[offsetSource + 1] * 0.1;
-            normalLines[offsetTarget + 5] = positions[offsetSource + 2] + normals[offsetSource + 2] * 0.1;
-        }
-
-        return normalLines;
-    }
-
-
     /**
      * Sample random point on a sphere.
      * Uniform distribution.

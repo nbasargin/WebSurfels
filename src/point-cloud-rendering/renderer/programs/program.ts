@@ -10,7 +10,6 @@ export abstract class Program {
 
     public abstract render();
 
-
     protected setBufferData(buffer: WebGLBuffer, data: Float32Array) {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);

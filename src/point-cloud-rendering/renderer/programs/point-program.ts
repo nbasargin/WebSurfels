@@ -1,7 +1,44 @@
-import { mat4 } from "gl-matrix";
+import { mat4 } from 'gl-matrix';
 import { PointCloudData } from '../../data/point-cloud-data';
-import { fragmentShader, vertexShader } from '../shaders';
 import { Program } from './program';
+
+const pointVS = `
+    // precision highp float;
+    
+    attribute vec3 pos;
+    attribute vec3 color;
+    attribute vec3 normal; 
+    
+    uniform mat4 uModelViewMatrix;
+    uniform mat4 uProjectionMatrix;
+    uniform float uScreenHeight;
+    
+    varying vec3 v_color;
+    varying vec3 v_normal;
+    
+    void main() {
+      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1);
+      v_color = color;
+      v_normal = normal;
+      
+      float world_point_size = 0.5 * 0.01;  // 0.5 equals a square with world size of 1x1
+      float height_ratio = uScreenHeight ;
+      
+      gl_PointSize = world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w;
+      
+    }
+`;
+
+const pointFS = `
+    precision highp float;
+
+    varying vec3 v_color;
+    varying vec3 v_normal;
+
+    void main() {
+      gl_FragColor = vec4(v_color, 1.0);
+    }
+`;
 
 export class PointProgram extends Program {
 
@@ -31,7 +68,7 @@ export class PointProgram extends Program {
         private projectionMatrix: mat4,
         private modelViewMatrix: mat4,
     ) {
-        super(gl, vertexShader, fragmentShader);
+        super(gl, pointVS, pointFS);
 
         this.attributes = {
             pos: this.gl.getAttribLocation(this.program, 'pos'),
