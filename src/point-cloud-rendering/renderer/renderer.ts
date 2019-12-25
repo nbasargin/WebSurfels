@@ -1,30 +1,16 @@
 import { mat4, vec3 } from 'gl-matrix';
+import { NormalVisualizationProgram } from './programs/normal-visualization-program';
 import { PointProgram } from './programs/point-program';
 
-import { normalFragmentShader, normalVertexShader } from './shaders';
 import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
 
 
 export class Renderer {
 
-    private gl: WebGL2RenderingContext;
+    private readonly gl: WebGL2RenderingContext;
 
-    private readonly programNormalVis: WebGLProgram;
-
+    private normalVisProgram: NormalVisualizationProgram;
     private pointProgram: PointProgram;
-
-    private readonly attributesNormalVis: {
-        pos: GLint,
-    };
-
-    private readonly uniformsNormalVis: {
-        projectionMatrix: WebGLUniformLocation,
-        modelViewMatrix: WebGLUniformLocation,
-    };
-
-    private readonly buffersNormalVis: {
-        pos: WebGLBuffer,
-    };
 
     private readonly numPoints = 100000;
 
@@ -39,36 +25,17 @@ export class Renderer {
         }
         this.gl = context;
 
-        this.programNormalVis = this.initShaderProgram(normalVertexShader, normalFragmentShader);
-
-        this.attributesNormalVis = {
-            pos: this.gl.getAttribLocation(this.programNormalVis, 'pos'),
-        };
-
-        this.uniformsNormalVis = {
-            projectionMatrix: this.gl.getUniformLocation(this.programNormalVis, 'uProjectionMatrix') as WebGLUniformLocation,
-            modelViewMatrix: this.gl.getUniformLocation(this.programNormalVis, 'uModelViewMatrix') as WebGLUniformLocation,
-        };
-
-        this.buffersNormalVis = {
-            pos: this.gl.createBuffer() as WebGLBuffer,
-        };
-
         this.projectionMatrix = mat4.create();
         this.modelViewMatrix = mat4.create();
 
-        this.pointProgram = new PointProgram(this.gl, this.canvas, this.numPoints, this.projectionMatrix, this.modelViewMatrix);
-
-        this.lookAt([0,0,2.5], [0,0,0], [0, 1, 0]);
+        this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix);
+        this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
 
         const dataGen = new PointCloudDataGenerator();
         const data = dataGen.generateSphere(this.numPoints);
 
         this.pointProgram.setData(data);
-
-        const normalLines = dataGen.computeNormalLines(data.positions, data.normals);
-
-        this.setBufferData(this.buffersNormalVis.pos, normalLines);
+        this.normalVisProgram.setData(data);
 
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
@@ -85,73 +52,14 @@ export class Renderer {
     }
 
     render() {
-        const offset = 0;
-
-        // general setup
-
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.clearColor(0,0,0,0);
         this.gl.clearDepth(1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.perspective();
 
-        // draw points
         this.pointProgram.render();
-
-        // normal visualization
-
-        this.gl.useProgram(this.programNormalVis);
-        this.gl.uniformMatrix4fv(this.uniformsNormalVis.projectionMatrix, false, this.projectionMatrix);
-        this.gl.uniformMatrix4fv(this.uniformsNormalVis.modelViewMatrix, false, this.modelViewMatrix);
-        this.enableBuffer3f(this.buffersNormalVis.pos, this.attributesNormalVis.pos);
-        this.gl.drawArrays(this.gl.LINES, offset, this.numPoints * 2);
+        this.normalVisProgram.render();
     }
 
-    private setBufferData(buffer: WebGLBuffer, data: Float32Array) {
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
-    }
-
-    private enableBuffer3f(buffer: WebGLBuffer, attrib: GLint) {
-        const numComponents = 3;
-        const type = this.gl.FLOAT;
-        const normalize = false;
-        const stride = 0;
-        const offset = 0;
-
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-        this.gl.vertexAttribPointer(attrib, numComponents, type, normalize, stride, offset);
-        this.gl.enableVertexAttribArray(attrib);
-    }
-
-    private initShaderProgram(vsSource: string, fsSource: string): WebGLProgram {
-        const vertexShader = this.loadShader(this.gl.VERTEX_SHADER, vsSource);
-        const fragmentShader = this.loadShader(this.gl.FRAGMENT_SHADER, fsSource);
-
-        const shaderProgram = this.gl.createProgram();
-        if (!shaderProgram) {
-            throw new Error('Could not create shader program!');
-        }
-        this.gl.attachShader(shaderProgram, vertexShader);
-        this.gl.attachShader(shaderProgram, fragmentShader);
-        this.gl.linkProgram(shaderProgram);
-
-        if (!this.gl.getProgramParameter(shaderProgram, this.gl.LINK_STATUS)) {
-            throw new Error('Unable to initialize the shader program: ' + this.gl.getProgramInfoLog(shaderProgram));
-        }
-        return shaderProgram;
-    }
-
-    private loadShader(type, source): WebGLShader {
-        const shader = this.gl.createShader(type);
-        if (!shader) {
-            throw new Error('Could not create shader!')
-        }
-        this.gl.shaderSource(shader, source);
-        this.gl.compileShader(shader);
-        if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-            throw new Error('An error occurred compiling the shader: ' + this.gl.getShaderInfoLog(shader));
-        }
-        return shader;
-    }
 }
