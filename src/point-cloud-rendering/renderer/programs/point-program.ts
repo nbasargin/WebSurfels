@@ -21,7 +21,7 @@ const pointVS = `
         v_color = color;
         v_normal = normal;
 
-        float world_point_size = 0.5 * 0.01;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * 0.3;  // 0.5 equals a square with world size of 1x1
         float height_ratio = uScreenHeight ;
 
         gl_PointSize = world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w;
@@ -29,17 +29,30 @@ const pointVS = `
 `;
 
 const pointFS = `
+    #define PI 3.1415926538
+
     precision highp float;
 
     varying vec3 v_color;
     varying vec3 v_normal;
 
     void main() {        
+        float rotation = -45.0 / 180.0 * PI;
+        float squeeze = 80.0 / 180.0 * PI;
         vec2 cxy = 2.0 * gl_PointCoord - 1.0;
-        float r = dot(cxy, cxy);
-        if (r > 1.0) {
+        
+        float sin_r = sin(rotation);
+        float cos_r = cos(rotation);
+        // float sin_s = sin(squeeze);
+        float cos_s = cos(squeeze);
+        
+        float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
+        float y_trans = sin_r * cxy.x + cos_r * cxy.y;
+        
+        if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s) {        
             discard;
         }
+        
         gl_FragColor = vec4(v_color, 1.0);
     }
 `;
