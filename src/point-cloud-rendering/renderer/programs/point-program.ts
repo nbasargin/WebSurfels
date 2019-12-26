@@ -20,14 +20,13 @@ const pointVS = `
 
     void main() {
         vec4 vertex_world_space = uModelViewMatrix * vec4(pos, 1);
-        vec4 normal_world_space = uModelViewMatrixIT * vec4(normal, 0);
+        vec3 normal_world_space = normalize((uModelViewMatrixIT * vec4(normal, 0)).xyz);
     
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1);
+        gl_Position = uProjectionMatrix * vertex_world_space;
         v_color = color;
         
-        vec4 projected_normal = normalize(uProjectionMatrix * uModelViewMatrixIT * vec4(normal, 0));
-        rotation = atan(projected_normal.y / projected_normal.x);        
-        squeeze = dot(normalize(vertex_world_space.xyz), normalize(normal_world_space.xyz));
+        rotation = atan(normal_world_space.y / normal_world_space.x);        
+        squeeze = dot(normalize(vertex_world_space.xyz), normal_world_space);
 
         float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
 
