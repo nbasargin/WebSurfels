@@ -18,6 +18,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private animationRequest;
     private renderer: Renderer;
+    private renderNormals: boolean = false;
 
     private readonly cameraPos: vec3;
     private readonly viewDirection: vec3;
@@ -44,6 +45,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     @HostListener('document:keydown', ['$event'])
     keyDown(e: KeyboardEvent) {
         this.pressedKeys.add(e.code);
+        if (e.code == 'KeyN' && !e.repeat) {
+            this.renderNormals = !this.renderNormals
+        }
     }
 
     @HostListener('document:keyup', ['$event'])
@@ -70,7 +74,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.animationRequest = requestAnimationFrame(() => this.renderLoop());
         this.checkCanvasSize();
         this.checkCamera();
-        this.renderer.render();
+        this.renderer.render(this.renderNormals);
     }
 
     checkCamera() {
