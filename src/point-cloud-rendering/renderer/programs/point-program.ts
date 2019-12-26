@@ -23,12 +23,14 @@ const pointVS = `
         
         vec4 projected_normal = uProjectionMatrix * uModelViewMatrix * vec4(normal, 0);
         rotation = atan(projected_normal.y / projected_normal.x);
-        angle = acos(dot(normalize(projected_normal.xyz), vec3(0,0,1)));
+        angle = acos(dot(normalize(projected_normal.xyz), vec3(0,0,-1)));
 
         float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
         float height_ratio = uScreenHeight ;
 
-        gl_PointSize = world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w;
+        // limit point size to be 2 pixels at least
+        // TODO: instead of limiting minimal points size, do not discard fragments
+        gl_PointSize = max(2.0, world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w);
     }
 `;
 
@@ -42,16 +44,18 @@ const pointFS = `
     varying float angle;
 
     void main() {
-        float squeeze = angle;
         vec2 cxy = 2.0 * gl_PointCoord - 1.0;
         
         float sin_r = sin(rotation);
         float cos_r = cos(rotation);
-        // float sin_s = sin(squeeze);
-        float cos_s = cos(squeeze);
+        // float sin_s = sin(angle);
+        float cos_s = max(0.1, abs(cos(angle)));  // limit squeezing to 90%
         
         float x_trans = (cos_r * cxy.x - sin_r * cxy.y);
         float y_trans = cos_s * (sin_r * cxy.x + cos_r * cxy.y);
+        
+        // TODO: do not discard fragments if gl_PointSize is small
+        //       only create spherical shapes for gl_PointSize larger than 2 
         
         if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s) {        
             discard;
