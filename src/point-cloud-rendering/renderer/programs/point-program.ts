@@ -10,27 +10,34 @@ const pointVS = `
     attribute vec3 normal; 
 
     uniform mat4 uModelViewMatrix;
+    uniform mat4 uModelViewMatrixIT;
     uniform mat4 uProjectionMatrix;
     uniform float uScreenHeight;
 
     varying vec3 v_color;
     varying float rotation;
     varying float angle;
+    varying float point_size;
 
     void main() {
+        vec4 vertex_world_space = uModelViewMatrix * vec4(pos, 1);
+        vec4 normal_world_space = uModelViewMatrixIT * vec4(normal, 0);
+    
         gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1);
         v_color = color;
         
-        vec4 projected_normal = uProjectionMatrix * uModelViewMatrix * vec4(normal, 0);
+        vec4 projected_normal = normalize(uProjectionMatrix * uModelViewMatrixIT * vec4(normal, 0));
         rotation = atan(projected_normal.y / projected_normal.x);
-        angle = acos(dot(normalize(projected_normal.xyz), vec3(0,0,-1)));
+        
+        angle = acos(dot(normalize(vertex_world_space.xyz), normalize(normal_world_space.xyz)));
 
-        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * 0.05;  // 0.5 equals a square with world size of 1x1
         float height_ratio = uScreenHeight ;
 
         // limit point size to be 2 pixels at least
         // TODO: instead of limiting minimal points size, do not discard fragments
-        gl_PointSize = max(2.0, world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w);
+        gl_PointSize = world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w;
+        point_size = gl_PointSize;
     }
 `;
 
@@ -42,14 +49,14 @@ const pointFS = `
     varying vec3 v_color;
     varying float rotation;
     varying float angle;
+    varying float point_size;
 
     void main() {
         vec2 cxy = 2.0 * gl_PointCoord - 1.0;
         
         float sin_r = sin(rotation);
         float cos_r = cos(rotation);
-        // float sin_s = sin(angle);
-        float cos_s = max(0.1, abs(cos(angle)));  // limit squeezing to 90%
+        float cos_s = cos(angle); //max(0.0, cos(angle));  // limit squeezing to 90%
         
         float x_trans = (cos_r * cxy.x - sin_r * cxy.y);
         float y_trans = cos_s * (sin_r * cxy.x + cos_r * cxy.y);
@@ -57,7 +64,7 @@ const pointFS = `
         // TODO: do not discard fragments if gl_PointSize is small
         //       only create spherical shapes for gl_PointSize larger than 2 
         
-        if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s) {        
+        if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s && point_size >= 2.0) {        
             discard;
         }
         
@@ -76,6 +83,7 @@ export class PointProgram extends Program {
     private readonly uniforms: {
         projectionMatrix: WebGLUniformLocation,
         modelViewMatrix: WebGLUniformLocation,
+        modelViewMatrixIT: WebGLUniformLocation,
         screenHeight: WebGLUniformLocation,
     };
 
@@ -92,6 +100,7 @@ export class PointProgram extends Program {
         private canvas: HTMLCanvasElement,
         private projectionMatrix: mat4,
         private modelViewMatrix: mat4,
+        private modelViewMatrixIT: mat4,
     ) {
         super(gl, pointVS, pointFS);
 
@@ -104,6 +113,7 @@ export class PointProgram extends Program {
         this.uniforms = {
             projectionMatrix: this.gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
             modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
+            modelViewMatrixIT: this.gl.getUniformLocation(this.program, 'uModelViewMatrixIT') as WebGLUniformLocation,
             screenHeight: this.gl.getUniformLocation(this.program, 'uScreenHeight') as WebGLUniformLocation,
         };
 
@@ -120,6 +130,7 @@ export class PointProgram extends Program {
         this.gl.uniform1f(this.uniforms.screenHeight, this.gl.drawingBufferHeight);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
+        this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrixIT, false, this.modelViewMatrixIT);
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
         this.enableBuffer3f(this.buffers.color, this.attributes.color);
         this.enableBuffer3f(this.buffers.normal, this.attributes.normal);

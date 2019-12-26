@@ -14,7 +14,7 @@ export class PointCloudDataGenerator {
 
             data.positions[offset] = randomPoint[0];
             data.positions[offset + 1] = randomPoint[1];
-            data.positions[offset + 2] = randomPoint[2];
+            data.positions[offset + 2] = randomPoint[2] - 2;
 
             data.colors[offset] = randomPoint[0];
             data.colors[offset + 1] = randomPoint[1];

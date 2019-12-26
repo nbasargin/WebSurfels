@@ -16,6 +16,7 @@ export class Renderer {
 
     private readonly projectionMatrix: mat4;
     private readonly modelViewMatrix: mat4;
+    private readonly modelViewMatrixIT: mat4;
 
     constructor(public readonly canvas: HTMLCanvasElement) {
         const context = canvas.getContext('webgl2');
@@ -27,8 +28,9 @@ export class Renderer {
 
         this.projectionMatrix = mat4.create();
         this.modelViewMatrix = mat4.create();
+        this.modelViewMatrixIT = mat4.create();
 
-        this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix);
+        this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT);
         this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
 
         const dataGen = new PointCloudDataGenerator();
@@ -44,6 +46,10 @@ export class Renderer {
 
     lookAt(eye: vec3 | number[], center: vec3 | number[], up: vec3 | number[]) {
         mat4.lookAt(this.modelViewMatrix, eye, center, up);
+        mat4.invert(this.modelViewMatrixIT, this.modelViewMatrix);
+        mat4.transpose(this.modelViewMatrixIT, this.modelViewMatrixIT);
+        //console.log('normal', this.modelViewMatrix);
+        //console.log('it', this.modelViewMatrixIT);
     }
 
     perspective(fovRadians: number = Math.PI / 3, near: number = 0.01, far: number = 100) {
