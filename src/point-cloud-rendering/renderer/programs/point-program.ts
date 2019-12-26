@@ -16,8 +16,7 @@ const pointVS = `
 
     varying vec3 v_color;
     varying float rotation;
-    varying float angle;
-    varying float point_size;
+    varying float squeeze;
 
     void main() {
         vec4 vertex_world_space = uModelViewMatrix * vec4(pos, 1);
@@ -27,17 +26,13 @@ const pointVS = `
         v_color = color;
         
         vec4 projected_normal = normalize(uProjectionMatrix * uModelViewMatrixIT * vec4(normal, 0));
-        rotation = atan(projected_normal.y / projected_normal.x);
-        
-        angle = acos(dot(normalize(vertex_world_space.xyz), normalize(normal_world_space.xyz)));
+        rotation = atan(projected_normal.y / projected_normal.x);        
+        squeeze = dot(normalize(vertex_world_space.xyz), normalize(normal_world_space.xyz));
 
-        float world_point_size = 0.5 * 0.05;  // 0.5 equals a square with world size of 1x1
-        float height_ratio = uScreenHeight ;
+        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
 
-        // limit point size to be 2 pixels at least
-        // TODO: instead of limiting minimal points size, do not discard fragments
-        gl_PointSize = world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w;
-        point_size = gl_PointSize;
+        // small points cause problems, so limit size to 5
+        gl_PointSize = max(5.0, world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w);
     }
 `;
 
@@ -48,23 +43,20 @@ const pointFS = `
 
     varying vec3 v_color;
     varying float rotation;
-    varying float angle;
-    varying float point_size;
+    varying float squeeze;
 
     void main() {
-        vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+        vec2 cxy = 2.0 * gl_PointCoord - 1.0; 
         
         float sin_r = sin(rotation);
         float cos_r = cos(rotation);
-        float cos_s = cos(angle); //max(0.0, cos(angle));  // limit squeezing to 90%
+        // limit squeezing to 80% -> at least one pixel should be visible given min point size of 5
+        float cos_s = max(0.2, abs(squeeze)); 
         
         float x_trans = (cos_r * cxy.x - sin_r * cxy.y);
         float y_trans = cos_s * (sin_r * cxy.x + cos_r * cxy.y);
         
-        // TODO: do not discard fragments if gl_PointSize is small
-        //       only create spherical shapes for gl_PointSize larger than 2 
-        
-        if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s && point_size >= 2.0) {        
+        if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s) {        
             discard;
         }
         
