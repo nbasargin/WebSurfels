@@ -29,7 +29,7 @@ const pointVS = `
 `;
 
 const pointFS = `
-    #define PI 3.1415926538
+    #define PI radians(180.0)
 
     precision highp float;
 
@@ -109,7 +109,7 @@ export class PointProgram extends Program {
     render() {
         this.gl.useProgram(this.program);
         // noinspection JSSuspiciousNameCombination
-        this.gl.uniform1f(this.uniforms.screenHeight, this.canvas.height);
+        this.gl.uniform1f(this.uniforms.screenHeight, this.gl.drawingBufferHeight);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
