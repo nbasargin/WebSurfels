@@ -14,14 +14,18 @@ const pointVS = `
     uniform float uScreenHeight;
 
     varying vec3 v_color;
-    varying vec3 v_normal;
+    varying float rotation;
+    varying float angle;
 
     void main() {
         gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1);
         v_color = color;
-        v_normal = normal;
+        
+        vec4 projected_normal = uProjectionMatrix * uModelViewMatrix * vec4(normal, 0);
+        rotation = atan(projected_normal.y / projected_normal.x);
+        angle = acos(dot(normalize(projected_normal.xyz), vec3(0,0,1)));
 
-        float world_point_size = 0.5 * 0.3;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
         float height_ratio = uScreenHeight ;
 
         gl_PointSize = world_point_size * height_ratio * uProjectionMatrix[1][1] / gl_Position.w;
@@ -34,11 +38,11 @@ const pointFS = `
     precision highp float;
 
     varying vec3 v_color;
-    varying vec3 v_normal;
+    varying float rotation;
+    varying float angle;
 
-    void main() {        
-        float rotation = -45.0 / 180.0 * PI;
-        float squeeze = 80.0 / 180.0 * PI;
+    void main() {
+        float squeeze = angle;
         vec2 cxy = 2.0 * gl_PointCoord - 1.0;
         
         float sin_r = sin(rotation);
@@ -46,8 +50,8 @@ const pointFS = `
         // float sin_s = sin(squeeze);
         float cos_s = cos(squeeze);
         
-        float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
-        float y_trans = sin_r * cxy.x + cos_r * cxy.y;
+        float x_trans = (cos_r * cxy.x - sin_r * cxy.y);
+        float y_trans = cos_s * (sin_r * cxy.x + cos_r * cxy.y);
         
         if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s) {        
             discard;
