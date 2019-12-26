@@ -47,12 +47,12 @@ export class Renderer {
     }
 
     perspective(fovRadians: number = Math.PI / 3, near: number = 0.01, far: number = 100) {
-        const aspectRatio = this.canvas.width / Math.max(this.canvas.height, 1);
+        const aspectRatio = this.canvas.clientWidth / Math.max(this.canvas.clientHeight, 1);
         mat4.perspective(this.projectionMatrix, fovRadians, aspectRatio, near, far);
     }
 
     render(visualizeNormals: boolean = true) {
-        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        this.gl.viewport(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
         this.gl.clearColor(0,0,0,0);
         this.gl.clearDepth(1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
