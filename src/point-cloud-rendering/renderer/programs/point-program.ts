@@ -25,7 +25,10 @@ const pointVS = `
         gl_Position = uProjectionMatrix * vertex_world_space;
         v_color = color;
         
-        rotation = atan(normal_world_space.y / normal_world_space.x);        
+        vec3 axis = cross(vertex_world_space.xyz, normal_world_space);
+        vec4 axis_screen = uModelViewMatrixIT * vec4(axis, 0.0);
+        
+        rotation = atan(axis_screen.y / axis_screen.x);        
         squeeze = dot(normalize(vertex_world_space.xyz), normal_world_space);
 
         float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
@@ -52,8 +55,8 @@ const pointFS = `
         // limit squeezing to 80% -> at least one pixel should be visible given min point size of 5
         float cos_s = max(0.2, abs(squeeze)); 
         
-        float x_trans = (cos_r * cxy.x - sin_r * cxy.y);
-        float y_trans = cos_s * (sin_r * cxy.x + cos_r * cxy.y);
+        float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
+        float y_trans = (sin_r * cxy.x + cos_r * cxy.y);
         
         if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s) {        
             discard;
