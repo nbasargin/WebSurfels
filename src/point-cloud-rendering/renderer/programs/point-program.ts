@@ -25,11 +25,10 @@ const pointVS = `
         gl_Position = uProjectionMatrix * vertex_world_space;
         v_color = color;
         
-        vec3 axis = cross(vertex_world_space.xyz, normal_world_space);
-        vec4 axis_screen = uModelViewMatrixIT * vec4(axis, 0.0);
-        
-        rotation = atan(axis_screen.y / axis_screen.x);        
-        squeeze = dot(normalize(vertex_world_space.xyz), normal_world_space);
+        vec3 n_vertex_world_space = normalize(vertex_world_space.xyz);
+        vec3 axis = cross(n_vertex_world_space, normal_world_space);                
+        rotation = atan(axis.y / axis.x);        
+        squeeze = dot(n_vertex_world_space, normal_world_space);
 
         float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
 
