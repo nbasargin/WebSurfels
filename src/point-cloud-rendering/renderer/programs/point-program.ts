@@ -30,7 +30,7 @@ const pointVS = `
         rotation = atan(axis.y / axis.x);        
         squeeze = dot(n_vertex_world_space, normal_world_space);
 
-        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * 0.15;  // 0.5 equals a square with world size of 1x1
 
         // small points cause problems, so limit size to 5
         gl_PointSize = max(5.0, world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w);
