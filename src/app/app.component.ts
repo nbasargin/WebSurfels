@@ -23,6 +23,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private readonly cameraPos: vec3;
     private readonly viewDirection: vec3;
     private readonly up: vec3;
+    private angleX: number = 0;
+    private angleY: number = 0;
 
     private pressedKeys: Set<string>;
 
@@ -60,9 +62,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         if ((e.buttons & 1) !== 1) {
             return;  // left mouse button not pressed
         }
+
         const degreesPerPixel = -0.1;
-        const radians = Math.PI / 180 * degreesPerPixel * e.movementX;
-        vec3.rotateY(this.viewDirection, this.viewDirection, vec3.create(), radians);
+        const radians = Math.PI / 180 ;
+        const maxVerticalAngle = 85;
+        vec3.set(this.viewDirection, 0, 0, -1);
+        this.angleX += radians * e.movementX * degreesPerPixel;
+        this.angleY += radians * e.movementY * degreesPerPixel;
+        this.angleY = Math.max(radians * -maxVerticalAngle, Math.min(radians * maxVerticalAngle, this.angleY));
+
+        vec3.rotateX(this.viewDirection, this.viewDirection, vec3.create(), this.angleY);
+        vec3.rotateY(this.viewDirection, this.viewDirection, vec3.create(), this.angleX);
     }
 
     @HostListener('window:blur')
@@ -91,7 +101,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, this.viewDirection, -movementSpeed);
         }
         if (this.pressedKeys.has('KeyD')) {
-            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
         }
 
