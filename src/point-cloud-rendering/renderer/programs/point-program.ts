@@ -15,6 +15,7 @@ const pointVS = `
     uniform float uScreenHeight;
 
     varying vec3 v_color;
+    varying vec3 v_normal; 
     varying float rotation;
     varying float squeeze;
 
@@ -24,6 +25,7 @@ const pointVS = `
     
         gl_Position = uProjectionMatrix * vertex_world_space;
         v_color = color;
+        v_normal = normal;
         
         vec3 n_vertex_world_space = normalize(vertex_world_space.xyz);
         vec3 axis = cross(n_vertex_world_space, normal_world_space);                
@@ -39,10 +41,12 @@ const pointVS = `
 
 const pointFS = `
     #define PI radians(180.0)
+    #define MIN_LIGHTNESS 0.1
 
     precision highp float;
 
     varying vec3 v_color;
+    varying vec3 v_normal;
     varying float rotation;
     varying float squeeze;
 
@@ -61,7 +65,12 @@ const pointFS = `
             discard;
         }
         
-        gl_FragColor = vec4(v_color, 1.0);
+        // test: modify color based on light
+        // MIN_LIGHTNESS is the minimal received light (ambient)
+        // The remaining contribution is scaled by (1.0 - MIN_LIGHTNESS) and depends on surface normal and light direction
+        vec3 light_dir = vec3(1.0, 0.0, 0.0);
+        float light = MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal));
+        gl_FragColor = vec4(v_color * light, 1.0);
     }
 `;
 
