@@ -2,7 +2,8 @@ import { mat4, vec3 } from 'gl-matrix';
 import { NormalVisualizationProgram } from './programs/normal-visualization-program';
 import { PointProgram } from './programs/point-program';
 
-import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
+// import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
+import { LasDataLoader } from '../data/las-data-loader';
 
 
 export class Renderer {
@@ -12,7 +13,7 @@ export class Renderer {
     private normalVisProgram: NormalVisualizationProgram;
     private pointProgram: PointProgram;
 
-    private readonly numPoints = 1000;
+    // private readonly numPoints = 1000;
 
     private readonly projectionMatrix: mat4;
     private readonly modelViewMatrix: mat4;
@@ -33,11 +34,17 @@ export class Renderer {
         this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT);
         this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
 
-        const dataGen = new PointCloudDataGenerator();
-        const data = dataGen.generateSphere(this.numPoints);
+        // const dataGen = new PointCloudDataGenerator();
+        // const data = dataGen.generateSphere(this.numPoints);
 
-        this.pointProgram.setData(data);
-        this.normalVisProgram.setData(data);
+        // this.pointProgram.setData(data);
+        // this.normalVisProgram.setData(data);
+
+        const lasDataLoader = new LasDataLoader();
+        lasDataLoader.loadLas().then(data => {
+            this.pointProgram.setData(data);
+            this.normalVisProgram.setData(data);
+        });
 
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
@@ -48,8 +55,6 @@ export class Renderer {
         mat4.lookAt(this.modelViewMatrix, eye, center, up);
         mat4.invert(this.modelViewMatrixIT, this.modelViewMatrix);
         mat4.transpose(this.modelViewMatrixIT, this.modelViewMatrixIT);
-        //console.log('normal', this.modelViewMatrix);
-        //console.log('it', this.modelViewMatrixIT);
     }
 
     perspective(fovRadians: number = Math.PI / 3, near: number = 0.01, far: number = 100) {

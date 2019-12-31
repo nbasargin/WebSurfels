@@ -26,13 +26,14 @@ const pointVS = `
         gl_Position = uProjectionMatrix * vertex_world_space;
         v_color = color;
         v_normal = normal;
+        bool has_normal = length(normal) > 0.0;
         
         vec3 n_vertex_world_space = normalize(vertex_world_space.xyz);
         vec3 axis = cross(n_vertex_world_space, normal_world_space);                
-        rotation = atan(axis.y / axis.x);        
-        squeeze = dot(n_vertex_world_space, normal_world_space);
+        rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
+        squeeze = has_normal ? dot(n_vertex_world_space, normal_world_space) : 1.0;
 
-        float world_point_size = 0.5 * 0.15;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
 
         // small points cause problems, so limit size to 5
         gl_PointSize = max(5.0, world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w);
@@ -41,7 +42,7 @@ const pointVS = `
 
 const pointFS = `
     #define PI radians(180.0)
-    #define MIN_LIGHTNESS 0.1
+    #define MIN_LIGHTNESS 0.5
 
     precision highp float;
 
@@ -68,8 +69,10 @@ const pointFS = `
         // test: modify color based on light
         // MIN_LIGHTNESS is the minimal received light (ambient)
         // The remaining contribution is scaled by (1.0 - MIN_LIGHTNESS) and depends on surface normal and light direction
+        
+        bool has_normal = length(v_normal) > 0.0;
         vec3 light_dir = vec3(1.0, 0.0, 0.0);
-        float light = MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal));
+        float light = has_normal ? MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal)) : 1.0;
         gl_FragColor = vec4(v_color * light, 1.0);
     }
 `;
