@@ -100,6 +100,13 @@ export class PointProgram extends Program {
 
     private numPoints: number = 0;
 
+    private readonly framebuffer: WebGLFramebuffer;
+    private readonly fbColorTarget: WebGLTexture;
+    private readonly fbNormalTarget: WebGLTexture;
+    private readonly fbDepthTarget: WebGLTexture;
+    private readonly fbWidth = 640;
+    private readonly fbHeight = 480;
+
     constructor(
         gl: WebGL2RenderingContext,
         private canvas: HTMLCanvasElement,
@@ -110,23 +117,45 @@ export class PointProgram extends Program {
         super(gl, pointVS, pointFS);
 
         this.attributes = {
-            pos: this.gl.getAttribLocation(this.program, 'pos'),
-            color: this.gl.getAttribLocation(this.program, 'color'),
-            normal: this.gl.getAttribLocation(this.program, 'normal'),
+            pos: gl.getAttribLocation(this.program, 'pos'),
+            color: gl.getAttribLocation(this.program, 'color'),
+            normal: gl.getAttribLocation(this.program, 'normal'),
         };
 
         this.uniforms = {
-            projectionMatrix: this.gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
-            modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
-            modelViewMatrixIT: this.gl.getUniformLocation(this.program, 'uModelViewMatrixIT') as WebGLUniformLocation,
-            screenHeight: this.gl.getUniformLocation(this.program, 'uScreenHeight') as WebGLUniformLocation,
+            projectionMatrix: gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
+            modelViewMatrix: gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
+            modelViewMatrixIT: gl.getUniformLocation(this.program, 'uModelViewMatrixIT') as WebGLUniformLocation,
+            screenHeight: gl.getUniformLocation(this.program, 'uScreenHeight') as WebGLUniformLocation,
         };
 
         this.buffers = {
-            pos: this.gl.createBuffer() as WebGLBuffer,
-            color: this.gl.createBuffer() as WebGLBuffer,
-            normal: this.gl.createBuffer() as WebGLBuffer,
+            pos: gl.createBuffer() as WebGLBuffer,
+            color: gl.createBuffer() as WebGLBuffer,
+            normal: gl.createBuffer() as WebGLBuffer,
         };
+
+        // frame buffer textures
+        this.fbColorTarget = gl.createTexture() as WebGLTexture;
+        this.fbNormalTarget = gl.createTexture() as WebGLTexture;
+        this.fbDepthTarget = gl.createTexture() as WebGLTexture;
+        this.setTexture(this.fbColorTarget, gl.RGBA32F);
+        this.setTexture(this.fbNormalTarget, gl.RGBA32F);
+        this.setTexture(this.fbDepthTarget, gl.RGBA32F);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.fbColorTarget);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.fbNormalTarget);
+
+        // framebuffer
+        this.framebuffer = gl.createFramebuffer() as WebGLFramebuffer;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.fbColorTarget, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, this.fbNormalTarget, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.fbDepthTarget, 0);
+        gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
     render() {
@@ -147,6 +176,15 @@ export class PointProgram extends Program {
         this.setBufferData(this.buffers.pos, data.positions);
         this.setBufferData(this.buffers.color, data.colors);
         this.setBufferData(this.buffers.normal, data.normals);
+    }
+
+    private setTexture(t: WebGLTexture, internalFormat: number) {
+        this.gl.bindTexture(this.gl.TEXTURE_2D, t);
+        this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, internalFormat, this.fbWidth, this.fbHeight);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
     }
 
 }
