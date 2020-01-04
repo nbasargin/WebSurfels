@@ -156,6 +156,14 @@ export class PointProgram extends Program {
         gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // ext check
+        const extensions = ["EXT_color_buffer_float", "EXT_float_blend"];
+        for (const ext of extensions) {
+            if (!gl.getExtension(ext)) {
+                console.error(`Required WebGL extensions missing: ${ext}`);
+            }
+        }
     }
 
     render() {
@@ -168,6 +176,18 @@ export class PointProgram extends Program {
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
         this.enableBuffer3f(this.buffers.color, this.attributes.color);
         this.enableBuffer3f(this.buffers.normal, this.attributes.normal);
+
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
+        this.gl.viewport(0, 0, this.fbWidth, this.fbHeight);
+        this.gl.depthMask(true);
+        this.gl.colorMask(false, false, false, false);
+        // todo: this does not work yet
+        // this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
+
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+        this.gl.viewport(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
+        this.gl.depthMask(true);
+        this.gl.colorMask(true, true, true, true);
         this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
     }
 
