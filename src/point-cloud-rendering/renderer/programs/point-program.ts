@@ -33,7 +33,7 @@ const pointVS = `
         rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
         squeeze = has_normal ? dot(n_vertex_world_space, normal_world_space) : 1.0;
 
-        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * 0.15;  // 0.5 equals a square with world size of 1x1
 
         // small points cause problems, so limit size to 5
         gl_PointSize = max(5.0, world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w);
@@ -73,7 +73,7 @@ const pointFS = `
         bool has_normal = length(v_normal) > 0.0;
         vec3 light_dir = vec3(1.0, 0.0, 0.0);
         float light = has_normal ? MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal)) : 1.0;
-        gl_FragColor = vec4(v_color * light, 1.0);
+        gl_FragColor = vec4(v_color * light, 1.0); // vec4(light, light, light, 1.0);
     }
 `;
 

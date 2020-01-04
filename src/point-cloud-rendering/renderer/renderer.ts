@@ -2,18 +2,21 @@ import { mat4, vec3 } from 'gl-matrix';
 import { NormalVisualizationProgram } from './programs/normal-visualization-program';
 import { PointProgram } from './programs/point-program';
 
-// import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
+import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
 import { LasDataLoader } from '../data/las-data-loader';
 
 
 export class Renderer {
+
+    private static USE_GENERATED_SPHERE_DATA = true;
+    private static USE_ADDITIVE_BLENDING = false;
 
     private readonly gl: WebGL2RenderingContext;
 
     private normalVisProgram: NormalVisualizationProgram;
     private pointProgram: PointProgram;
 
-    // private readonly numPoints = 1000;
+    private readonly numPoints = 1000;
 
     private readonly projectionMatrix: mat4;
     private readonly modelViewMatrix: mat4;
@@ -34,21 +37,30 @@ export class Renderer {
         this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT);
         this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
 
-        // const dataGen = new PointCloudDataGenerator();
-        // const data = dataGen.generateSphere(this.numPoints);
 
-        // this.pointProgram.setData(data);
-        // this.normalVisProgram.setData(data);
+        if (Renderer.USE_GENERATED_SPHERE_DATA) {
+            const dataGen = new PointCloudDataGenerator();
+            const data = dataGen.generateSphere(this.numPoints);
 
-        const lasDataLoader = new LasDataLoader();
-        lasDataLoader.loadLas().then(data => {
             this.pointProgram.setData(data);
             this.normalVisProgram.setData(data);
-        });
+        } else {
+            const lasDataLoader = new LasDataLoader();
+            lasDataLoader.loadLas().then(data => {
+                this.pointProgram.setData(data);
+                this.normalVisProgram.setData(data);
+            });
+        }
 
-        this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.enable(this.gl.BLEND);
-        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+        if (Renderer.USE_ADDITIVE_BLENDING) {
+            this.gl.enable(this.gl.BLEND);
+            this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
+        } else {
+            this.gl.enable(this.gl.DEPTH_TEST);
+            this.gl.enable(this.gl.BLEND);
+            this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+        }
+
     }
 
     lookAt(eye: vec3 | number[], center: vec3 | number[], up: vec3 | number[]) {
