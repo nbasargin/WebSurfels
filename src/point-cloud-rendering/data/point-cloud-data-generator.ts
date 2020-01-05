@@ -10,15 +10,15 @@ export class PointCloudDataGenerator {
         data.normals = new Float32Array(pointNumber * 3);
         for (let i = 0; i < pointNumber; i++) {
             const offset = i * 3;
-            const randomPoint = PointCloudDataGenerator.randomPointOnSphere();
+            const randomPoint = PointCloudDataGenerator.randomPointOnSphere(); // randomPointOnCircle();
 
             data.positions[offset] = randomPoint[0];
             data.positions[offset + 1] = randomPoint[1];
             data.positions[offset + 2] = randomPoint[2];
 
-            data.colors[offset] = Math.random(); // Math.max(0, randomPoint[0]);
-            data.colors[offset + 1] = Math.random(); // Math.max(0, randomPoint[1]);
-            data.colors[offset + 2] = Math.random(); // Math.max(0, randomPoint[2]);
+            data.colors[offset] = Math.random() * 0.5 + 0.5; // Math.max(0, randomPoint[0]);
+            data.colors[offset + 1] = Math.random() * 0.5 + 0.5; // Math.max(0, randomPoint[1]);
+            data.colors[offset + 2] = Math.random() * 0.5 + 0.5; // Math.max(0, randomPoint[2]);
 
             data.normals[offset] = randomPoint[0];
             data.normals[offset + 1] = randomPoint[1];
@@ -39,6 +39,14 @@ export class PointCloudDataGenerator {
         const x = Math.sin(phi) * Math.cos(theta);
         const y = Math.sin(phi) * Math.sin(theta);
         const z = Math.cos(phi);
+        return [x, y, z];
+    }
+
+    private static randomPointOnCircle(): [number, number, number] {
+        const angle = Math.random() * Math.PI * 2;
+        const x = Math.cos(angle);
+        const y = Math.sin(angle);
+        const z = 0;
         return [x, y, z];
     }
 

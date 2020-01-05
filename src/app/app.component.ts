@@ -105,7 +105,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
 
         const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.viewDirection);
-        this.renderer.lookAt(this.cameraPos, viewTarget, [0, 1, 0]);
+        let up = vec3.cross(vec3.create(), right, this.viewDirection);
+
+        if (this.pressedKeys.has('KeyC')) {
+            up = this.up;
+        }
+
+        this.renderer.lookAt(this.cameraPos, viewTarget, up);
     }
 
     checkCanvasSize() {

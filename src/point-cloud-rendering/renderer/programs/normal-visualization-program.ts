@@ -59,6 +59,7 @@ export class NormalVisualizationProgram extends Program {
 
     render() {
         this.gl.useProgram(this.program);
+        this.gl.disable(this.gl.DEPTH_TEST);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
@@ -83,9 +84,9 @@ export class NormalVisualizationProgram extends Program {
             normalLines[offsetTarget + 1] = positions[offsetSource + 1];
             normalLines[offsetTarget + 2] = positions[offsetSource + 2];
 
-            normalLines[offsetTarget + 3] = positions[offsetSource] + normals[offsetSource] * 0.1;
-            normalLines[offsetTarget + 4] = positions[offsetSource + 1] + normals[offsetSource + 1] * 0.1;
-            normalLines[offsetTarget + 5] = positions[offsetSource + 2] + normals[offsetSource + 2] * 0.1;
+            normalLines[offsetTarget + 3] = positions[offsetSource] + normals[offsetSource] * 0.2;
+            normalLines[offsetTarget + 4] = positions[offsetSource + 1] + normals[offsetSource + 1] * 0.2;
+            normalLines[offsetTarget + 5] = positions[offsetSource + 2] + normals[offsetSource + 2] * 0.2;
         }
 
         return normalLines;

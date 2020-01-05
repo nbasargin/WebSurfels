@@ -79,14 +79,22 @@ const pointFS = `
         
         float sin_r = sin(rotation);
         float cos_r = cos(rotation);
-        float cos_s = squeeze;
+        float cos_s = squeeze; // max(0.0, -squeeze);
         
         float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
         float y_trans = (sin_r * cxy.x + cos_r * cxy.y);
         
-        if (x_trans * x_trans + y_trans * y_trans > cos_s * cos_s) {        
+        float dist = x_trans * x_trans + y_trans * y_trans;
+        float dist_limit = cos_s * cos_s;
+        
+        if (dist > dist_limit) {        
             discard;
         }
+        
+        // cross lines
+        //if (abs(x_trans) < 0.05 || abs(y_trans) < 0.05) {
+        //    discard;
+        //} 
         
         // test: modify color based on light
         // MIN_LIGHTNESS is the minimal received light (ambient)
