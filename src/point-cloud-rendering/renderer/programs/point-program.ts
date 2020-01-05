@@ -3,21 +3,23 @@ import { PointCloudData } from '../../data/point-cloud-data';
 import { Program } from './program';
 
 const pointVS = `
+    #version 300 es
+    
     // precision highp float;
 
-    attribute vec3 pos;
-    attribute vec3 color;
-    attribute vec3 normal; 
+    in vec3 pos;
+    in vec3 color;
+    in vec3 normal; 
 
     uniform mat4 uModelViewMatrix;
     uniform mat4 uModelViewMatrixIT;
     uniform mat4 uProjectionMatrix;
     uniform float uScreenHeight;
 
-    varying vec3 v_color;
-    varying vec3 v_normal; 
-    varying float rotation;
-    varying float squeeze;
+    flat out vec3 v_color;
+    flat out  vec3 v_normal; 
+    flat out  float rotation;
+    flat out  float squeeze;
 
     void main() {
         vec4 vertex_world_space = uModelViewMatrix * vec4(pos, 1);
@@ -38,18 +40,23 @@ const pointVS = `
         // small points cause problems, so limit size to 5
         gl_PointSize = max(5.0, world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w);
     }
-`;
+`.trim();
 
 const pointFS = `
+    #version 300 es
+    
     #define PI radians(180.0)
     #define MIN_LIGHTNESS 0.5
 
     precision highp float;
 
-    varying vec3 v_color;
-    varying vec3 v_normal;
-    varying float rotation;
-    varying float squeeze;
+    flat in vec3 v_color;
+    flat in vec3 v_normal;
+    flat in float rotation;
+    flat in float squeeze;
+        
+    layout(location=0) out highp vec4 color;
+    layout(location=1) out highp vec3 normal_out;
 
     void main() {
         vec2 cxy = 2.0 * gl_PointCoord - 1.0; 
@@ -73,9 +80,10 @@ const pointFS = `
         bool has_normal = length(v_normal) > 0.0;
         vec3 light_dir = vec3(1.0, 0.0, 0.0);
         float light = has_normal ? MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal)) : 1.0;
-        gl_FragColor = vec4(v_color * light, 1.0); // vec4(light, light, light, 1.0);
+        // gl_FragColor = vec4(v_color * light, 1.0); // vec4(light, light, light, 1.0);
+        color = vec4(v_color * light, 1.0);
     }
-`;
+`.trim();
 
 export class PointProgram extends Program {
 
@@ -141,7 +149,7 @@ export class PointProgram extends Program {
         this.fbDepthTarget = gl.createTexture() as WebGLTexture;
         this.setTexture(this.fbColorTarget, gl.RGBA32F);
         this.setTexture(this.fbNormalTarget, gl.RGBA32F);
-        this.setTexture(this.fbDepthTarget, gl.RGBA32F);
+        this.setTexture(this.fbDepthTarget, gl.DEPTH_COMPONENT32F);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.fbColorTarget);
         gl.activeTexture(gl.TEXTURE1);
@@ -181,8 +189,7 @@ export class PointProgram extends Program {
         this.gl.viewport(0, 0, this.fbWidth, this.fbHeight);
         this.gl.depthMask(true);
         this.gl.colorMask(false, false, false, false);
-        // todo: this does not work yet
-        // this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
+        this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
 
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
         this.gl.viewport(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
