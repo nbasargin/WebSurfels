@@ -16,9 +16,9 @@ export class PointCloudDataGenerator {
             data.positions[offset + 1] = randomPoint[1];
             data.positions[offset + 2] = randomPoint[2];
 
-            data.colors[offset] = Math.max(0, randomPoint[0]);
-            data.colors[offset + 1] = Math.max(0, randomPoint[1]);
-            data.colors[offset + 2] = Math.max(0, randomPoint[2]);
+            data.colors[offset] = Math.random(); // Math.max(0, randomPoint[0]);
+            data.colors[offset + 1] = Math.random(); // Math.max(0, randomPoint[1]);
+            data.colors[offset + 2] = Math.random(); // Math.max(0, randomPoint[2]);
 
             data.normals[offset] = randomPoint[0];
             data.normals[offset + 1] = randomPoint[1];
