@@ -110,11 +110,11 @@ export class PointProgram extends Program {
     private numPoints: number = 0;
 
     private readonly framebuffer: WebGLFramebuffer;
-    private readonly fbColorTarget: WebGLTexture;
+    private fbColorTarget: WebGLTexture;
     private readonly fbNormalTarget: WebGLTexture;
     private readonly fbDepthTarget: WebGLTexture;
-    private readonly fbWidth = 640;
-    private readonly fbHeight = 480;
+    private fbWidth = 640;
+    private fbHeight = 480;
 
     constructor(
         gl: WebGL2RenderingContext,
@@ -156,6 +156,17 @@ export class PointProgram extends Program {
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.fbNormalTarget);
 
+        // experimental: resize framebuffer after some time
+        setTimeout(() => {
+
+            this.fbWidth *= 2;
+            this.fbHeight *= 2;
+
+            this.setTexture(this.fbColorTarget, gl.RGBA32F);
+            this.setTexture(this.fbNormalTarget, gl.RGBA32F);
+            this.setTexture(this.fbDepthTarget, gl.DEPTH_COMPONENT32F);
+        }, 2000);
+
         // framebuffer
         this.framebuffer = gl.createFramebuffer() as WebGLFramebuffer;
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
@@ -180,8 +191,8 @@ export class PointProgram extends Program {
         const gl = this.gl;
 
         this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.enable(this.gl.BLEND);
-        this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
+        //this.gl.enable(this.gl.BLEND);
+        //this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
 
         gl.clearDepth(1.0);
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -197,7 +208,7 @@ export class PointProgram extends Program {
         this.enableBuffer3f(this.buffers.normal, this.attributes.normal);
 
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
-        this.gl.viewport(0, 0, this.fbWidth, this.fbHeight);
+        // this.gl.viewport(0, 0, this.fbWidth, this.fbHeight);
         this.gl.depthMask(true);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         //this.gl.colorMask(false, false, false, false);
@@ -220,7 +231,15 @@ export class PointProgram extends Program {
 
     private setTexture(t: WebGLTexture, internalFormat: number) {
         this.gl.bindTexture(this.gl.TEXTURE_2D, t);
-        this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, internalFormat, this.fbWidth, this.fbHeight);
+        // this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, internalFormat, this.fbWidth, this.fbHeight);
+
+        if (internalFormat === this.gl.DEPTH_COMPONENT32F) {
+            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, internalFormat, this.fbWidth,  this.fbHeight, 0, this.gl.DEPTH_COMPONENT, this.gl.FLOAT, null);
+        } else {
+            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, internalFormat, this.fbWidth,  this.fbHeight, 0, this.gl.RGBA, this.gl.FLOAT, null);
+        }
+
+
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);

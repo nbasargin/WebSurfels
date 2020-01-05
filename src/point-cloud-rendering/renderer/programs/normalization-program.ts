@@ -47,6 +47,7 @@ export class NormalizationProgram extends Program {
             splatNormals: gl.getUniformLocation(this.program, 'splatNormals') as WebGLUniformLocation,
         };
 
+        this.gl.useProgram(this.program);
         gl.uniform1i(this.uniforms.splatColors, 0);
         gl.uniform1i(this.uniforms.splatNormals, 1);
 
