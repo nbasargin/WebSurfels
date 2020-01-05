@@ -1,5 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { NormalVisualizationProgram } from './programs/normal-visualization-program';
+import { NormalizationProgram } from './programs/normalization-program';
 import { PointProgram } from './programs/point-program';
 
 import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
@@ -15,6 +16,7 @@ export class Renderer {
 
     private normalVisProgram: NormalVisualizationProgram;
     private pointProgram: PointProgram;
+    private normalizationProgram: NormalizationProgram;
 
     private readonly numPoints = 1000;
 
@@ -36,7 +38,7 @@ export class Renderer {
 
         this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT);
         this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
-
+        this.normalizationProgram = new NormalizationProgram(this.gl);
 
         if (Renderer.USE_GENERATED_SPHERE_DATA) {
             const dataGen = new PointCloudDataGenerator();
@@ -82,6 +84,7 @@ export class Renderer {
         this.perspective();
 
         this.pointProgram.render();
+        this.normalizationProgram.render();
         if (visualizeNormals) {
             this.normalVisProgram.render();
         }

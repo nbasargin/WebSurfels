@@ -17,13 +17,13 @@ const pointVS = `
     uniform float uScreenHeight;
 
     flat out vec3 v_color;
-    flat out  vec3 v_normal; 
-    flat out  float rotation;
-    flat out  float squeeze;
+    flat out vec3 v_normal; 
+    flat out float rotation;
+    flat out float squeeze;
 
     void main() {
-        vec4 vertex_world_space = uModelViewMatrix * vec4(pos, 1);
-        vec3 normal_world_space = normalize((uModelViewMatrixIT * vec4(normal, 0)).xyz);
+        vec4 vertex_world_space = uModelViewMatrix * vec4(pos, 1.0);
+        vec3 normal_world_space = normalize((uModelViewMatrixIT * vec4(normal, 0.0)).xyz);
     
         gl_Position = uProjectionMatrix * vertex_world_space;
         v_color = color;
@@ -82,6 +82,7 @@ const pointFS = `
         float light = has_normal ? MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal)) : 1.0;
         // gl_FragColor = vec4(v_color * light, 1.0); // vec4(light, light, light, 1.0);
         color = vec4(v_color * light, 1.0);
+        normal_out = v_normal;
     }
 `.trim();
 
@@ -175,6 +176,16 @@ export class PointProgram extends Program {
     }
 
     render() {
+
+        const gl = this.gl;
+
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
+
+        gl.clearDepth(1.0);
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+
         this.gl.useProgram(this.program);
         // noinspection JSSuspiciousNameCombination
         this.gl.uniform1f(this.uniforms.screenHeight, this.gl.drawingBufferHeight);
@@ -188,14 +199,16 @@ export class PointProgram extends Program {
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
         this.gl.viewport(0, 0, this.fbWidth, this.fbHeight);
         this.gl.depthMask(true);
-        this.gl.colorMask(false, false, false, false);
-        this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
-
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-        this.gl.viewport(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
-        this.gl.depthMask(true);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        //this.gl.colorMask(false, false, false, false);
         this.gl.colorMask(true, true, true, true);
         this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
+
+        //this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+        //this.gl.viewport(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
+        // this.gl.depthMask(true);
+        // this.gl.colorMask(true, true, true, true);
+        // this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
     }
 
     setData(data: PointCloudData) {
