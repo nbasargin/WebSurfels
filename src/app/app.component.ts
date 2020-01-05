@@ -118,8 +118,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const height = Math.round(bb.height * resolution);
 
         if (c.width !== width || c.height !== height) {
-            c.width = width;
-            c.height = height;
+            this.renderer.setSize(width, height);
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
     }

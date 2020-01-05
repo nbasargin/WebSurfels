@@ -90,4 +90,15 @@ export class Renderer {
         }
     }
 
+    /**
+     * Set canvas width and height to specified values and update internal framebuffers if necessary.
+     * @param width
+     * @param height
+     */
+    setSize(width: number, height: number) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.pointProgram.resizeFramebuffer(width, height);
+    }
+
 }

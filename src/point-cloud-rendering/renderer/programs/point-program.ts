@@ -110,11 +110,11 @@ export class PointProgram extends Program {
     private numPoints: number = 0;
 
     private readonly framebuffer: WebGLFramebuffer;
-    private fbColorTarget: WebGLTexture;
+    private readonly fbColorTarget: WebGLTexture;
     private readonly fbNormalTarget: WebGLTexture;
     private readonly fbDepthTarget: WebGLTexture;
-    private fbWidth = 640;
-    private fbHeight = 480;
+    private fbWidth = 1;
+    private fbHeight = 1;
 
     constructor(
         gl: WebGL2RenderingContext,
@@ -156,17 +156,6 @@ export class PointProgram extends Program {
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.fbNormalTarget);
 
-        // experimental: resize framebuffer after some time
-        setTimeout(() => {
-
-            this.fbWidth *= 2;
-            this.fbHeight *= 2;
-
-            this.setTexture(this.fbColorTarget, gl.RGBA32F);
-            this.setTexture(this.fbNormalTarget, gl.RGBA32F);
-            this.setTexture(this.fbDepthTarget, gl.DEPTH_COMPONENT32F);
-        }, 2000);
-
         // framebuffer
         this.framebuffer = gl.createFramebuffer() as WebGLFramebuffer;
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
@@ -187,7 +176,6 @@ export class PointProgram extends Program {
     }
 
     render() {
-
         const gl = this.gl;
 
         this.gl.enable(this.gl.DEPTH_TEST);
@@ -229,6 +217,15 @@ export class PointProgram extends Program {
         this.setBufferData(this.buffers.normal, data.normals);
     }
 
+    resizeFramebuffer(width: number, height: number) {
+        this.fbWidth = width;
+        this.fbHeight = height;
+
+        this.setTexture(this.fbColorTarget, this.gl.RGBA32F);
+        this.setTexture(this.fbNormalTarget, this.gl.RGBA32F);
+        this.setTexture(this.fbDepthTarget, this.gl.DEPTH_COMPONENT32F);
+    }
+
     private setTexture(t: WebGLTexture, internalFormat: number) {
         this.gl.bindTexture(this.gl.TEXTURE_2D, t);
         // this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, internalFormat, this.fbWidth, this.fbHeight);
@@ -238,7 +235,6 @@ export class PointProgram extends Program {
         } else {
             this.gl.texImage2D(this.gl.TEXTURE_2D, 0, internalFormat, this.fbWidth,  this.fbHeight, 0, this.gl.RGBA, this.gl.FLOAT, null);
         }
-
 
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
