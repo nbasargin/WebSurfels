@@ -77,7 +77,7 @@ export class Renderer {
     }
 
     render(visualizeNormals: boolean = true) {
-        this.gl.viewport(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.clearColor(0,0,0,0);
         this.gl.clearDepth(1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
