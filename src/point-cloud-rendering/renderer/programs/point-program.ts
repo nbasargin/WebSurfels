@@ -25,39 +25,35 @@ const pointVS = `
     flat out float squeeze;
 
     void main() {
-        vec4 vertex_world_space = uModelViewMatrix * vec4(pos, 1.0);
-        vec3 normal_world_space = normalize((uModelViewMatrixIT * vec4(normal, 0.0)).xyz);
-        
-        float world_point_size = 0.5 * 0.15;  // 0.5 equals a square with world size of 1x1
-        
-    
-        // point position
-        vec4 vertex_world_space_copy = vertex_world_space;
-        
-        if (uDepthPass) {    
-            vertex_world_space_copy.xyz += normalize(vertex_world_space_copy.xyz) * 0.1;
-        }
-    
-        gl_Position = uProjectionMatrix * vertex_world_space_copy;
-        vec4 true_position = uProjectionMatrix * vertex_world_space;
-        
-        
-        
-        // point size and shape
-        
+        vec4 position_camera_space = uModelViewMatrix * vec4(pos, 1.0);
+        vec3 normal_camera_space = normalize((uModelViewMatrixIT * vec4(normal, 0.0)).xyz);
+        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
         
         v_color = color;
         v_normal = normal;
-        bool has_normal = length(normal) > 0.0;
         
-        vec3 n_vertex_world_space = normalize(vertex_world_space.xyz);
-        vec3 axis = cross(n_vertex_world_space, normal_world_space);                
+        // point position        
+        gl_Position = uProjectionMatrix * position_camera_space;
+        
+        // point shape
+        bool has_normal = length(normal) > 0.0;        
+        vec3 n_position_camera_space = normalize(position_camera_space.xyz);
+        vec3 axis = cross(n_position_camera_space, normal_camera_space);                
         rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
-        squeeze = has_normal ? dot(n_vertex_world_space, normal_world_space) : 1.0;
-
-
+        squeeze = has_normal ? dot(n_position_camera_space, normal_camera_space) : 1.0;
+        // limit squeezing to 80% -> at least one pixel should be visible given min point size of 5
+        squeeze = max(0.2, abs(squeeze)); 
+        
         // small points cause problems, so limit size to 5
-        gl_PointSize = max(5.0, world_point_size * uScreenHeight * uProjectionMatrix[1][1] / true_position.w);
+        gl_PointSize = max(5.0, world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w);
+        
+        // for depth pass, move points away from the camera to create a depth margin 
+        if (uDepthPass) {    
+            position_camera_space.xyz += normalize(position_camera_space.xyz) * world_point_size * 2.0;
+            gl_Position = uProjectionMatrix * position_camera_space;        
+        }
+    
+        
     }
 `.trim();
 
@@ -82,8 +78,7 @@ const pointFS = `
         
         float sin_r = sin(rotation);
         float cos_r = cos(rotation);
-        // limit squeezing to 80% -> at least one pixel should be visible given min point size of 5
-        float cos_s = max(0.2, abs(squeeze)); 
+        float cos_s = squeeze;
         
         float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
         float y_trans = (sin_r * cxy.x + cos_r * cxy.y);
