@@ -114,8 +114,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const bb = w.getBoundingClientRect();
 
         const resolution = window.devicePixelRatio || 1;
-        const width = Math.round(bb.width) * resolution;
-        const height = Math.round(bb.height) * resolution;
+        const width = Math.round(bb.width * resolution);
+        const height = Math.round(bb.height * resolution);
 
         if (c.width !== width || c.height !== height) {
             c.width = width;
