@@ -25,6 +25,7 @@ const normalizationFS = `
     void main() {
         ivec2 uv = ivec2(gl_FragCoord.xy);
         color = texelFetch(splatColors, uv, 0);
+        color /= color.w;
     
         // color = vec4(1,0.5,1,1);
     }
