@@ -41,11 +41,12 @@ const pointVS = `
         vec3 axis = cross(n_position_camera_space, normal_camera_space);                
         rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
         squeeze = has_normal ? dot(n_position_camera_space, normal_camera_space) : 1.0;
-        // limit squeezing to 80% -> at least one pixel should be visible given min point size of 5
-        squeeze = max(0.2, abs(squeeze)); 
+        // optionally, squeezing could be limited to 80% to keep some color contribution for points at steep angles
+        // it can also be used for backface culling by discarding fragments with negative squeeze values
         
-        // small points cause problems, so limit size to 5
-        gl_PointSize = max(5.0, world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w);
+        gl_PointSize = world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w;
+        // optionally, point size could be forced to be larger than 5 to prevent small points
+        // however, this is actually the task of LOD
         
         // for depth pass, move points away from the camera to create a depth margin 
         if (uDepthPass) {    
