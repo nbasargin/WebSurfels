@@ -21,8 +21,11 @@ const pointVS = `
 
     flat out vec3 v_color;
     flat out vec3 v_normal; 
-    flat out float rotation;
-    flat out float squeeze;
+    
+    // experimental approximation of projected circles
+    // does not work well for objects close to the camera
+    // flat out float rotation;
+    // flat out float squeeze;
 
     void main() {
         vec4 position_camera_space = uModelViewMatrix * vec4(pos, 1.0);
@@ -36,11 +39,12 @@ const pointVS = `
         gl_Position = uProjectionMatrix * position_camera_space;
         
         // point shape
-        bool has_normal = length(normal) > 0.0;        
-        vec3 n_position_camera_space = normalize(position_camera_space.xyz);
-        vec3 axis = cross(n_position_camera_space, normal_camera_space);                
-        rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
-        squeeze = has_normal ? dot(n_position_camera_space, normal_camera_space) : 1.0;
+        // possible viewing directions: n_position_camera_space or vec3(0,0,-1) -> different outcomes 
+        // bool has_normal = length(normal) > 0.0;        
+        // vec3 n_position_camera_space = normalize(position_camera_space.xyz);
+        // vec3 axis = cross(vec3(0,0,-1), normal_camera_space);                
+        // rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
+        // squeeze = has_normal ? dot(vec3(0,0,-1), normal_camera_space) : 1.0;
         // optionally, squeezing could be limited to 80% to keep some color contribution for points at steep angles
         // it can also be used for backface culling by discarding fragments with negative squeeze values
         
@@ -49,7 +53,7 @@ const pointVS = `
         // however, this is actually the task of LOD
         
         // for depth pass, move points away from the camera to create a depth margin 
-        if (uDepthPass) {    
+        if (uDepthPass) {
             position_camera_space.xyz += normalize(position_camera_space.xyz) * world_point_size * 2.0;
             gl_Position = uProjectionMatrix * position_camera_space;        
         }
@@ -68,8 +72,9 @@ const pointFS = `
 
     flat in vec3 v_color;
     flat in vec3 v_normal;
-    flat in float rotation;
-    flat in float squeeze;
+    
+    //flat in float rotation;
+    //flat in float squeeze;
         
     layout(location=0) out highp vec4 color;
     layout(location=1) out highp vec3 normal_out;
@@ -77,17 +82,18 @@ const pointFS = `
     void main() {
         vec2 cxy = 2.0 * gl_PointCoord - 1.0; 
         
-        float sin_r = sin(rotation);
-        float cos_r = cos(rotation);
-        float cos_s = squeeze; // max(0.0, -squeeze);
+        //float sin_r = sin(rotation);
+        //float cos_r = cos(rotation);
+        //float cos_s = squeeze; // max(0.0, -squeeze);
         
-        float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
-        float y_trans = (sin_r * cxy.x + cos_r * cxy.y);
+        //float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
+        //float y_trans = (sin_r * cxy.x + cos_r * cxy.y);
         
-        float dist = x_trans * x_trans + y_trans * y_trans;
-        float dist_limit = cos_s * cos_s;
+        //float dist = x_trans * x_trans + y_trans * y_trans;
+        //float dist_limit = cos_s * cos_s;
         
-        if (dist > dist_limit) {        
+        //if (dist > dist_limit) {
+        if (length(cxy) > 1.0) {
             discard;
         }
         

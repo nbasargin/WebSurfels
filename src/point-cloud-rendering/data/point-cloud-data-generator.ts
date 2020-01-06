@@ -2,7 +2,7 @@ import { PointCloudData } from "./point-cloud-data";
 
 export class PointCloudDataGenerator {
 
-    generateSphere(pointNumber: number): PointCloudData {
+    generateSphere(pointNumber: number, randomizeColors: boolean = true): PointCloudData {
         const data = new PointCloudData();
 
         data.positions = new Float32Array(pointNumber * 3);
@@ -19,6 +19,12 @@ export class PointCloudDataGenerator {
             data.colors[offset] = randomPoint[3];
             data.colors[offset + 1] = randomPoint[4];
             data.colors[offset + 2] = randomPoint[5];
+
+            if (randomizeColors) {
+                data.colors[offset] = (data.colors[offset] + Math.random()) / 2;
+                data.colors[offset + 1] = (data.colors[offset + 1] + Math.random()) / 2;
+                data.colors[offset + 2] = (data.colors[offset + 2] + Math.random()) / 2;
+            }
 
             data.normals[offset] = randomPoint[6];
             data.normals[offset + 1] = randomPoint[7];
@@ -56,6 +62,13 @@ export class PointCloudDataGenerator {
         const nz = Math.sqrt(2) / 2;
 
         return [x, y, -z, r, g, b, nx, ny, nz];
+    }
+
+    private static randomPointOnQuads2() {
+        const x = Math.floor(Math.random() * 5) - 2 + Math.random() * 0.5;  // {0, 1, ... 4} - 2 + [0 ... 0.5]
+        const y = Math.floor(Math.random() * 5) - 2 + Math.random() * 0.5;
+        const z = 0;
+        return [x, y, -z, 0.9, 0.9, 0.9, 0, 0, 1];
     }
 
 }
