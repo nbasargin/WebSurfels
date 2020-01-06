@@ -36,7 +36,7 @@ const pointVS = `
     void main() {
         vec4 position_camera_space = uModelViewMatrix * vec4(pos, 1.0);
         vec3 normal_camera_space = normalize((uModelViewMatrixIT * vec4(normal, 0.0)).xyz);
-        float world_point_size = 0.5 * 0.07;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
         
         v_color = color;
         v_normal = normal;
@@ -44,13 +44,20 @@ const pointVS = `
         // point position        
         gl_Position = uProjectionMatrix * position_camera_space;
         
-        // point shape
-        // possible viewing directions: n_position_camera_space or vec3(0,0,-1) -> different outcomes 
         
         #if defined(USE_ELLIPSES) && USE_ELLIPSES == 1
+            // elliptical point shape
             bool has_normal = length(normal) > 0.0;        
             vec3 n_position_camera_space = normalize(position_camera_space.xyz);
-            vec3 axis = cross(n_position_camera_space, normal_camera_space);                
+            
+            // possible viewing directions: 
+            // - perspective view: n_position_camera_space  -> good for squeeze, rotation is aligned to projected normals
+            // - orthographic view: vec3(0,0,-1)  -> rotation is aligned to orthographic normals (large changes if normal faces the camera)
+            // - or mix of both, based on how steep the normal is aligned to the viewer
+            float mix_ratio = pow(abs(normal_camera_space.z), 4.0);
+            vec3 mixed_viewing_direction = n_position_camera_space * mix_ratio + vec3(0,0,-1) * (1.0 - mix_ratio);
+                        
+            vec3 axis = cross(mixed_viewing_direction, normal_camera_space);                
             rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
             squeeze = has_normal ? dot(n_position_camera_space, normal_camera_space) : 1.0;
             // optionally, squeezing could be limited to 80% to keep some color contribution for points at steep angles
