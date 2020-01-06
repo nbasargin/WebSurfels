@@ -18,7 +18,7 @@ export class Renderer {
     private pointProgram: PointProgram;
     private normalizationProgram: NormalizationProgram;
 
-    private readonly numPoints = 100000;
+    private readonly numPoints = 10000;
 
     private readonly projectionMatrix: mat4;
     private readonly modelViewMatrix: mat4;

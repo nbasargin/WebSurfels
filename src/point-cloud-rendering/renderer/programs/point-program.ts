@@ -30,7 +30,7 @@ const pointVS = `
     void main() {
         vec4 position_camera_space = uModelViewMatrix * vec4(pos, 1.0);
         vec3 normal_camera_space = normalize((uModelViewMatrixIT * vec4(normal, 0.0)).xyz);
-        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * 0.07;  // 0.5 equals a square with world size of 1x1
         
         v_color = color;
         v_normal = normal;
@@ -54,7 +54,7 @@ const pointVS = `
         
         // for depth pass, move points away from the camera to create a depth margin 
         if (uDepthPass) {
-            position_camera_space.xyz += normalize(position_camera_space.xyz) * world_point_size * 2.0;
+            position_camera_space.xyz += normalize(position_camera_space.xyz) * world_point_size * 2.5;
             gl_Position = uProjectionMatrix * position_camera_space;        
         }
     
@@ -93,7 +93,8 @@ const pointFS = `
         //float dist_limit = cos_s * cos_s;
         
         //if (dist > dist_limit) {
-        if (length(cxy) > 1.0) {
+        float dist = length(cxy);        
+        if (dist > 1.0) {
             discard;
         }
         
@@ -110,8 +111,13 @@ const pointFS = `
         vec3 light_dir = vec3(1.0, 0.0, 0.0);
         float light = has_normal ? MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal)) : 1.0;
         // gl_FragColor = vec4(v_color * light, 1.0); // vec4(light, light, light, 1.0);
-        color = vec4(v_color * light, 1.0);
-        normal_out = v_normal;
+        
+        //  weight = (1 − distance^2)^hardness
+        float hardness = 4.0;
+        float weight = pow(1.0 - dist * dist, hardness); 
+        
+        color = vec4(v_color * light * weight, weight);
+        normal_out = v_normal * weight;
     }
 `.trim();
 
