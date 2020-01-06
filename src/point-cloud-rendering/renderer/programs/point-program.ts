@@ -2,8 +2,14 @@ import { mat4 } from 'gl-matrix';
 import { PointCloudData } from '../../data/point-cloud-data';
 import { Program } from './program';
 
+const USE_ELLIPSES = 1;
+
 const pointVS = `
     #version 300 es
+    
+    // experimental approximation of projected circles
+    // does not work well for objects close to the camera
+    #define USE_ELLIPSES ${USE_ELLIPSES}
     
     // precision highp float;
 
@@ -22,10 +28,10 @@ const pointVS = `
     flat out vec3 v_color;
     flat out vec3 v_normal; 
     
-    // experimental approximation of projected circles
-    // does not work well for objects close to the camera
-    // flat out float rotation;
-    // flat out float squeeze;
+    #if defined(USE_ELLIPSES) && USE_ELLIPSES == 1
+        flat out float rotation;
+        flat out float squeeze;
+    #endif
 
     void main() {
         vec4 position_camera_space = uModelViewMatrix * vec4(pos, 1.0);
@@ -40,13 +46,16 @@ const pointVS = `
         
         // point shape
         // possible viewing directions: n_position_camera_space or vec3(0,0,-1) -> different outcomes 
-        // bool has_normal = length(normal) > 0.0;        
-        // vec3 n_position_camera_space = normalize(position_camera_space.xyz);
-        // vec3 axis = cross(vec3(0,0,-1), normal_camera_space);                
-        // rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
-        // squeeze = has_normal ? dot(vec3(0,0,-1), normal_camera_space) : 1.0;
-        // optionally, squeezing could be limited to 80% to keep some color contribution for points at steep angles
-        // it can also be used for backface culling by discarding fragments with negative squeeze values
+        
+        #if defined(USE_ELLIPSES) && USE_ELLIPSES == 1
+            bool has_normal = length(normal) > 0.0;        
+            vec3 n_position_camera_space = normalize(position_camera_space.xyz);
+            vec3 axis = cross(n_position_camera_space, normal_camera_space);                
+            rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
+            squeeze = has_normal ? dot(n_position_camera_space, normal_camera_space) : 1.0;
+            // optionally, squeezing could be limited to 80% to keep some color contribution for points at steep angles
+            // it can also be used for backface culling by discarding fragments with negative squeeze values    
+        #endif
         
         gl_PointSize = world_point_size * uScreenHeight * uProjectionMatrix[1][1] / gl_Position.w;
         // optionally, point size could be forced to be larger than 5 to prevent small points
@@ -57,13 +66,13 @@ const pointVS = `
             position_camera_space.xyz += normalize(position_camera_space.xyz) * world_point_size * 2.5;
             gl_Position = uProjectionMatrix * position_camera_space;        
         }
-    
-        
     }
 `.trim();
 
 const pointFS = `
     #version 300 es
+    
+    #define USE_ELLIPSES ${USE_ELLIPSES}
     
     #define PI radians(180.0)
     #define MIN_LIGHTNESS 0.5
@@ -73,8 +82,10 @@ const pointFS = `
     flat in vec3 v_color;
     flat in vec3 v_normal;
     
-    //flat in float rotation;
-    //flat in float squeeze;
+    #if defined(USE_ELLIPSES) && USE_ELLIPSES == 1
+        flat in float rotation;
+        flat in float squeeze;
+    #endif
         
     layout(location=0) out highp vec4 color;
     layout(location=1) out highp vec3 normal_out;
@@ -82,19 +93,23 @@ const pointFS = `
     void main() {
         vec2 cxy = 2.0 * gl_PointCoord - 1.0; 
         
-        //float sin_r = sin(rotation);
-        //float cos_r = cos(rotation);
-        //float cos_s = squeeze; // max(0.0, -squeeze);
+        float dist = length(cxy);   
+        float dist_limit = 1.0;
         
-        //float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
-        //float y_trans = (sin_r * cxy.x + cos_r * cxy.y);
-        
-        //float dist = x_trans * x_trans + y_trans * y_trans;
-        //float dist_limit = cos_s * cos_s;
-        
-        //if (dist > dist_limit) {
-        float dist = length(cxy);        
-        if (dist > 1.0) {
+        #if defined(USE_ELLIPSES) && USE_ELLIPSES == 1
+            float sin_r = sin(rotation);
+            float cos_r = cos(rotation);
+            float cos_s = squeeze;
+            // optionally enable backface culling with max(0.0, -squeeze); 
+            
+            float x_trans = cos_s * (cos_r * cxy.x - sin_r * cxy.y);
+            float y_trans = (sin_r * cxy.x + cos_r * cxy.y);
+            
+            dist = x_trans * x_trans + y_trans * y_trans;
+            dist_limit = cos_s * cos_s;
+        #endif 
+             
+        if (dist > dist_limit) {
             discard;
         }
         
@@ -110,10 +125,10 @@ const pointFS = `
         bool has_normal = length(v_normal) > 0.0;
         vec3 light_dir = vec3(1.0, 0.0, 0.0);
         float light = has_normal ? MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal)) : 1.0;
-        // gl_FragColor = vec4(v_color * light, 1.0); // vec4(light, light, light, 1.0);
         
-        //  weight = (1 − distance^2)^hardness
+        // weight = (1 − distance^2)^hardness
         float hardness = 4.0;
+        dist = dist / dist_limit;
         float weight = pow(1.0 - dist * dist, hardness); 
         
         color = vec4(v_color * light * weight, weight);
