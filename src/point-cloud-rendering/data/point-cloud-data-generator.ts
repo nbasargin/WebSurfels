@@ -10,7 +10,7 @@ export class PointCloudDataGenerator {
         data.normals = new Float32Array(pointNumber * 3);
         for (let i = 0; i < pointNumber; i++) {
             const offset = i * 3;
-            const randomPoint = PointCloudDataGenerator.randomPointOnSphere();
+            const randomPoint = PointCloudDataGenerator.randomPointOnCube();
 
             data.positions[offset] = randomPoint[0];
             data.positions[offset + 1] = randomPoint[1];
@@ -46,6 +46,19 @@ export class PointCloudDataGenerator {
         const y = Math.sin(phi) * Math.sin(theta);
         const z = Math.cos(phi);
         return [x, y, z, Math.max(0, x), Math.max(0, y), Math.max(0, z), x, y, z];
+    }
+
+    private static randomPointOnCube(): [number, number, number, number, number, number, number, number, number] {
+        const axis = Math.floor(Math.random() * 3);
+        const direction = Math.random() >= 0.5 ? 1 : -1;
+
+        const pos = [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1];
+        pos[axis] = direction;
+        const normal = [0, 0, 0];
+        normal[axis] = direction;
+        const color = pos.map(p => Math.max(0, p));
+
+        return [...pos, ...color, ...normal] as any;
     }
 
     private static randomPointOnQuads(): [number, number, number, number, number, number, number, number, number] {
