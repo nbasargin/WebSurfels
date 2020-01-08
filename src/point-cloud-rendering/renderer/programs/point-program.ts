@@ -54,12 +54,14 @@ const pointVS = `
             // - perspective view: n_position_camera_space  -> good for squeeze, rotation is aligned to projected normals
             // - orthographic view: vec3(0,0,-1)  -> rotation is aligned to orthographic normals (large changes if normal faces the camera)
             // - or mix of both, based on how steep the normal is aligned to the viewer
-            float mix_ratio = pow(abs(normal_camera_space.z), 4.0);
-            vec3 mixed_viewing_direction = n_position_camera_space * mix_ratio + vec3(0,0,-1) * (1.0 - mix_ratio);
+            //float mix_ratio = pow(abs(normal_camera_space.z), 4.0);
+            //vec3 mixed_viewing_direction = n_position_camera_space * mix_ratio + vec3(0,0,-1) * (1.0 - mix_ratio);
                         
-            vec3 axis = cross(mixed_viewing_direction, normal_camera_space);                
-            rotation = has_normal ? atan(axis.y / axis.x) : 0.0;        
-            squeeze = has_normal ? dot(n_position_camera_space, normal_camera_space) : 1.0;
+            vec3 axis = cross(n_position_camera_space, normal_camera_space);                
+            rotation = has_normal ? atan(axis.y / axis.x) : 0.0;   
+            float squeeze1 = abs(dot(n_position_camera_space, normal_camera_space));
+            float squeeze2 = abs(dot(vec3(0,0,-1), normal_camera_space));
+            squeeze = has_normal ? max(squeeze1, squeeze2) : 1.0;
             // optionally, squeezing could be limited to 80% to keep some color contribution for points at steep angles
             // it can also be used for backface culling by discarding fragments with negative squeeze values    
         #endif
