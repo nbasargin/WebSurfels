@@ -23,6 +23,8 @@ const quadVS = `
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
     
+    out highp vec2 uv; 
+    
     void main() {
         vec3 point_normal = normalize(vec3(1.0, 1.0, 1.0));
         vec3 quad_normal = vec3(0.0, 0.0, 1.0);
@@ -33,16 +35,25 @@ const quadVS = `
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
     
         gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + rot_mat * splatVertices, 1.0);
-        gl_PointSize = 10.0;
+        
+        uv = splatVertices.xy * 2.0;
     }
 `.trim();
 
 const quadFS = `
     #version 300 es
     
+    in highp vec2 uv;
+    
     out highp vec4 color;
     
     void main() {
+    
+        highp float len = length(uv);
+        if (len > 1.0) {
+            discard;
+        }
+    
         color = vec4(1.0, 1.0, 1.0, 1.0);
     }
 `.trim();
