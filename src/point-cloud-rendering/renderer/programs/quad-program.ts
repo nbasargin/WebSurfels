@@ -18,7 +18,7 @@ const quadVS = `
     }
     
     in vec3 pos;
-    in vec3 splatVertices;
+    in vec3 quadVertex;
 
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
@@ -34,9 +34,9 @@ const quadVS = `
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
     
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + rot_mat * splatVertices, 1.0);
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + rot_mat * quadVertex, 1.0);
         
-        uv = splatVertices.xy * 2.0;
+        uv = quadVertex.xy * 2.0;
     }
 `.trim();
 
@@ -62,7 +62,7 @@ export class QuadProgram extends Program {
 
     private readonly attributes: {
         pos: GLint,
-        splatVertices: GLint,
+        quadVertex: GLint,
     };
 
     private readonly uniforms: {
@@ -72,10 +72,10 @@ export class QuadProgram extends Program {
 
     private readonly buffers: {
         pos: WebGLBuffer,
-        splatVertices: WebGLBuffer,
+        quadVertex: WebGLBuffer,
     };
 
-    private splatVertices = [
+    private quadVertices = [
         -0.5, -0.5, 0,
         -0.5, 0.5, 0,
         0.5, -0.5, 0,
@@ -99,7 +99,7 @@ export class QuadProgram extends Program {
 
         this.attributes = {
             pos: gl.getAttribLocation(this.program, 'pos'),
-            splatVertices: gl.getAttribLocation(this.program, 'splatVertices'),
+            quadVertex: gl.getAttribLocation(this.program, 'quadVertex'),
         };
 
         console.log(this.attributes);
@@ -111,11 +111,11 @@ export class QuadProgram extends Program {
 
         this.buffers = {
             pos: gl.createBuffer() as WebGLBuffer,
-            splatVertices: gl.createBuffer() as WebGLBuffer,
+            quadVertex: gl.createBuffer() as WebGLBuffer,
         };
 
         this.setBufferData(this.buffers.pos, new Float32Array(this.points));
-        this.setBufferData(this.buffers.splatVertices, new Float32Array(this.splatVertices));
+        this.setBufferData(this.buffers.quadVertex, new Float32Array(this.quadVertices));
     }
 
     render() {
@@ -124,11 +124,11 @@ export class QuadProgram extends Program {
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
 
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
-        this.enableBuffer3f(this.buffers.splatVertices, this.attributes.splatVertices); //
+        this.enableBuffer3f(this.buffers.quadVertex, this.attributes.quadVertex); //
         this.gl.vertexAttribDivisor(this.attributes.pos, 1);
 
         const numPoints = 4;
-        this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, this.splatVertices.length / 3, numPoints);
+        this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, this.quadVertices.length / 3, numPoints);
     }
 
 }
