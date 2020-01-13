@@ -10,7 +10,7 @@ export class PointCloudDataGenerator {
         data.normals = new Float32Array(pointNumber * 3);
         for (let i = 0; i < pointNumber; i++) {
             const offset = i * 3;
-            const randomPoint = PointCloudDataGenerator.randomPointOnCube();
+            const randomPoint = PointCloudDataGenerator.randomPointOnSphere();
 
             data.positions[offset] = randomPoint[0];
             data.positions[offset + 1] = randomPoint[1];

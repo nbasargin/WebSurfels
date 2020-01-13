@@ -2,6 +2,7 @@ import { mat4 } from 'gl-matrix';
 import { PointCloudData } from '../../data/point-cloud-data';
 import { Program } from './program';
 import { OffscreenFramebuffer } from "../offscreen-framebuffer";
+import { RendererConstants } from "../renderer-constants";
 
 const USE_ELLIPSES = 1;
 
@@ -37,7 +38,7 @@ const pointVS = `
     void main() {
         vec4 position_camera_space = uModelViewMatrix * vec4(pos, 1.0);
         vec3 normal_camera_space = normalize((uModelViewMatrixIT * vec4(normal, 0.0)).xyz);
-        float world_point_size = 0.5 * 0.03;  // 0.5 equals a square with world size of 1x1
+        float world_point_size = 0.5 * ${RendererConstants.POINT_SIZE};  // 0.5 equals a square with world size of 1x1
         
         v_color = color;
         v_normal = normal;

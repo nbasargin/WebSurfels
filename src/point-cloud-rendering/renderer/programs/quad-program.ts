@@ -1,5 +1,7 @@
 import { Program } from './program';
 import { mat4 } from 'gl-matrix';
+import { PointCloudData } from "../../data/point-cloud-data";
+import { RendererConstants } from "../renderer-constants";
 
 
 const quadVS = `
@@ -26,22 +28,24 @@ const quadVS = `
     uniform mat4 uModelViewMatrixIT;
     uniform mat4 uProjectionMatrix;
     
-    out highp vec2 uv; 
+    out highp vec2 uv;
     flat out vec3 v_color;
     flat out vec3 v_normal;
     
     void main() {
-        vec3 point_normal = normalize(vec3(1.0, 1.0, 1.0));
+        vec3 point_normal = normal;
         vec3 quad_normal = vec3(0.0, 0.0, 1.0);
         
 		vec3 rot_axis = cross(quad_normal, point_normal);
 		float rot_angle = acos(dot(quad_normal, point_normal));
+		float world_point_size = ${RendererConstants.POINT_SIZE};
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
     
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + rot_mat * quadVertex, 1.0);
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + rot_mat * quadVertex * world_point_size, 1.0);
         
         uv = quadVertex.xy * 2.0;
+        v_color = color;
     }
 `.trim();
 
@@ -52,6 +56,11 @@ const quadFS = `
     
     out highp vec4 color;
     
+    precision highp float;
+    
+    flat in vec3 v_color;
+    flat in vec3 v_normal;
+    
     void main() {
     
         highp float len = length(uv);
@@ -59,7 +68,8 @@ const quadFS = `
             discard;
         }
     
-        color = vec4(1.0, 1.0, 1.0, 1.0);
+        // color = vec4(1.0, 1.0, 1.0, 1.0);
+        color = vec4(v_color, 1.0);
     }
 `.trim();
 
@@ -92,18 +102,14 @@ export class QuadProgram extends Program {
         0.5, 0.5, 0,
     ];
 
-    private points = [
-        0, 0, 0,
-        0, 0, -1,
-        0, 0, -2,
-        0, 0, -3,
-    ];
+    private numPoints: number = 0;
 
     constructor(
         gl: WebGL2RenderingContext,
         private canvas: HTMLCanvasElement,
         private projectionMatrix: mat4,
         private modelViewMatrix: mat4,
+        private modelViewMatrixIT: mat4,
     ) {
         super(gl, quadVS, quadFS);
 
@@ -129,21 +135,37 @@ export class QuadProgram extends Program {
             quadVertex: gl.createBuffer() as WebGLBuffer,
         };
 
-        this.setBufferData(this.buffers.pos, new Float32Array(this.points));
+        // this.setBufferData(this.buffers.pos, new Float32Array(this.points));
         this.setBufferData(this.buffers.quadVertex, new Float32Array(this.quadVertices));
     }
 
     render() {
+
+        this.gl.enable(this.gl.DEPTH_TEST);
+
         this.gl.useProgram(this.program);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
+        this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrixIT, false, this.modelViewMatrixIT);
 
         this.enableBuffer3f(this.buffers.quadVertex, this.attributes.quadVertex);
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
         this.gl.vertexAttribDivisor(this.attributes.pos, 1);
 
-        const numPoints = 4;
-        this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, this.quadVertices.length / 3, numPoints);
+        this.enableBuffer3f(this.buffers.color, this.attributes.color);
+        this.gl.vertexAttribDivisor(this.attributes.color, 1);
+
+        this.enableBuffer3f(this.buffers.normal, this.attributes.normal);
+        this.gl.vertexAttribDivisor(this.attributes.normal, 1);
+
+        this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, this.quadVertices.length / 3, this.numPoints);
+    }
+
+    setData(data: PointCloudData) {
+        this.numPoints = data.positions.length / 3;
+        this.setBufferData(this.buffers.pos, data.positions);
+        this.setBufferData(this.buffers.color, data.colors);
+        this.setBufferData(this.buffers.normal, data.normals);
     }
 
 }
