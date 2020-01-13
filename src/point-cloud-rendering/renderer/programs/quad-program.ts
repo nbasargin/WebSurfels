@@ -18,12 +18,17 @@ const quadVS = `
     }
     
     in vec3 pos;
+    in vec3 color;
+    in vec3 normal; 
     in vec3 quadVertex;
 
     uniform mat4 uModelViewMatrix;
+    uniform mat4 uModelViewMatrixIT;
     uniform mat4 uProjectionMatrix;
     
     out highp vec2 uv; 
+    flat out vec3 v_color;
+    flat out vec3 v_normal;
     
     void main() {
         vec3 point_normal = normalize(vec3(1.0, 1.0, 1.0));
@@ -62,16 +67,21 @@ export class QuadProgram extends Program {
 
     private readonly attributes: {
         pos: GLint,
+        color: GLint,
+        normal: GLint,
         quadVertex: GLint,
     };
 
     private readonly uniforms: {
         projectionMatrix: WebGLUniformLocation,
         modelViewMatrix: WebGLUniformLocation,
+        modelViewMatrixIT: WebGLUniformLocation,
     };
 
     private readonly buffers: {
         pos: WebGLBuffer,
+        color: WebGLBuffer,
+        normal: WebGLBuffer,
         quadVertex: WebGLBuffer,
     };
 
@@ -99,6 +109,8 @@ export class QuadProgram extends Program {
 
         this.attributes = {
             pos: gl.getAttribLocation(this.program, 'pos'),
+            color: gl.getAttribLocation(this.program, 'color'),
+            normal: gl.getAttribLocation(this.program, 'normal'),
             quadVertex: gl.getAttribLocation(this.program, 'quadVertex'),
         };
 
@@ -107,10 +119,13 @@ export class QuadProgram extends Program {
         this.uniforms = {
             projectionMatrix: gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
             modelViewMatrix: gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
+            modelViewMatrixIT: gl.getUniformLocation(this.program, 'uModelViewMatrixIT') as WebGLUniformLocation,
         };
 
         this.buffers = {
             pos: gl.createBuffer() as WebGLBuffer,
+            color: gl.createBuffer() as WebGLBuffer,
+            normal: gl.createBuffer() as WebGLBuffer,
             quadVertex: gl.createBuffer() as WebGLBuffer,
         };
 
@@ -123,8 +138,8 @@ export class QuadProgram extends Program {
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
 
+        this.enableBuffer3f(this.buffers.quadVertex, this.attributes.quadVertex);
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
-        this.enableBuffer3f(this.buffers.quadVertex, this.attributes.quadVertex); //
         this.gl.vertexAttribDivisor(this.attributes.pos, 1);
 
         const numPoints = 4;
