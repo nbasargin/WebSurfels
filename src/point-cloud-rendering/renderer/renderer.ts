@@ -5,6 +5,7 @@ import { PointProgram } from './programs/point-program';
 
 import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
 import { LasDataLoader } from '../data/las-data-loader';
+import { QuadProgram } from "./programs/quad-program";
 
 
 export class Renderer {
@@ -17,6 +18,7 @@ export class Renderer {
     private normalVisProgram: NormalVisualizationProgram;
     private pointProgram: PointProgram;
     private normalizationProgram: NormalizationProgram;
+    private quadProgram: QuadProgram;
 
     private readonly numPoints = 30000;
 
@@ -39,6 +41,8 @@ export class Renderer {
         this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT);
         this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
         this.normalizationProgram = new NormalizationProgram(this.gl);
+
+        // this.quadProgram = new QuadProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix);
 
         if (Renderer.USE_GENERATED_SPHERE_DATA) {
             const dataGen = new PointCloudDataGenerator();
