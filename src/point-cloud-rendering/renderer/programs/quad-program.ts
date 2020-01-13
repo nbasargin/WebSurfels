@@ -12,10 +12,7 @@ const quadVS = `
     uniform mat4 uProjectionMatrix;
     
     void main() {
-        vec3 temp = splatVertices;
-        temp = vec3(0.0, 0.0, 0.0);
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + temp, 1.0);
-        gl_Position = vec4(0.0, 0.0, 0.5, 1.0); // //uProjectionMatrix * uModelViewMatrix * vec4(pos + temp, 1.0);
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + splatVertices, 1.0);
         gl_PointSize = 10.0;
     }
 `.trim();
@@ -55,7 +52,10 @@ export class QuadProgram extends Program {
     ];
 
     private points = [
-        0, 0, 1
+        0, 0, 0,
+        0, 0, -1,
+        0, 0, -2,
+        0, 0, -3,
     ];
 
     constructor(
@@ -94,9 +94,10 @@ export class QuadProgram extends Program {
 
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
         this.enableBuffer3f(this.buffers.splatVertices, this.attributes.splatVertices); //
+        this.gl.vertexAttribDivisor(this.attributes.pos, 1);
 
-        const numPoints = 1;
-        this.gl.drawArrays(this.gl.POINTS, 0, numPoints);
+        const numPoints = 4;
+        this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, this.splatVertices.length / 3, numPoints);
     }
 
 }
