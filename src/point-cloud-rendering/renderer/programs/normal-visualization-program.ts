@@ -63,6 +63,7 @@ export class NormalVisualizationProgram extends Program {
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
+        this.gl.vertexAttribDivisor(this.attributes.pos, 0);
         this.gl.drawArrays(this.gl.LINES, 0, this.numPoints * 2);
     }
 
