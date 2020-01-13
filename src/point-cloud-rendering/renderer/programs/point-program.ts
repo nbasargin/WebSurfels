@@ -1,6 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { PointCloudData } from '../../data/point-cloud-data';
 import { Program } from './program';
+import { OffscreenFramebuffer } from "../offscreen-framebuffer";
 
 const USE_ELLIPSES = 1;
 
@@ -170,12 +171,7 @@ export class PointProgram extends Program {
 
     private numPoints: number = 0;
 
-    private readonly framebuffer: WebGLFramebuffer;
-    private readonly fbColorTarget: WebGLTexture;
-    private readonly fbNormalTarget: WebGLTexture;
-    private readonly fbDepthTarget: WebGLTexture;
-    private fbWidth = 1;
-    private fbHeight = 1;
+    private offscreenFramebuffer: OffscreenFramebuffer;
 
     constructor(
         gl: WebGL2RenderingContext,
@@ -207,27 +203,7 @@ export class PointProgram extends Program {
             normal: gl.createBuffer() as WebGLBuffer,
         };
 
-        // frame buffer textures
-        this.fbColorTarget = gl.createTexture() as WebGLTexture;
-        this.fbNormalTarget = gl.createTexture() as WebGLTexture;
-        this.fbDepthTarget = gl.createTexture() as WebGLTexture;
-        this.setTexture(this.fbColorTarget, gl.RGBA32F);
-        this.setTexture(this.fbNormalTarget, gl.RGBA32F);
-        this.setTexture(this.fbDepthTarget, gl.DEPTH_COMPONENT32F);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.fbColorTarget);
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, this.fbNormalTarget);
-
-        // framebuffer
-        this.framebuffer = gl.createFramebuffer() as WebGLFramebuffer;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.fbColorTarget, 0);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, this.fbNormalTarget, 0);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.fbDepthTarget, 0);
-        gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        this.offscreenFramebuffer = new OffscreenFramebuffer(gl);
 
         // ext check
         const extensions = ["EXT_color_buffer_float", "EXT_float_blend"];
@@ -258,22 +234,22 @@ export class PointProgram extends Program {
         this.enableBuffer3f(this.buffers.color, this.attributes.color);
         this.enableBuffer3f(this.buffers.normal, this.attributes.normal);
 
-        // depth pass
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
-        // this.gl.viewport(0, 0, this.fbWidth, this.fbHeight);
+        this.offscreenFramebuffer.bind();
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        //this.gl.depthMask(true);
+
+        // depth pass
+        this.gl.depthMask(true);
         this.gl.colorMask(false, false, false, false);
         this.gl.uniform1i(this.uniforms.depthPass, 1);
         this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
 
         // splat pass
-        //this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-        //this.gl.viewport(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
         this.gl.depthMask(false);
         this.gl.colorMask(true, true, true, true);
         this.gl.uniform1i(this.uniforms.depthPass, 0);
         this.gl.drawArrays(this.gl.POINTS, 0, this.numPoints);
+
+        this.offscreenFramebuffer.unbind();
     }
 
     setData(data: PointCloudData) {
@@ -284,28 +260,7 @@ export class PointProgram extends Program {
     }
 
     resizeFramebuffer(width: number, height: number) {
-        this.fbWidth = width;
-        this.fbHeight = height;
-
-        this.setTexture(this.fbColorTarget, this.gl.RGBA32F);
-        this.setTexture(this.fbNormalTarget, this.gl.RGBA32F);
-        this.setTexture(this.fbDepthTarget, this.gl.DEPTH_COMPONENT32F);
-    }
-
-    private setTexture(t: WebGLTexture, internalFormat: number) {
-        this.gl.bindTexture(this.gl.TEXTURE_2D, t);
-        // this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, internalFormat, this.fbWidth, this.fbHeight);
-
-        if (internalFormat === this.gl.DEPTH_COMPONENT32F) {
-            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, internalFormat, this.fbWidth,  this.fbHeight, 0, this.gl.DEPTH_COMPONENT, this.gl.FLOAT, null);
-        } else {
-            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, internalFormat, this.fbWidth,  this.fbHeight, 0, this.gl.RGBA, this.gl.FLOAT, null);
-        }
-
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        this.offscreenFramebuffer.resize(width, height);
     }
 
 }
