@@ -12,7 +12,11 @@ const quadVS = `
     uniform mat4 uProjectionMatrix;
     
     void main() {
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1.0);
+        vec3 temp = splatVertices;
+        temp = vec3(0.0, 0.0, 0.0);
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + temp, 1.0);
+        gl_Position = vec4(0.0, 0.0, 0.5, 1.0); // //uProjectionMatrix * uModelViewMatrix * vec4(pos + temp, 1.0);
+        gl_PointSize = 10.0;
     }
 `.trim();
 
@@ -22,7 +26,7 @@ const quadFS = `
     out highp vec4 color;
     
     void main() {
-        color = vec4(1.0, 0.5, 1.0, 1.0);
+        color = vec4(1.0, 1.0, 1.0, 1.0);
     }
 `.trim();
 
@@ -51,7 +55,7 @@ export class QuadProgram extends Program {
     ];
 
     private points = [
-        0, 0, 0
+        0, 0, 1
     ];
 
     constructor(
@@ -67,6 +71,8 @@ export class QuadProgram extends Program {
             splatVertices: gl.getAttribLocation(this.program, 'splatVertices'),
         };
 
+        console.log(this.attributes);
+
         this.uniforms = {
             projectionMatrix: gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
             modelViewMatrix: gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
@@ -79,15 +85,18 @@ export class QuadProgram extends Program {
 
         this.setBufferData(this.buffers.pos, new Float32Array(this.points));
         this.setBufferData(this.buffers.splatVertices, new Float32Array(this.splatVertices));
-
-        this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
-        this.enableBuffer3f(this.buffers.splatVertices, this.attributes.splatVertices);
     }
 
     render() {
         this.gl.useProgram(this.program);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
+
+        this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
+        this.enableBuffer3f(this.buffers.splatVertices, this.attributes.splatVertices); //
+
+        const numPoints = 1;
+        this.gl.drawArrays(this.gl.POINTS, 0, numPoints);
     }
 
 }

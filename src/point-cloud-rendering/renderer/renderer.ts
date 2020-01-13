@@ -77,8 +77,9 @@ export class Renderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.perspective();
 
-        this.pointProgram.render();
-        this.normalizationProgram.render();
+        //this.pointProgram.render();
+        //this.normalizationProgram.render();
+        this.quadProgram.render();
         if (visualizeNormals) {
             this.normalVisProgram.render();
         }
