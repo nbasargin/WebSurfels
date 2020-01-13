@@ -5,6 +5,18 @@ import { mat4 } from 'gl-matrix';
 const quadVS = `
     #version 300 es
     
+    // adapted from http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
+    // expecting normalized axis (length of 1)
+    mat3 rotation_matrix(vec3 axis, float angle) {
+        float s = sin(angle);
+        float c = cos(angle);
+        float oc = 1.0 - c;
+    
+        return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
+                    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
+                    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
+    }
+    
     in vec3 pos;
     in vec3 splatVertices;
 
@@ -12,7 +24,15 @@ const quadVS = `
     uniform mat4 uProjectionMatrix;
     
     void main() {
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + splatVertices, 1.0);
+        vec3 point_normal = normalize(vec3(1.0, 1.0, 1.0));
+        vec3 quad_normal = vec3(0.0, 0.0, 1.0);
+        
+		vec3 rot_axis = cross(quad_normal, point_normal);
+		float rot_angle = acos(dot(quad_normal, point_normal));
+		
+		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
+    
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + rot_mat * splatVertices, 1.0);
         gl_PointSize = 10.0;
     }
 `.trim();
