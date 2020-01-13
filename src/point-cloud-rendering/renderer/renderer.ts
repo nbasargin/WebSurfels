@@ -11,7 +11,6 @@ import { QuadProgram } from "./programs/quad-program";
 export class Renderer {
 
     private static USE_GENERATED_SPHERE_DATA = true;
-    private static USE_ADDITIVE_BLENDING = false;
 
     private readonly gl: WebGL2RenderingContext;
 
@@ -42,7 +41,7 @@ export class Renderer {
         this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
         this.normalizationProgram = new NormalizationProgram(this.gl);
 
-        // this.quadProgram = new QuadProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix);
+        this.quadProgram = new QuadProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix);
 
         if (Renderer.USE_GENERATED_SPHERE_DATA) {
             const dataGen = new PointCloudDataGenerator();
@@ -56,15 +55,6 @@ export class Renderer {
                 this.pointProgram.setData(data);
                 this.normalVisProgram.setData(data);
             });
-        }
-
-        if (Renderer.USE_ADDITIVE_BLENDING) {
-            this.gl.enable(this.gl.BLEND);
-            this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
-        } else {
-            this.gl.enable(this.gl.DEPTH_TEST);
-            this.gl.enable(this.gl.BLEND);
-            this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
         }
 
     }
