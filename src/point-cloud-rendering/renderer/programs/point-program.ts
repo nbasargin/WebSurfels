@@ -213,6 +213,8 @@ export class PointProgram extends Program {
                 console.error(`Required WebGL extensions missing: ${ext}`);
             }
         }
+
+        // console.log('Point Program attributes:', this.attributes);
     }
 
     render() {

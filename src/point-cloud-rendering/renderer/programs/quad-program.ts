@@ -27,6 +27,7 @@ const quadVS = `
     uniform mat4 uModelViewMatrix;
     uniform mat4 uModelViewMatrixIT;
     uniform mat4 uProjectionMatrix;
+    uniform bool uDepthPass;
     
     out highp vec2 uv;
     flat out vec3 v_color;
@@ -41,25 +42,33 @@ const quadVS = `
 		float world_point_size = ${RendererConstants.POINT_SIZE};
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
-    
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos + rot_mat * quadVertex * world_point_size, 1.0);
+		
+        vec4 position_camera_space = uModelViewMatrix * vec4(pos + rot_mat * quadVertex * world_point_size, 1.0);    
+        gl_Position = uProjectionMatrix * position_camera_space;
         
         uv = quadVertex.xy * 2.0;
         v_color = color;
+        v_normal = normal;
+        
+        // for depth pass, move points away from the camera to create a depth margin 
+        if (uDepthPass) {
+            position_camera_space.xyz += normalize(position_camera_space.xyz) * world_point_size * 0.5 * 2.5;
+            gl_Position = uProjectionMatrix * position_camera_space;        
+        }
     }
 `.trim();
 
 const quadFS = `
     #version 300 es
     
-    in highp vec2 uv;
-    
-    out highp vec4 color;
-    
     precision highp float;
     
+    in highp vec2 uv;    
     flat in vec3 v_color;
     flat in vec3 v_normal;
+    
+    layout(location=0) out highp vec4 color;
+    layout(location=1) out highp vec3 normal_out;
     
     void main() {
     
@@ -86,6 +95,7 @@ export class QuadProgram extends Program {
         projectionMatrix: WebGLUniformLocation,
         modelViewMatrix: WebGLUniformLocation,
         modelViewMatrixIT: WebGLUniformLocation,
+        depthPass: WebGLUniformLocation,
     };
 
     private readonly buffers: {
@@ -120,12 +130,11 @@ export class QuadProgram extends Program {
             quadVertex: gl.getAttribLocation(this.program, 'quadVertex'),
         };
 
-        console.log(this.attributes);
-
         this.uniforms = {
             projectionMatrix: gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
             modelViewMatrix: gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
             modelViewMatrixIT: gl.getUniformLocation(this.program, 'uModelViewMatrixIT') as WebGLUniformLocation,
+            depthPass: gl.getUniformLocation(this.program, 'uDepthPass') as WebGLUniformLocation,
         };
 
         this.buffers = {
@@ -137,6 +146,8 @@ export class QuadProgram extends Program {
 
         // this.setBufferData(this.buffers.pos, new Float32Array(this.points));
         this.setBufferData(this.buffers.quadVertex, new Float32Array(this.quadVertices));
+
+        // console.log('Quad Program attributes:', this.attributes);
     }
 
     render() {
