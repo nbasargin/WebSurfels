@@ -10,7 +10,7 @@ const quadVS = `
     // adapted from http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
     // expecting normalized axis (length of 1)
     mat3 rotation_matrix(vec3 axis, float angle) {
-        float s = sin(angle);
+        float s = -sin(angle);
         float c = cos(angle);
         float oc = 1.0 - c;
     
@@ -36,7 +36,7 @@ const quadVS = `
         vec3 point_normal = normal;
         vec3 quad_normal = vec3(0.0, 0.0, 1.0);
         
-		vec3 rot_axis = cross(quad_normal, point_normal);
+		vec3 rot_axis = normalize(cross(quad_normal, point_normal));
 		float rot_angle = acos(dot(quad_normal, point_normal));
 		float world_point_size = ${RendererConstants.POINT_SIZE};
 		
