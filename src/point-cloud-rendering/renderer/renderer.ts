@@ -80,8 +80,8 @@ export class Renderer {
         this.perspective();
 
         //this.pointProgram.render();
-        //this.normalizationProgram.render();
         this.quadProgram.render();
+        this.normalizationProgram.render();
         if (visualizeNormals) {
             this.normalVisProgram.render();
         }
@@ -96,6 +96,7 @@ export class Renderer {
         this.canvas.width = width;
         this.canvas.height = height;
         this.pointProgram.resizeFramebuffer(width, height);
+        this.quadProgram.resizeFramebuffer(width, height);
     }
 
 }

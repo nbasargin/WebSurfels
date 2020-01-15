@@ -2,6 +2,7 @@ import { Program } from './program';
 import { mat4 } from 'gl-matrix';
 import { PointCloudData } from "../../data/point-cloud-data";
 import { RendererConstants } from "../renderer-constants";
+import { OffscreenFramebuffer } from "../offscreen-framebuffer";
 
 
 const quadVS = `
@@ -77,8 +78,11 @@ const quadFS = `
             discard;
         }
     
-        // color = vec4(1.0, 1.0, 1.0, 1.0);
-        color = vec4(v_color, 1.0);
+        float hardness = 4.0;
+        float weight = pow(1.0 - len * len, hardness); 
+        
+        color = vec4(v_color * weight, weight);
+        normal_out = v_normal * weight;
     }
 `.trim();
 
@@ -114,6 +118,8 @@ export class QuadProgram extends Program {
 
     private numPoints: number = 0;
 
+    private offscreenFramebuffer: OffscreenFramebuffer;
+
     constructor(
         gl: WebGL2RenderingContext,
         private canvas: HTMLCanvasElement,
@@ -144,7 +150,8 @@ export class QuadProgram extends Program {
             quadVertex: gl.createBuffer() as WebGLBuffer,
         };
 
-        // this.setBufferData(this.buffers.pos, new Float32Array(this.points));
+        this.offscreenFramebuffer = new OffscreenFramebuffer(gl);
+
         this.setBufferData(this.buffers.quadVertex, new Float32Array(this.quadVertices));
 
         // console.log('Quad Program attributes:', this.attributes);
@@ -153,6 +160,10 @@ export class QuadProgram extends Program {
     render() {
 
         this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
+        this.gl.clearDepth(1.0);
+        this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
 
         this.gl.useProgram(this.program);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
@@ -169,7 +180,22 @@ export class QuadProgram extends Program {
         this.enableBuffer3f(this.buffers.normal, this.attributes.normal);
         this.gl.vertexAttribDivisor(this.attributes.normal, 1);
 
+        this.offscreenFramebuffer.bind();
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+        // depth pass
+        this.gl.depthMask(true);
+        this.gl.colorMask(false, false, false, false);
+        this.gl.uniform1i(this.uniforms.depthPass, 1);
         this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, this.quadVertices.length / 3, this.numPoints);
+
+        // splat pass
+        this.gl.depthMask(false);
+        this.gl.colorMask(true, true, true, true);
+        this.gl.uniform1i(this.uniforms.depthPass, 0);
+        this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, this.quadVertices.length / 3, this.numPoints);
+
+        this.offscreenFramebuffer.unbind();
     }
 
     setData(data: PointCloudData) {
@@ -177,6 +203,10 @@ export class QuadProgram extends Program {
         this.setBufferData(this.buffers.pos, data.positions);
         this.setBufferData(this.buffers.color, data.colors);
         this.setBufferData(this.buffers.normal, data.normals);
+    }
+
+    resizeFramebuffer(width: number, height: number) {
+        this.offscreenFramebuffer.resize(width, height);
     }
 
 }
