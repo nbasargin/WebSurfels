@@ -7,6 +7,7 @@ import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
 import { LasDataLoader } from '../data/las-data-loader';
 import { QuadProgram } from "./programs/quad-program";
 import { RendererConstants } from "./renderer-constants";
+import { OffscreenFramebuffer } from "./offscreen-framebuffer";
 
 
 export class Renderer {
@@ -15,6 +16,7 @@ export class Renderer {
 
     private readonly gl: WebGL2RenderingContext;
 
+    private offscreenFramebuffer: OffscreenFramebuffer;
     private normalVisProgram: NormalVisualizationProgram;
     private pointProgram: PointProgram;
     private normalizationProgram: NormalizationProgram;
@@ -25,6 +27,8 @@ export class Renderer {
     private readonly projectionMatrix: mat4;
     private readonly modelViewMatrix: mat4;
     private readonly modelViewMatrixIT: mat4;
+
+    public useQuads = false;
 
     constructor(public readonly canvas: HTMLCanvasElement) {
         const context = canvas.getContext('webgl2');
@@ -38,11 +42,13 @@ export class Renderer {
         this.modelViewMatrix = mat4.create();
         this.modelViewMatrixIT = mat4.create();
 
-        this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT);
+        this.offscreenFramebuffer = new OffscreenFramebuffer(this.gl);
+
+        this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT, this.offscreenFramebuffer);
         this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
         this.normalizationProgram = new NormalizationProgram(this.gl);
 
-        this.quadProgram = new QuadProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT);
+        this.quadProgram = new QuadProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT, this.offscreenFramebuffer);
 
         if (Renderer.USE_GENERATED_SPHERE_DATA) {
             const dataGen = new PointCloudDataGenerator();
@@ -79,9 +85,13 @@ export class Renderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.perspective();
 
-        //this.pointProgram.render();
-        this.quadProgram.render();
+        if (this.useQuads) {
+            this.quadProgram.render();
+        }  else {
+            this.pointProgram.render();
+        }
         this.normalizationProgram.render();
+
         if (visualizeNormals) {
             this.normalVisProgram.render();
         }
@@ -95,8 +105,7 @@ export class Renderer {
     setSize(width: number, height: number) {
         this.canvas.width = width;
         this.canvas.height = height;
-        this.pointProgram.resizeFramebuffer(width, height);
-        this.quadProgram.resizeFramebuffer(width, height);
+        this.offscreenFramebuffer.resize(width, height);
     }
 
 }

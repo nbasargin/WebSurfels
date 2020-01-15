@@ -133,9 +133,10 @@ const pointFS = `
         // MIN_LIGHTNESS is the minimal received light (ambient)
         // The remaining contribution is scaled by (1.0 - MIN_LIGHTNESS) and depends on surface normal and light direction
         
-        bool has_normal = length(v_normal) > 0.0;
-        vec3 light_dir = vec3(1.0, 0.0, 0.0);
-        float light = has_normal ? MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal)) : 1.0;
+        // bool has_normal = length(v_normal) > 0.0;
+        // vec3 light_dir = vec3(1.0, 0.0, 0.0);
+        // float light = has_normal ? MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, v_normal)) : 1.0;
+        float light = 1.0;  // light disabled for now
         
         // weight = (1 − distance^2)^hardness
         float hardness = 4.0;
@@ -172,14 +173,13 @@ export class PointProgram extends Program {
 
     private numPoints: number = 0;
 
-    private offscreenFramebuffer: OffscreenFramebuffer;
-
     constructor(
         gl: WebGL2RenderingContext,
         private canvas: HTMLCanvasElement,
         private projectionMatrix: mat4,
         private modelViewMatrix: mat4,
         private modelViewMatrixIT: mat4,
+        private offscreenFramebuffer: OffscreenFramebuffer,
     ) {
         super(gl, pointVS, pointFS);
 
@@ -203,8 +203,6 @@ export class PointProgram extends Program {
             color: gl.createBuffer() as WebGLBuffer,
             normal: gl.createBuffer() as WebGLBuffer,
         };
-
-        this.offscreenFramebuffer = new OffscreenFramebuffer(gl);
 
         // ext check
         const extensions = ["EXT_color_buffer_float", "EXT_float_blend"];
@@ -234,8 +232,11 @@ export class PointProgram extends Program {
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrixIT, false, this.modelViewMatrixIT);
         this.enableBuffer3f(this.buffers.pos, this.attributes.pos);
+        this.gl.vertexAttribDivisor(this.attributes.pos, 0);  // temporary required to dynamically switch between programs
         this.enableBuffer3f(this.buffers.color, this.attributes.color);
+        this.gl.vertexAttribDivisor(this.attributes.color, 0);  // temporary required to dynamically switch between programs
         this.enableBuffer3f(this.buffers.normal, this.attributes.normal);
+        this.gl.vertexAttribDivisor(this.attributes.normal, 0);  // temporary required to dynamically switch between programs
 
         this.offscreenFramebuffer.bind();
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -260,10 +261,6 @@ export class PointProgram extends Program {
         this.setBufferData(this.buffers.pos, data.positions);
         this.setBufferData(this.buffers.color, data.colors);
         this.setBufferData(this.buffers.normal, data.normals);
-    }
-
-    resizeFramebuffer(width: number, height: number) {
-        this.offscreenFramebuffer.resize(width, height);
     }
 
 }

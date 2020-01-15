@@ -104,6 +104,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
         }
 
+        if (this.pressedKeys.has('KeyQ') && !this.renderer.useQuads) {
+            console.log('Switching to quad rendering');
+            this.renderer.useQuads = true;
+        } else if (this.pressedKeys.has('KeyE') && this.renderer.useQuads) {
+            console.log('Switching to ellipse rendering');
+            this.renderer.useQuads = false;
+        }
+
         const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.viewDirection);
         let up = vec3.cross(vec3.create(), right, this.viewDirection);
 

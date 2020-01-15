@@ -118,14 +118,13 @@ export class QuadProgram extends Program {
 
     private numPoints: number = 0;
 
-    private offscreenFramebuffer: OffscreenFramebuffer;
-
     constructor(
         gl: WebGL2RenderingContext,
         private canvas: HTMLCanvasElement,
         private projectionMatrix: mat4,
         private modelViewMatrix: mat4,
         private modelViewMatrixIT: mat4,
+        private offscreenFramebuffer: OffscreenFramebuffer,
     ) {
         super(gl, quadVS, quadFS);
 
@@ -149,8 +148,6 @@ export class QuadProgram extends Program {
             normal: gl.createBuffer() as WebGLBuffer,
             quadVertex: gl.createBuffer() as WebGLBuffer,
         };
-
-        this.offscreenFramebuffer = new OffscreenFramebuffer(gl);
 
         this.setBufferData(this.buffers.quadVertex, new Float32Array(this.quadVertices));
 
@@ -203,10 +200,6 @@ export class QuadProgram extends Program {
         this.setBufferData(this.buffers.pos, data.positions);
         this.setBufferData(this.buffers.color, data.colors);
         this.setBufferData(this.buffers.normal, data.normals);
-    }
-
-    resizeFramebuffer(width: number, height: number) {
-        this.offscreenFramebuffer.resize(width, height);
     }
 
 }
