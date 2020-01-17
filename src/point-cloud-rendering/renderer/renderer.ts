@@ -28,7 +28,7 @@ export class Renderer {
     private readonly modelViewMatrix: mat4;
     private readonly modelViewMatrixIT: mat4;
 
-    public useQuads = false;
+    public useQuads = true;
 
     constructor(public readonly canvas: HTMLCanvasElement) {
         const context = canvas.getContext('webgl2');
