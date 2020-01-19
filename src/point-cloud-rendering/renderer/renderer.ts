@@ -13,7 +13,7 @@ import { OffscreenFramebuffer } from "./offscreen-framebuffer";
 
 export class Renderer {
 
-    private static DATA_SOURCE: 'generated' | 'las' | 'ply' = 'ply';
+    private static DATA_SOURCE: 'generated' | 'las' | 'ply' = 'generated';
 
     private readonly gl: WebGL2RenderingContext;
 
