@@ -67,7 +67,7 @@ export class Renderer {
             });
         } else {
             const dragonLoader = new StanfordDragonLoader();
-            dragonLoader.load().then(data => {
+            dragonLoader.load(10).then(data => {
                 this.pointProgram.setData(data);
                 this.quadProgram.setData(data);
                 this.normalVisProgram.setData(data);
