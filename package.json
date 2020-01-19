@@ -22,6 +22,7 @@
     "@angular/router": "~8.2.14",
     "@loaders.gl/core": "^2.0.0",
     "@loaders.gl/las": "^2.0.0",
+    "@loaders.gl/ply": "^2.0.2",
     "gl-matrix": "^3.1.0",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",

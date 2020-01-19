@@ -1,4 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
+import { StanfordDragonLoader } from '../data/stanford-dragon-loader';
 import { NormalVisualizationProgram } from './programs/normal-visualization-program';
 import { NormalizationProgram } from './programs/normalization-program';
 import { PointProgram } from './programs/point-program';
@@ -12,7 +13,7 @@ import { OffscreenFramebuffer } from "./offscreen-framebuffer";
 
 export class Renderer {
 
-    private static USE_GENERATED_SPHERE_DATA = true;
+    private static DATA_SOURCE: 'generated' | 'las' | 'ply' = 'ply';
 
     private readonly gl: WebGL2RenderingContext;
 
@@ -50,20 +51,29 @@ export class Renderer {
 
         this.quadProgram = new QuadProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT, this.offscreenFramebuffer);
 
-        if (Renderer.USE_GENERATED_SPHERE_DATA) {
+        if (Renderer.DATA_SOURCE === 'generated') {
             const dataGen = new PointCloudDataGenerator();
             const data = dataGen.generateSphere(this.numPoints);
 
             this.pointProgram.setData(data);
             this.normalVisProgram.setData(data);
             this.quadProgram.setData(data);
-        } else {
+        } else if (Renderer.DATA_SOURCE === 'las') {
             const lasDataLoader = new LasDataLoader();
             lasDataLoader.loadLas().then(data => {
                 this.pointProgram.setData(data);
+                this.quadProgram.setData(data);
+                this.normalVisProgram.setData(data);
+            });
+        } else {
+            const dragonLoader = new StanfordDragonLoader();
+            dragonLoader.load().then(data => {
+                this.pointProgram.setData(data);
+                this.quadProgram.setData(data);
                 this.normalVisProgram.setData(data);
             });
         }
+
 
     }
 
