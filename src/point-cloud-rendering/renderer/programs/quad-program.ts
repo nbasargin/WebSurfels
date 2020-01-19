@@ -4,9 +4,13 @@ import { PointCloudData } from "../../data/point-cloud-data";
 import { RendererConstants } from "../renderer-constants";
 import { OffscreenFramebuffer } from "../offscreen-framebuffer";
 
+const SHAPE_PRESERVING_DEPTH_PASS: 0 | 1 = 1;
 
 const quadVS = `
     #version 300 es
+    
+    // only modify z but not x & y during depth pass: more expensive but prevents mismatching shapes
+    #define SHAPE_PRESERVING_DEPTH_PASS ${SHAPE_PRESERVING_DEPTH_PASS}
     
     // adapted from http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
     // expecting normalized axis (length of 1)
@@ -47,13 +51,27 @@ const quadVS = `
 		
 		vec3 vertex_pos = pos + rot_mat * quadVertex * world_point_size;
 		
-        // for depth pass, move points away from the camera to create a depth margin 
-        if (uDepthPass) {
-            vec3 view_direction = normalize(vertex_pos - uEyePos);
-            vertex_pos += view_direction * world_point_size * 0.5 * 2.5;		
-        }
+		
+        #if defined(SHAPE_PRESERVING_DEPTH_PASS) && SHAPE_PRESERVING_DEPTH_PASS == 0
+            // for non shape-preserving depth pass, move points away from the camera to create a depth margin 
+            if (uDepthPass) {
+                vec3 view_direction = normalize(vertex_pos - uEyePos);
+                vertex_pos += view_direction * world_point_size * 0.5 * 2.5;		
+            }
+        #endif
 		  
         gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0); 
+        
+        #if defined(SHAPE_PRESERVING_DEPTH_PASS) && SHAPE_PRESERVING_DEPTH_PASS == 1
+            // for shape-preserving depth pass, modify z as if point would be more far away 
+            if (uDepthPass) {
+                vec3 view_direction = normalize(vertex_pos - uEyePos);
+                vertex_pos += view_direction * world_point_size * 0.5 * 2.5;	
+                vec4 new = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0); 	
+                gl_Position.z = new.z / new.w * gl_Position.w;
+            }
+        #endif
+		
         uv = quadVertex.xy * 2.0;
         v_color = color;
         v_normal = normal;
