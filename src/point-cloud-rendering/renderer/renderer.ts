@@ -25,6 +25,7 @@ export class Renderer {
 
     private readonly numPoints = RendererConstants.NUM_POINTS;
 
+    private readonly eyePosition: vec3;
     private readonly projectionMatrix: mat4;
     private readonly modelViewMatrix: mat4;
     private readonly modelViewMatrixIT: mat4;
@@ -39,17 +40,18 @@ export class Renderer {
         }
         this.gl = context;
 
+        this.eyePosition = vec3.create();
         this.projectionMatrix = mat4.create();
         this.modelViewMatrix = mat4.create();
         this.modelViewMatrixIT = mat4.create();
 
         this.offscreenFramebuffer = new OffscreenFramebuffer(this.gl);
 
-        this.pointProgram = new PointProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT, this.offscreenFramebuffer);
+        this.pointProgram = new PointProgram(this.gl, this.canvas,  this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT, this.offscreenFramebuffer);
         this.normalVisProgram = new NormalVisualizationProgram(this.gl, this.projectionMatrix, this.modelViewMatrix);
         this.normalizationProgram = new NormalizationProgram(this.gl);
 
-        this.quadProgram = new QuadProgram(this.gl, this.canvas, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT, this.offscreenFramebuffer);
+        this.quadProgram = new QuadProgram(this.gl, this.canvas, this.eyePosition, this.projectionMatrix, this.modelViewMatrix, this.modelViewMatrixIT, this.offscreenFramebuffer);
 
         if (Renderer.DATA_SOURCE === 'generated') {
             const dataGen = new PointCloudDataGenerator();
@@ -78,6 +80,7 @@ export class Renderer {
     }
 
     lookAt(eye: vec3 | number[], center: vec3 | number[], up: vec3 | number[]) {
+        vec3.copy(this.eyePosition, eye);
         mat4.lookAt(this.modelViewMatrix, eye, center, up);
         mat4.invert(this.modelViewMatrixIT, this.modelViewMatrix);
         mat4.transpose(this.modelViewMatrixIT, this.modelViewMatrixIT);

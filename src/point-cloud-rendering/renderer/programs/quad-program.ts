@@ -1,5 +1,5 @@
 import { Program } from './program';
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { PointCloudData } from "../../data/point-cloud-data";
 import { RendererConstants } from "../renderer-constants";
 import { OffscreenFramebuffer } from "../offscreen-framebuffer";
@@ -25,6 +25,7 @@ const quadVS = `
     in vec3 normal; 
     in vec3 quadVertex;
 
+    uniform vec3 uEyePos; 
     uniform mat4 uModelViewMatrix;
     uniform mat4 uModelViewMatrixIT;
     uniform mat4 uProjectionMatrix;
@@ -44,18 +45,19 @@ const quadVS = `
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
 		
-        vec4 position_camera_space = uModelViewMatrix * vec4(pos + rot_mat * quadVertex * world_point_size, 1.0);    
-        gl_Position = uProjectionMatrix * position_camera_space;
-        
+		vec3 vertex_pos = pos + rot_mat * quadVertex * world_point_size;
+		
+        // for depth pass, move points away from the camera to create a depth margin 
+        if (uDepthPass) {
+            vec3 view_direction = normalize(vertex_pos - uEyePos);
+            vertex_pos += view_direction * world_point_size * 0.5 * 2.5;		
+        }
+		  
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0); 
         uv = quadVertex.xy * 2.0;
         v_color = color;
         v_normal = normal;
         
-        // for depth pass, move points away from the camera to create a depth margin 
-        if (uDepthPass) {
-            position_camera_space.xyz += normalize(position_camera_space.xyz) * world_point_size * 0.5 * 2.5;
-            gl_Position = uProjectionMatrix * position_camera_space;        
-        }
     }
 `.trim();
 
@@ -96,6 +98,7 @@ export class QuadProgram extends Program {
     };
 
     private readonly uniforms: {
+        eyePos: WebGLUniformLocation,
         projectionMatrix: WebGLUniformLocation,
         modelViewMatrix: WebGLUniformLocation,
         modelViewMatrixIT: WebGLUniformLocation,
@@ -121,6 +124,7 @@ export class QuadProgram extends Program {
     constructor(
         gl: WebGL2RenderingContext,
         private canvas: HTMLCanvasElement,
+        private eyePosition: vec3,
         private projectionMatrix: mat4,
         private modelViewMatrix: mat4,
         private modelViewMatrixIT: mat4,
@@ -136,6 +140,7 @@ export class QuadProgram extends Program {
         };
 
         this.uniforms = {
+            eyePos: gl.getUniformLocation(this.program, 'uEyePos') as WebGLUniformLocation,
             projectionMatrix: gl.getUniformLocation(this.program, 'uProjectionMatrix') as WebGLUniformLocation,
             modelViewMatrix: gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
             modelViewMatrixIT: gl.getUniformLocation(this.program, 'uModelViewMatrixIT') as WebGLUniformLocation,
@@ -163,6 +168,7 @@ export class QuadProgram extends Program {
         this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
 
         this.gl.useProgram(this.program);
+        this.gl.uniform3fv(this.uniforms.eyePos, this.eyePosition);
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrix, false, this.modelViewMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.modelViewMatrixIT, false, this.modelViewMatrixIT);
