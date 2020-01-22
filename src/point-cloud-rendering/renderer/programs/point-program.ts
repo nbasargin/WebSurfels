@@ -28,7 +28,7 @@ const pointVS = `
     // uniform highp vec3 uEyePos;
 
     flat out vec3 v_color;
-    flat out vec3 v_normal; 
+    // flat out vec3 v_normal; 
     
     #if defined(USE_ELLIPSES) && USE_ELLIPSES == 1
         flat out float rotation;
@@ -41,7 +41,7 @@ const pointVS = `
         float world_point_size = 0.5 * ${RendererConstants.POINT_SIZE};  // 0.5 equals a square with world size of 1x1
         
         v_color = color;
-        v_normal = normal;
+        // v_normal = normal;
         
         // point position        
         gl_Position = uProjectionMatrix * position_camera_space;
@@ -91,7 +91,7 @@ const pointFS = `
     precision highp float;
 
     flat in vec3 v_color;
-    flat in vec3 v_normal;
+    // flat in vec3 v_normal;
     
     #if defined(USE_ELLIPSES) && USE_ELLIPSES == 1
         flat in float rotation;
@@ -99,7 +99,7 @@ const pointFS = `
     #endif
         
     layout(location=0) out highp vec4 color;
-    layout(location=1) out highp vec3 normal_out;
+    // layout(location=1) out highp vec3 normal_out;
 
     void main() {
         vec2 cxy = 2.0 * gl_PointCoord - 1.0; 
@@ -144,7 +144,7 @@ const pointFS = `
         float weight = pow(1.0 - dist * dist, hardness); 
         
         color = vec4(v_color * light * weight, weight);
-        normal_out = v_normal * weight;
+        // normal_out = v_normal * weight;
     }
 `.trim();
 

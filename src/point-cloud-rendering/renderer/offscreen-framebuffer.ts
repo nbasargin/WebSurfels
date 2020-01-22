@@ -25,7 +25,8 @@ export class OffscreenFramebuffer {
         this.fb = gl.createFramebuffer() as WebGLFramebuffer;
         this.bind();
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.fbColorTarget, 0);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, this.fbNormalTarget, 0);
+        // disable normal output for better performance
+        // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, this.fbNormalTarget, 0);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.fbDepthTarget, 0);
         gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
         this.unbind();

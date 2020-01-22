@@ -37,7 +37,7 @@ const quadVS = `
     
     out highp vec2 uv;
     flat out vec3 v_color;
-    flat out vec3 v_normal;
+    // flat out vec3 v_normal;
     
     void main() {
         vec3 point_normal = normal;
@@ -74,7 +74,7 @@ const quadVS = `
 		
         uv = quadVertex.xy * 2.0;
         v_color = color;
-        v_normal = normal;
+        // v_normal = normal;
         
     }
 `.trim();
@@ -86,10 +86,10 @@ const quadFS = `
     
     in highp vec2 uv;    
     flat in vec3 v_color;
-    flat in vec3 v_normal;
+    // flat in vec3 v_normal;
     
     layout(location=0) out highp vec4 color;
-    layout(location=1) out highp vec3 normal_out;
+    // layout(location=1) out highp vec3 normal_out;
     
     void main() {
     
@@ -102,7 +102,7 @@ const quadFS = `
         float weight = pow(1.0 - len * len, hardness); 
         
         color = vec4(v_color * weight, weight);
-        normal_out = v_normal * weight;
+        // normal_out = v_normal * weight;
     }
 `.trim();
 
