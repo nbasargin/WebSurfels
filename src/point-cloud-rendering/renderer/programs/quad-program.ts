@@ -11,6 +11,7 @@ const quadVS = `
     
     // only modify z but not x & y during depth pass: more expensive but prevents mismatching shapes
     #define SHAPE_PRESERVING_DEPTH_PASS ${SHAPE_PRESERVING_DEPTH_PASS}
+    #define MIN_LIGHTNESS 0.3
     
     // adapted from http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
     // expecting normalized axis (length of 1)
@@ -73,7 +74,14 @@ const quadVS = `
         #endif
 		
         uv = quadVertex.xy * 2.0;
-        v_color = color;
+        
+        // Gouraud shading
+        // MIN_LIGHTNESS is the minimal received light (ambient)
+        // The remaining contribution is scaled by (1.0 - MIN_LIGHTNESS) and depends on surface normal and light direction
+        vec3 light_dir = normalize(vec3(1.0, 1.0, 0.0));
+        float light = MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, normal));
+        v_color = color * light;
+        
         // v_normal = normal;
         
     }

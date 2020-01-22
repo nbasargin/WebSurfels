@@ -13,7 +13,7 @@ import { OffscreenFramebuffer } from "./offscreen-framebuffer";
 
 export class Renderer {
 
-    private static DATA_SOURCE: 'generated' | 'las' | 'ply' = 'generated';
+    private static DATA_SOURCE: 'generated' | 'las' | 'ply' = 'ply';
 
     private readonly gl: WebGL2RenderingContext;
 
@@ -69,7 +69,7 @@ export class Renderer {
             });
         } else {
             const dragonLoader = new StanfordDragonLoader();
-            dragonLoader.load(10).then(data => {
+            dragonLoader.load().then(data => {
                 this.pointProgram.setData(data);
                 this.quadProgram.setData(data);
                 this.normalVisProgram.setData(data);
