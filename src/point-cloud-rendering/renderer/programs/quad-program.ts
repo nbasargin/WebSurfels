@@ -84,9 +84,9 @@ const quadVS = `
             // ambient and diffuse: scale point color
             float diffuse = MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, normal));
             // specular: add light color (white)
-            vec3 view_direction = normalize(vertex_pos - uEyePos);
+            vec3 view_direction_to_center = normalize(pos - uEyePos);
             vec3 reflect_direction = reflect(light_dir, normal);
-            float specular = 0.2 * pow(max(dot(view_direction, reflect_direction), 0.0), 32.0);            
+            float specular = 0.2 * pow(max(dot(view_direction_to_center, reflect_direction), 0.0), 32.0);            
             v_color = color * diffuse + vec3(1.0, 1.0, 1.0) * specular;
         #else
             v_color = color;
