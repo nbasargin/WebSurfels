@@ -77,23 +77,27 @@ const quadVS = `
         uv = quadVertex.xy * 2.0;
         
         // Gouraud shading
-        #if defined(USE_LIGHTING) && USE_LIGHTING == 1
-            // MIN_LIGHTNESS is the minimal received light (ambient)
-            // The remaining contribution is scaled by (1.0 - MIN_LIGHTNESS) and depends on surface normal and light direction
-            vec3 light_dir = normalize(vec3(1.0, 3.0, 1.0));
-            // ambient and diffuse: scale point color
-            float diffuse = MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, normal));
-            // specular: add light color (white)
-            vec3 view_direction_to_center = normalize(pos - uEyePos);
-            vec3 reflect_direction = reflect(light_dir, normal);
-            float specular = 0.2 * pow(max(dot(view_direction_to_center, reflect_direction), 0.0), 32.0);            
-            v_color = color * diffuse + vec3(1.0, 1.0, 1.0) * specular;
-        #else
-            v_color = color;
-        #endif
         
-        // v_normal = normal;
-        
+        if (!uDepthPass) {        
+            #if defined(USE_LIGHTING) && USE_LIGHTING == 1
+                // MIN_LIGHTNESS is the minimal received light (ambient)
+                // The remaining contribution is scaled by (1.0 - MIN_LIGHTNESS) and depends on surface normal and light direction
+                vec3 light_dir = normalize(vec3(1.0, 3.0, 1.0));
+                // ambient and diffuse: scale point color
+                float diffuse = MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, normal));
+                // specular: add light color (white)
+                vec3 view_direction_to_center = normalize(pos - uEyePos);
+                vec3 reflect_direction = reflect(light_dir, normal);
+                float specular = 0.2 * pow(max(dot(view_direction_to_center, reflect_direction), 0.0), 32.0);            
+                v_color = color * diffuse + vec3(1.0, 1.0, 1.0) * specular;
+            #else
+                v_color = color;
+            #endif
+            
+            // v_normal = normal;
+        } else {
+            // v_color = vec3(1.0, 1.0, 1.0);
+        }
     }
 `.trim();
 
@@ -106,6 +110,8 @@ const quadFS = `
     flat in vec3 v_color;
     // flat in vec3 v_normal;
     
+    uniform bool uDepthPass;
+    
     layout(location=0) out highp vec4 color;
     // layout(location=1) out highp vec3 normal_out;
     
@@ -115,12 +121,17 @@ const quadFS = `
         if (len > 1.0) {
             discard;
         }
-    
-        float hardness = 4.0;
-        float weight = pow(1.0 - len * len, hardness); 
         
-        color = vec4(v_color * weight, weight);
-        // normal_out = v_normal * weight;
+        if (!uDepthPass) {        
+            float hardness = 4.0;
+            float weight = pow(1.0 - len * len, hardness); 
+            
+            color = vec4(v_color * weight, weight);
+            // normal_out = v_normal * weight;
+        } else {        
+            color = vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    
     }
 `.trim();
 
