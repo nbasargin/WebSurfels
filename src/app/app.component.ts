@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { Renderer } from '../point-cloud-rendering/renderer/renderer';
 import { vec3 } from 'gl-matrix';
+import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
+import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 
 @Component({
     selector: 'app-root',
@@ -17,7 +18,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     @ViewChild('wrapper', {static: true}) wrapperRef: ElementRef<HTMLDivElement>;
 
     private animationRequest;
-    private renderer: Renderer;
+    // private renderer: Renderer;
+    private renderer2: Renderer2;
     private renderNormals: boolean = false;
 
     private readonly cameraPos: vec3;
@@ -36,7 +38,21 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit(): void {
-        this.renderer = new Renderer(this.canvasRef.nativeElement);
+        // this.renderer = new Renderer(this.canvasRef.nativeElement);
+        this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
+
+        const dragonLoader = new StanfordDragonLoader();
+        dragonLoader.load().then(data => {
+            console.log('data loaded', data);
+
+            for (let instances = 0; instances < 1; instances++) {
+                this.renderer2.addData(data.positions, data.colors, data.normals);
+                for (let i = 0; i < data.positions.length; i+=3) {
+                    data.positions[i+2] -= 10;
+                }
+            }
+
+        });
         this.renderLoop();
     }
 
@@ -84,7 +100,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.animationRequest = requestAnimationFrame(() => this.renderLoop());
         this.checkCanvasSize();
         this.checkCamera();
-        this.renderer.render(this.renderNormals);
+        // this.renderer.render(this.renderNormals);
+        this.renderer2.render();
     }
 
     checkCamera() {
@@ -104,6 +121,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
         }
 
+        /*
         if (this.pressedKeys.has('KeyQ') && !this.renderer.useQuads) {
             console.log('Switching to quad rendering');
             this.renderer.useQuads = true;
@@ -111,6 +129,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log('Switching to ellipse rendering');
             this.renderer.useQuads = false;
         }
+        */
 
         const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.viewDirection);
         let up = vec3.cross(vec3.create(), right, this.viewDirection);
@@ -119,7 +138,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             up = this.up;
         }
 
-        this.renderer.lookAt(this.cameraPos, viewTarget, up);
+        //this.renderer.lookAt(this.cameraPos, viewTarget, up);
+        this.renderer2.setCameraOrientation(this.cameraPos, viewTarget, up);
     }
 
     checkCanvasSize() {
@@ -132,7 +152,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const height = Math.round(bb.height * resolution);
 
         if (c.width !== width || c.height !== height) {
-            this.renderer.setSize(width, height);
+            // this.renderer.setSize(width, height);
+            this.renderer2.setCanvasSize(width, height);
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
     }
