@@ -115,6 +115,7 @@ export class Renderer2 {
         this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.pos);
         this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.color);
         this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.normal);
+        this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.quadVertex);
 
         this.gl.vertexAttribDivisor(this.splatShader.attributeLocations.pos, 1);
         this.gl.vertexAttribDivisor(this.splatShader.attributeLocations.color, 1);
@@ -155,7 +156,6 @@ export class Renderer2 {
         this.gl.colorMask(true, true, true, true);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-
     }
 
     private drawNodes() {
