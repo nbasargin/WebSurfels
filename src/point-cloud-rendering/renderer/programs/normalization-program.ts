@@ -1,6 +1,6 @@
 import { Program } from './program';
 
-const normalizationVS = `
+export const normalizationVS = `
     #version 300 es
     
     const vec4 pos[4] = vec4[4](
@@ -14,7 +14,7 @@ const normalizationVS = `
     }
 `.trim();
 
-const normalizationFS = `
+export const normalizationFS = `
     #version 300 es
     
     uniform sampler2D splatColors;

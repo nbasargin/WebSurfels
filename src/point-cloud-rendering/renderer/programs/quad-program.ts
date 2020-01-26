@@ -6,7 +6,7 @@ import { OffscreenFramebuffer } from "../offscreen-framebuffer";
 
 const SHAPE_PRESERVING_DEPTH_PASS: 0 | 1 = 1;
 
-const quadVS = `
+export const quadVS = `
     #version 300 es
     
     // only modify z but not x & y during depth pass: more expensive but prevents mismatching shapes
@@ -101,7 +101,7 @@ const quadVS = `
     }
 `.trim();
 
-const quadFS = `
+export const quadFS = `
     #version 300 es
     
     precision highp float;
