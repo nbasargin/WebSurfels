@@ -1,12 +1,7 @@
 export class PointDataNode {
 
     visible = true;
-
-    data: {
-        positions: Float32Array,
-        colors: Float32Array,
-        normals: Float32Array,
-    };
+    numPoints: number;
 
     buffers: {
         positions: WebGLBuffer;

@@ -76,9 +76,7 @@ export class Renderer2 {
 
     addData(positions: Float32Array, colors: Float32Array, normals: Float32Array): PointDataNode {
         const node = new PointDataNode();
-        node.data = {
-            positions, colors, normals
-        };
+        node.numPoints = positions.length / 3;
         node.buffers = {
             positions: WebGLUtils.createBuffer(this.gl, positions),
             colors: WebGLUtils.createBuffer(this.gl, colors),
@@ -86,6 +84,14 @@ export class Renderer2 {
         };
         this.nodes.add(node);
         return node;
+    }
+
+    removeNode(node: PointDataNode) {
+        this.gl.deleteBuffer(node.buffers.positions);
+        this.gl.deleteBuffer(node.buffers.colors);
+        this.gl.deleteBuffer(node.buffers.normals);
+        node.numPoints = 0;
+        this.nodes.delete(node);
     }
 
     setCanvasSize(width: number, height: number) {
@@ -173,9 +179,8 @@ export class Renderer2 {
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, node.buffers.normals);
             this.gl.vertexAttribPointer(this.splatShader.attributeLocations.normal, 3, this.gl.FLOAT, false, 0, 0);
 
-            const numPoints = node.data.positions.length / 3;
             const verticesPerQuad = 4;
-            this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, verticesPerQuad, numPoints);
+            this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, verticesPerQuad, node.numPoints);
         }
     }
 
