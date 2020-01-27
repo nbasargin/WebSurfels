@@ -53,19 +53,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     ngAfterViewInit(): void {
         // this.renderer = new Renderer(this.canvasRef.nativeElement);
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
-
-        const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.load().then(data => {
-            console.log('data loaded', data);
-
-            for (let instances = 0; instances < 1; instances++) {
-                this.renderer2.addData(data.positions, data.colors, data.normals);
-                for (let i = 0; i < data.positions.length; i+=3) {
-                    data.positions[i+2] -= 10;
-                }
-            }
-
-        });
+        const instances = 64;
+        this.addDragons(instances, Math.min(20, instances));
         this.renderLoop(0);
     }
 
@@ -184,5 +173,38 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.renderer2.setCanvasSize(width, height);
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
+    }
+
+    addDragons(instances: number, keepEveryNthPoint: number) {
+
+        const dragonLoader = new StanfordDragonLoader();
+
+        dragonLoader.load(keepEveryNthPoint).then(data => {
+            console.log('data loaded');
+
+            let x = 0;
+            let z = 0;
+            const sideLength = Math.floor(Math.sqrt(instances));
+            const spacing = 4;
+
+            for (let inst = 0; inst < instances; inst++) {
+                const goalX = ((inst % sideLength) - sideLength / 2) * spacing;
+                const goalZ = (Math.floor(inst / sideLength) - sideLength / 2) * spacing;
+
+                const dx = goalX - x;
+                const dz = goalZ - z;
+
+                x = goalX;
+                z = goalZ;
+
+                for (let i = 0; i < data.positions.length; i+=3) {
+                    data.positions[i] += dx;
+                    data.positions[i+2] += dz;
+                }
+
+                this.renderer2.addData(data.positions, data.colors, data.normals);
+            }
+
+        });
     }
 }
