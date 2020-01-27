@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { vec3 } from 'gl-matrix';
+import { AnimatedCamera } from '../point-cloud-rendering/benchmark/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
@@ -8,6 +9,10 @@ import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
     selector: 'app-root',
     template: `
         <div class="fps-overlay">FPS: {{fps}}</div>
+        <div class="animation-overlay">
+            <input #animCheck type="checkbox" (change)="benchmarkRunning = animCheck.checked">
+            animate
+        </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
         </div>
@@ -34,6 +39,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private pressedKeys: Set<string>;
 
     private benchmarkRunning = false;
+    private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
@@ -110,7 +116,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.checkCanvasSize();
 
         if (this.benchmarkRunning) {
-
+            this.animatedCamera.nextFrame(this.renderer2);
         } else {
             this.checkCamera();
         }
