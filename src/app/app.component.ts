@@ -1,11 +1,13 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { vec3 } from 'gl-matrix';
+import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 
 @Component({
     selector: 'app-root',
     template: `
+        <div class="fps-overlay">FPS: {{fps}}</div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
         </div>
@@ -16,6 +18,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('canvas', {static: true}) canvasRef: ElementRef<HTMLCanvasElement>;
     @ViewChild('wrapper', {static: true}) wrapperRef: ElementRef<HTMLDivElement>;
+    fps = '0';
 
     private animationRequest;
     // private renderer: Renderer;
@@ -29,6 +32,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private angleY: number = 0;
 
     private pressedKeys: Set<string>;
+
+    private benchmarkRunning = false;
+    private fpsCounter: FpsCounter = new FpsCounter(20);
+    private lastTimestamp = 0;
 
     constructor() {
         this.cameraPos = vec3.fromValues(0, 0, 2.5);
@@ -53,7 +60,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             }
 
         });
-        this.renderLoop();
+        this.renderLoop(0);
     }
 
     ngOnDestroy(): void {
@@ -96,12 +103,29 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.pressedKeys.clear();
     }
 
-    renderLoop() {
-        this.animationRequest = requestAnimationFrame(() => this.renderLoop());
+    renderLoop(timestamp) {
+        this.updateFPS(timestamp);
+
+        this.animationRequest = requestAnimationFrame(timestamp => this.renderLoop(timestamp));
         this.checkCanvasSize();
-        this.checkCamera();
+
+        if (this.benchmarkRunning) {
+
+        } else {
+            this.checkCamera();
+        }
+
         // this.renderer.render(this.renderNormals);
         this.renderer2.render();
+    }
+
+    updateFPS(timestamp: number) {
+        if (this.lastTimestamp > 0) {
+            const duration = timestamp - this.lastTimestamp;
+            this.fpsCounter.addDuration(duration);
+            this.fps = (1000 / this.fpsCounter.getAvgDuration()).toFixed(2);
+        }
+        this.lastTimestamp = timestamp;
     }
 
     checkCamera() {
