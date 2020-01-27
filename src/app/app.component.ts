@@ -106,16 +106,20 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     checkCamera() {
         const movementSpeed = 0.05;
-        const right = vec3.cross(vec3.create(), this.viewDirection, this.up);
+        const right = vec3.create();
+        vec3.cross(right, this.viewDirection, this.up);
+        vec3.normalize(right, right);
+        const front = vec3.create();
+        vec3.normalize(front, this.viewDirection);
 
         if (this.pressedKeys.has('KeyW')) {
-            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, this.viewDirection, movementSpeed);
+            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, front, movementSpeed);
         }
         if (this.pressedKeys.has('KeyA')) {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, -movementSpeed);
         }
         if (this.pressedKeys.has('KeyS')) {
-            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, this.viewDirection, -movementSpeed);
+            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, front, -movementSpeed);
         }
         if (this.pressedKeys.has('KeyD')) {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
