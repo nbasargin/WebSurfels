@@ -15,7 +15,7 @@ export class DynamicOctreeNode {
     private readonly pointPositions: Float32Array;
     private readonly pointColors: Float32Array;
     private readonly pointNormals: Float32Array;
-    private pointNumber: number = 0;
+    private nodePointNumber: number = 0;
     private children: Array<DynamicOctreeNode> = [];
 
     constructor(
@@ -34,20 +34,20 @@ export class DynamicOctreeNode {
     }
 
     addPoint(pointIndex: number, positions: Float32Array, colors: Float32Array, normals: Float32Array) {
-        if (this.pointNumber < this.pointLimit) {
+        if (this.nodePointNumber < this.pointLimit) {
             // insert locally
             const source = pointIndex * 3;
-            const target = this.pointNumber * 3;
+            const target = this.nodePointNumber * 3;
             for (let i = 0; i < 3; i++) {
                 this.pointPositions[target + i] = positions[source + i];
                 this.pointColors[target + i] = colors[source + i];
                 this.pointNormals[target + i] = normals[source + i];
             }
-            this.pointNumber++;
+            this.nodePointNumber++;
             return;
         }
 
-        if (this.pointNumber === this.pointLimit) {
+        if (!this.hasChildren()) {
             if (this.remainingDepth <= 0) {
                 console.warn('node is full and depth limit is reached, losing points');
                 return;
@@ -56,9 +56,38 @@ export class DynamicOctreeNode {
             this.initChildren();
         }
         this.insertIntoChildren(pointIndex, positions, colors, normals);
-        this.pointNumber++;
     }
 
+    getDepth(): number {
+        let childDepth = 0;
+        for (const child of this.children) {
+            childDepth = Math.max(childDepth, child.getDepth());
+        }
+        return 1 + childDepth;
+    }
+
+    getNumberOfNodes(): number {
+        let childNodes = 0;
+        for (const child of this.children) {
+            childNodes += child.getNumberOfNodes();
+        }
+        return 1 + childNodes;
+    }
+
+    getNumberOfPoints(): number {
+        if (!this.hasChildren()) {
+            return this.nodePointNumber;
+        }
+        let pointsInChildren = 0;
+        for (const child of this.children) {
+            pointsInChildren += child.getNumberOfPoints();
+        }
+        return pointsInChildren;
+    }
+
+    private hasChildren(): boolean {
+        return this.children.length === 8;
+    }
 
     private insertIntoChildren(pointIndex: number, positions: Float32Array, colors: Float32Array, normals: Float32Array) {
         const x = positions[pointIndex * 3] > this.centerX ? 1 : 0;
@@ -82,7 +111,7 @@ export class DynamicOctreeNode {
                 }
             }
         }
-        for (let i = 0; i < this.pointNumber; i++) {
+        for (let i = 0; i < this.nodePointNumber; i++) {
             this.insertIntoChildren(i, this.pointPositions, this.pointColors, this.pointNormals);
         }
     }
