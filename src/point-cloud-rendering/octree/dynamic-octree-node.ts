@@ -49,8 +49,7 @@ export class DynamicOctreeNode {
 
         if (!this.hasChildren()) {
             if (this.remainingDepth <= 0) {
-                console.warn('node is full and depth limit is reached, losing points');
-                return;
+                throw new Error('Unable to add a new point: node is full and depth limit is reached.');
             }
             // create children and move all points into them
             this.initChildren();
