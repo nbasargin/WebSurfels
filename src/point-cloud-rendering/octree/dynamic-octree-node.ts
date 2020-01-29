@@ -22,7 +22,7 @@ export class DynamicOctreeNode {
         public readonly nodePosition: [number, number, number],
         public readonly nodeSize: number,
         public readonly pointLimit: number,
-        public readonly remainingDepth: number,
+        public readonly maxDepth: number,
     ) {
         this.centerX = nodePosition[0] + nodeSize / 2;
         this.centerY = nodePosition[1] + nodeSize / 2;
@@ -48,7 +48,7 @@ export class DynamicOctreeNode {
         }
 
         if (!this.hasChildren()) {
-            if (this.remainingDepth <= 0) {
+            if (this.maxDepth <= 1) {
                 throw new Error('Unable to add a new point: node is full and depth limit is reached.');
             }
             // create children and move all points into them
@@ -106,7 +106,7 @@ export class DynamicOctreeNode {
                     const newY = this.nodePosition[1] + childSize * y;
                     const newZ = this.nodePosition[2] + childSize * z;
                     const childID = DynamicOctreeNode.getChildIndex(x, y, z);
-                    this.children[childID] = new DynamicOctreeNode([newX, newY, newZ], childSize, this.pointLimit, this.remainingDepth - 1);
+                    this.children[childID] = new DynamicOctreeNode([newX, newY, newZ], childSize, this.pointLimit, this.maxDepth - 1);
                 }
             }
         }
