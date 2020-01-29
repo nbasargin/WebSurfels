@@ -57,7 +57,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
         // const instances = 64;
         // this.addDragons(instances, Math.min(20, instances));
-        this.addDragonLod(0);
+        this.addDragonLod(1, 10000, 10);
 
         this.renderLoop(0);
     }
@@ -212,20 +212,22 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    addDragonLod(lodLevel: number) {
+    addDragonLod(lodLevel: number, pointLimitPerNode: number, maxDepth: number) {
         // lod level starts with 0
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.load().then(data => {
             console.log('data loaded');
 
-            const octree = new Octree(data, 10000, 10);
+            const octree = new Octree(data, pointLimitPerNode, maxDepth);
             this.addNodesAtSpecificDepth(octree.root, lodLevel);
+            console.log('added', this.renderer2.nodes.size, 'nodes at LOD level', lodLevel);
         });
     }
 
     addNodesAtSpecificDepth(node: StaticOctreeNode, depth: number) {
         if (depth <= 0 || node.children.length == 0) {
             this.renderer2.addData(node.pointPositions, node.pointColors, node.pointNormals);
+            console.log('adding node that represents', node.representedPointNumber, 'points with', node.pointPositions.length / 3, 'points');
         } else {
             for (const child of node.children) {
                 this.addNodesAtSpecificDepth(child, depth - 1);
