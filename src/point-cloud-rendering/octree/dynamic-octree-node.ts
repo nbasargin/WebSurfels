@@ -12,11 +12,11 @@ export class DynamicOctreeNode {
     private readonly centerY: number;
     private readonly centerZ: number;
 
-    private readonly pointPositions: Float32Array;
-    private readonly pointColors: Float32Array;
-    private readonly pointNormals: Float32Array;
-    private nodePointNumber: number = 0;
-    private children: Array<DynamicOctreeNode> = [];
+    public readonly pointPositions: Float32Array;
+    public readonly pointColors: Float32Array;
+    public readonly pointNormals: Float32Array;
+    public nodePointNumber: number = 0;
+    public children: Array<DynamicOctreeNode> = [];
 
     constructor(
         public readonly nodePosition: [number, number, number],
@@ -84,7 +84,7 @@ export class DynamicOctreeNode {
         return pointsInChildren;
     }
 
-    private hasChildren(): boolean {
+    hasChildren(): boolean {
         return this.children.length === 8;
     }
 

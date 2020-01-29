@@ -3,6 +3,8 @@ import { vec3 } from 'gl-matrix';
 import { AnimatedCamera } from '../point-cloud-rendering/benchmark/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
+import { Octree } from '../point-cloud-rendering/octree/octree';
+import { StaticOctreeNode } from '../point-cloud-rendering/octree/static-octree-node';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 
 @Component({
@@ -53,8 +55,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     ngAfterViewInit(): void {
         // this.renderer = new Renderer(this.canvasRef.nativeElement);
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
-        const instances = 64;
-        this.addDragons(instances, Math.min(20, instances));
+        // const instances = 64;
+        // this.addDragons(instances, Math.min(20, instances));
+        this.addDragonLod(0);
+
         this.renderLoop(0);
     }
 
@@ -207,4 +211,26 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         });
     }
+
+    addDragonLod(lodLevel: number) {
+        // lod level starts with 0
+        const dragonLoader = new StanfordDragonLoader();
+        dragonLoader.load().then(data => {
+            console.log('data loaded');
+
+            const octree = new Octree(data, 10000, 10);
+            this.addNodesAtSpecificDepth(octree.root, lodLevel);
+        });
+    }
+
+    addNodesAtSpecificDepth(node: StaticOctreeNode, depth: number) {
+        if (depth <= 0 || node.children.length == 0) {
+            this.renderer2.addData(node.pointPositions, node.pointColors, node.pointNormals);
+        } else {
+            for (const child of node.children) {
+                this.addNodesAtSpecificDepth(child, depth - 1);
+            }
+        }
+    }
+
 }
