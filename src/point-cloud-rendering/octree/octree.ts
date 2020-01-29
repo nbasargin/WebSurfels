@@ -89,8 +89,17 @@ export class Octree {
 
         // node_contribution: node.representedNumber / totalRepresentedPointNumber
         // the child node gets represented by max_points * node_contribution points
-        const pointsPerChild = children.map(c => Math.round(c.representedPointNumber / totalRepresentedPointNumber * pointLimit));
-        const lodPointsNumber = pointsPerChild.reduce((a, b) => a + b, 0);
+
+        const pointsPerChildren: Array<number> = [];
+        let lodPointsNumber: number = 0;
+        for (const child of children) {
+            const pointsPerChild = Math.round(child.representedPointNumber / totalRepresentedPointNumber * pointLimit);
+            const pointsInChild = child.pointPositions.length / 3;
+            const points = Math.min(pointsPerChild, pointsInChild);
+            pointsPerChildren.push(points);
+            lodPointsNumber += points;
+        }
+
 
         // reduce points per node and write them to the merged array
         const mergedPositions = new Float32Array(lodPointsNumber * 3);
@@ -100,7 +109,7 @@ export class Octree {
 
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
-            const points = pointsPerChild[i];
+            const points = pointsPerChildren[i];
             const {positions, colors, normals} = Octree.reducePointNumber(child, points);
 
             mergedPositions.set(positions, writePos);
