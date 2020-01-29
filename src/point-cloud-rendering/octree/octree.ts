@@ -19,6 +19,9 @@ export class Octree {
         }
         // convert dynamic into static and generate LoD levels
         this.root = this.createStaticTree(dynamicRoot);
+
+        console.log('Created octree. Nodes:', dynamicRoot.getNumberOfNodes(),
+            ' Points:', dynamicRoot.getNumberOfPoints(), ' Depth:', dynamicRoot.getDepth());
     }
 
     getBoundingBox(positions: Float32Array) {
@@ -99,7 +102,6 @@ export class Octree {
             pointsPerChildren.push(points);
             lodPointsNumber += points;
         }
-
 
         // reduce points per node and write them to the merged array
         const mergedPositions = new Float32Array(lodPointsNumber * 3);

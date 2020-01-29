@@ -15,6 +15,10 @@ import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
             <input #animCheck type="checkbox" (change)="benchmarkRunning = animCheck.checked">
             animate
         </div>
+        <div class="lod-overlay" *ngIf="dragonOctree">            
+            <input #lodSlider (input)="showDragonLoD(+lodSlider.value)" type="range" min="0" max="6" step="1" value="0">
+            LoD level: {{lodSlider.value}}
+        </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
         </div>
@@ -45,10 +49,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
+    dragonOctree: Octree;
+
     constructor() {
         this.cameraPos = vec3.fromValues(0, 0, 2.5);
         this.viewDirection = vec3.fromValues(0, 0, -1);
-        this.up = vec3.fromValues(0,1, 0);
+        this.up = vec3.fromValues(0, 1, 0);
         this.pressedKeys = new Set();
     }
 
@@ -57,7 +63,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
         // const instances = 64;
         // this.addDragons(instances, Math.min(20, instances));
-        this.addDragonLod(1, 10000, 10);
+        this.createDragonLod(0, 10000, 10);
 
         this.renderLoop(0);
     }
@@ -84,9 +90,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         if ((e.buttons & 1) !== 1) {
             return;  // left mouse button not pressed
         }
+        if (e.target !== this.canvasRef.nativeElement) {
+            return;
+        }
 
         const degreesPerPixel = -0.1;
-        const radians = Math.PI / 180 ;
+        const radians = Math.PI / 180;
         const maxVerticalAngle = 85;
         vec3.set(this.viewDirection, 0, 0, -1);
         this.angleX += radians * e.movementX * degreesPerPixel;
@@ -201,9 +210,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 x = goalX;
                 z = goalZ;
 
-                for (let i = 0; i < data.positions.length; i+=3) {
+                for (let i = 0; i < data.positions.length; i += 3) {
                     data.positions[i] += dx;
-                    data.positions[i+2] += dz;
+                    data.positions[i + 2] += dz;
                 }
 
                 this.renderer2.addData(data.positions, data.colors, data.normals);
@@ -212,25 +221,38 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    addDragonLod(lodLevel: number, pointLimitPerNode: number, maxDepth: number) {
-        // lod level starts with 0
+    createDragonLod(lodLevel: number, pointLimitPerNode: number, maxDepth: number) {
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.load().then(data => {
             console.log('data loaded');
-
-            const octree = new Octree(data, pointLimitPerNode, maxDepth);
-            this.addNodesAtSpecificDepth(octree.root, lodLevel);
-            console.log('added', this.renderer2.nodes.size, 'nodes at LOD level', lodLevel);
+            this.dragonOctree = new Octree(data, pointLimitPerNode, maxDepth);
+            this.showDragonLoD(lodLevel);
         });
     }
 
-    addNodesAtSpecificDepth(node: StaticOctreeNode, depth: number) {
+    showDragonLoD(lodLevel) {
+        const nodes = [...this.renderer2.nodes];
+        for (const node of nodes) {
+            this.renderer2.removeNode(node);
+        }
+        const stats = {
+            nodes: 0,
+            representedPoints: 0,
+            visiblePoints: 0
+        };
+        this.addNodesAtSpecificDepth(this.dragonOctree.root, lodLevel, stats);
+        console.log(`LOD level ${lodLevel}: ${stats.nodes} nodes represent ${stats.representedPoints} points with ${stats.visiblePoints} points`);
+    }
+
+    addNodesAtSpecificDepth(node: StaticOctreeNode, depth: number, stats: { nodes: number, representedPoints: number, visiblePoints: number }) {
         if (depth <= 0 || node.children.length == 0) {
             this.renderer2.addData(node.pointPositions, node.pointColors, node.pointNormals);
-            console.log('adding node that represents', node.representedPointNumber, 'points with', node.pointPositions.length / 3, 'points');
+            stats.nodes++;
+            stats.representedPoints += node.representedPointNumber;
+            stats.visiblePoints += node.pointPositions.length / 3;
         } else {
             for (const child of node.children) {
-                this.addNodesAtSpecificDepth(child, depth - 1);
+                this.addNodesAtSpecificDepth(child, depth - 1, stats);
             }
         }
     }

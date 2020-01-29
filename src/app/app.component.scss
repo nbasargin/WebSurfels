@@ -31,4 +31,18 @@ canvas {
   color: white;
   font-family: monospace;
 
+  display: flex;
+  align-items: center;
+}
+
+.lod-overlay {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  color: white;
+  font-family: monospace;
+
+  display: flex;
+  align-items: center;
+
 }
