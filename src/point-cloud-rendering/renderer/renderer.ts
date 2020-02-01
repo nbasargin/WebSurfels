@@ -5,7 +5,6 @@ import { NormalizationProgram } from './programs/normalization-program';
 import { PointProgram } from './programs/point-program';
 
 import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
-import { LasDataLoader } from '../data/las-data-loader';
 import { QuadProgram } from "./programs/quad-program";
 import { RendererConstants } from "./renderer-constants";
 import { OffscreenFramebuffer } from "./offscreen-framebuffer";
@@ -13,7 +12,7 @@ import { OffscreenFramebuffer } from "./offscreen-framebuffer";
 
 export class Renderer {
 
-    private static DATA_SOURCE: 'generated' | 'las' | 'ply' = 'ply';
+    private static DATA_SOURCE: 'generated' | 'ply' = 'ply';
 
     private readonly gl: WebGL2RenderingContext;
 
@@ -60,13 +59,6 @@ export class Renderer {
             this.pointProgram.setData(data);
             this.normalVisProgram.setData(data);
             this.quadProgram.setData(data);
-        } else if (Renderer.DATA_SOURCE === 'las') {
-            const lasDataLoader = new LasDataLoader();
-            lasDataLoader.loadLas().then(data => {
-                this.pointProgram.setData(data);
-                this.quadProgram.setData(data);
-                this.normalVisProgram.setData(data);
-            });
         } else {
             const dragonLoader = new StanfordDragonLoader();
             dragonLoader.load().then(data => {
