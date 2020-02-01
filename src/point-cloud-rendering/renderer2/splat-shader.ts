@@ -24,6 +24,7 @@ export const quadVS = `
     }
     
     in vec3 pos;
+    in float size;
     in vec3 color;
     in vec3 normal; 
     in vec3 quadVertex;
@@ -44,7 +45,7 @@ export const quadVS = `
         
 		vec3 rot_axis = normalize(cross(quad_normal, point_normal));
 		float rot_angle = acos(dot(quad_normal, point_normal));
-		float world_point_size = ${RendererConstants.POINT_SIZE};
+		float world_point_size = ${RendererConstants.POINT_SIZE} * size;
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
 		
@@ -141,6 +142,7 @@ export class SplatShader {
 
     readonly attributeLocations: {
         pos: GLint,
+        size: GLint,
         color: GLint,
         normal: GLint,
         quadVertex: GLint,
@@ -167,6 +169,7 @@ export class SplatShader {
 
         this.attributeLocations = {
             pos: gl.getAttribLocation(this.program, 'pos'),
+            size: gl.getAttribLocation(this.program, 'size'),
             color: gl.getAttribLocation(this.program, 'color'),
             normal: gl.getAttribLocation(this.program, 'normal'),
             quadVertex: gl.getAttribLocation(this.program, 'quadVertex'),

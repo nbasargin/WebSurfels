@@ -49,14 +49,18 @@ export class Octree {
         if (!dynamicNode.hasChildren()) {
             // single node
             const positions = dynamicNode.pointPositions.slice(0, dynamicNode.nodePointNumber * 3);
+            const sizes = new Float32Array(dynamicNode.nodePointNumber);
             const colors = dynamicNode.pointColors.slice(0, dynamicNode.nodePointNumber * 3);
             const normals = dynamicNode.pointNormals.slice(0, dynamicNode.nodePointNumber * 3);
+
+            sizes.fill(1);
 
             return new StaticOctreeNode(
                 dynamicNode.nodePosition,
                 dynamicNode.nodeSize,
                 dynamicNode.nodePointNumber,
                 positions,
+                sizes,
                 colors,
                 normals,
                 []
@@ -105,6 +109,7 @@ export class Octree {
 
         // reduce points per node and write them to the merged array
         const mergedPositions = new Float32Array(lodPointsNumber * 3);
+        const mergedSizes = new Float32Array(lodPointsNumber);
         const mergedColors = new Float32Array(lodPointsNumber * 3);
         const mergedNormals = new Float32Array(lodPointsNumber * 3);
         let writePos = 0;
@@ -112,9 +117,10 @@ export class Octree {
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             const points = pointsPerChildren[i];
-            const {positions, colors, normals} = Octree.reducePointNumber(child, points);
+            const {positions, sizes, colors, normals} = Octree.reducePointNumber(child, points);
 
             mergedPositions.set(positions, writePos);
+            mergedSizes.set(sizes, writePos / 3);
             mergedColors.set(colors, writePos);
             mergedNormals.set(normals, writePos);
             writePos += positions.length;
@@ -124,6 +130,7 @@ export class Octree {
             dynamicNode.nodeSize,
             totalRepresentedPointNumber,
             mergedPositions,
+            mergedSizes,
             mergedColors,
             mergedNormals,
             children
@@ -136,8 +143,9 @@ export class Octree {
      * @param node
      * @param points
      */
-    private static reducePointNumber(node: StaticOctreeNode, points: number): {positions: Float32Array, colors: Float32Array, normals: Float32Array}  {
+    private static reducePointNumber(node: StaticOctreeNode, points: number): {positions: Float32Array, sizes: Float32Array, colors: Float32Array, normals: Float32Array}  {
         const positions = new Float32Array(points * 3);
+        const sizes = new Float32Array(points);
         const colors = new Float32Array(points * 3);
         const normals = new Float32Array(points * 3);
 
@@ -157,8 +165,9 @@ export class Octree {
                 colors[writeOffset + elm] = node.pointColors[readOffset + elm];
                 normals[writeOffset + elm] = node.pointNormals[readOffset + elm];
             }
+            sizes[i] = node.pointSizes[Math.floor(i / keepRatio)] * 2;
         }
-        return {positions, colors, normals};
+        return {positions, sizes, colors, normals};
     }
 
 }

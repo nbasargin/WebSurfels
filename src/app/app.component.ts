@@ -201,7 +201,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                     data.positions[i + 2] += dz;
                 }
 
-                this.renderer2.addData(data.positions, data.colors, data.normals);
+                this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
             }
 
         });
@@ -232,7 +232,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     addNodesAtSpecificDepth(node: StaticOctreeNode, depth: number, stats: { nodes: number, representedPoints: number, visiblePoints: number }) {
         if (depth <= 0 || node.children.length == 0) {
-            this.renderer2.addData(node.pointPositions, node.pointColors, node.pointNormals);
+            this.renderer2.addData(node.pointPositions, node.pointSizes, node.pointColors, node.pointNormals);
             stats.nodes++;
             stats.representedPoints += node.representedPointNumber;
             stats.visiblePoints += node.pointPositions.length / 3;

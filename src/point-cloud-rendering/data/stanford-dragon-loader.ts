@@ -28,6 +28,9 @@ export class StanfordDragonLoader {
             data.normals = StanfordDragonLoader.dropPoints(data.normals, keepEveryNth);
         }
 
+        data.sizes = new Float32Array(data.positions.length / 3);
+        data.sizes.fill(1);
+
         return data;
     }
 

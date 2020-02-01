@@ -74,11 +74,12 @@ export class Renderer2 {
         mat4.transpose(this.uniforms.modelViewMatrixIT, this.uniforms.modelViewMatrixIT);
     }
 
-    addData(positions: Float32Array, colors: Float32Array, normals: Float32Array): PointDataNode {
+    addData(positions: Float32Array, sizes: Float32Array, colors: Float32Array, normals: Float32Array): PointDataNode {
         const node = new PointDataNode();
         node.numPoints = positions.length / 3;
         node.buffers = {
             positions: WebGLUtils.createBuffer(this.gl, positions),
+            sizes: WebGLUtils.createBuffer(this.gl, sizes),
             colors: WebGLUtils.createBuffer(this.gl, colors),
             normals: WebGLUtils.createBuffer(this.gl, normals),
         };
@@ -119,6 +120,7 @@ export class Renderer2 {
         this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
 
         this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.pos);
+        this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.size);
         this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.color);
         this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.normal);
         this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.quadVertex);
@@ -144,7 +146,6 @@ export class Renderer2 {
         this.gl.colorMask(false, false, false, false);
         this.gl.uniform1i(this.splatShader.uniformLocations.depthPass, 1);
         this.drawNodes();
-
 
         // color pass
         this.gl.depthMask(false);
@@ -172,6 +173,9 @@ export class Renderer2 {
 
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, node.buffers.positions);
             this.gl.vertexAttribPointer(this.splatShader.attributeLocations.pos, 3, this.gl.FLOAT, false, 0, 0);
+
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, node.buffers.sizes);
+            this.gl.vertexAttribPointer(this.splatShader.attributeLocations.size, 1, this.gl.FLOAT, false, 0, 0);
 
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, node.buffers.colors);
             this.gl.vertexAttribPointer(this.splatShader.attributeLocations.color, 3, this.gl.FLOAT, false, 0, 0);

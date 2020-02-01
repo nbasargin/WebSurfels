@@ -5,6 +5,7 @@ export class PointDataNode {
 
     buffers: {
         positions: WebGLBuffer;
+        sizes: WebGLBuffer,
         colors: WebGLBuffer;
         normals: WebGLBuffer;
     };
