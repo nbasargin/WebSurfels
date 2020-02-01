@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 
-import { OffscreenFramebuffer } from '../renderer/offscreen-framebuffer';
+import { OffscreenFramebuffer } from './offscreen-framebuffer';
 import { NormShader } from './norm-shader';
 import { PointDataNode } from './point-data-node';
 import { SplatShader } from './splat-shader';

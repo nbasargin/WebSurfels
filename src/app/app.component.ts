@@ -32,7 +32,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     fps = '0';
 
     private animationRequest;
-    // private renderer: Renderer;
     private renderer2: Renderer2;
     private renderNormals: boolean = false;
 
@@ -59,7 +58,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit(): void {
-        // this.renderer = new Renderer(this.canvasRef.nativeElement);
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
         // const instances = 64;
         // this.addDragons(instances, Math.min(20, instances));
@@ -157,18 +155,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
         }
 
-        /*
-        if (this.pressedKeys.has('KeyQ') && !this.renderer.useQuads) {
-            console.log('Switching to quad rendering');
-            this.renderer.useQuads = true;
-        } else if (this.pressedKeys.has('KeyE') && this.renderer.useQuads) {
-            console.log('Switching to ellipse rendering');
-            this.renderer.useQuads = false;
-        }
-        */
-
         const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.viewDirection);
-        //this.renderer.lookAt(this.cameraPos, viewTarget, up);
         this.renderer2.setCameraOrientation(this.cameraPos, viewTarget, this.up);
     }
 
@@ -182,7 +169,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const height = Math.round(bb.height * resolution);
 
         if (c.width !== width || c.height !== height) {
-            // this.renderer.setSize(width, height);
             this.renderer2.setCanvasSize(width, height);
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
