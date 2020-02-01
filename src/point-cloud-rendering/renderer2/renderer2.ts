@@ -126,6 +126,7 @@ export class Renderer2 {
         this.gl.enableVertexAttribArray(this.splatShader.attributeLocations.quadVertex);
 
         this.gl.vertexAttribDivisor(this.splatShader.attributeLocations.pos, 1);
+        this.gl.vertexAttribDivisor(this.splatShader.attributeLocations.size, 1);
         this.gl.vertexAttribDivisor(this.splatShader.attributeLocations.color, 1);
         this.gl.vertexAttribDivisor(this.splatShader.attributeLocations.normal, 1);
 
