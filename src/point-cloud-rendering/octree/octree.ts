@@ -1,5 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { DynamicOctreeNode } from './dynamic-octree-node';
+import { LevelOfDetail } from './level-of-detail';
 import { StaticOctreeNode } from './static-octree-node';
 
 export class Octree {
@@ -27,9 +28,9 @@ export class Octree {
     getBoundingBox(positions: Float32Array) {
         let minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, minZ = Number.MAX_VALUE;
         let maxX = Number.MIN_VALUE, maxY = Number.MIN_VALUE, maxZ = Number.MIN_VALUE;
-        
-        for (let i = 0; i < positions.length; i+=3) {
-            const x = positions[i], y = positions[i+1], z = positions[i+2];
+
+        for (let i = 0; i < positions.length; i += 3) {
+            const x = positions[i], y = positions[i + 1], z = positions[i + 2];
             minX = Math.min(minX, x);
             minY = Math.min(minY, y);
             minZ = Math.min(minZ, z);
@@ -37,7 +38,7 @@ export class Octree {
             maxY = Math.max(maxY, y);
             maxZ = Math.max(maxZ, z);
         }
-        return { minX, minY, minZ, maxX, maxY, maxZ }
+        return {minX, minY, minZ, maxX, maxY, maxZ}
     }
 
     /**
@@ -53,8 +54,10 @@ export class Octree {
             const sizes = new Float32Array(dynamicNode.nodePointNumber);
             const colors = dynamicNode.pointColors.slice(0, dynamicNode.nodePointNumber * 3);
             const normals = dynamicNode.pointNormals.slice(0, dynamicNode.nodePointNumber * 3);
+            const weights = new Float32Array(dynamicNode.nodePointNumber);
 
             sizes.fill(leafNodePointSize);
+            weights.fill(1);
 
             return new StaticOctreeNode(
                 dynamicNode.nodePosition,
@@ -64,6 +67,7 @@ export class Octree {
                 sizes,
                 colors,
                 normals,
+                weights,
                 []
             )
         }
@@ -76,57 +80,35 @@ export class Octree {
             children.push(staticNode);
         }
 
-        return this.createLodFromChildren(children, dynamicNode);
+        return this.createLodFromChildren2(children, dynamicNode);
     }
 
-    /**
-     * Generates a static node from 8 static child nodes.
-     * The new static node will have dynamicNode.pointLimit points (+/- 1)
-     * @param children
-     * @param dynamicNode
-     */
-    createLodFromChildren(children: Array<StaticOctreeNode>, dynamicNode: DynamicOctreeNode): StaticOctreeNode {
-        // children are weighted by representedPointNumber
+    createLodFromChildren2(children: Array<StaticOctreeNode>, dynamicNode: DynamicOctreeNode): StaticOctreeNode {
+        // merge all children into a new node
+        let totalPointNumber = 0;
         let totalRepresentedPointNumber = 0; // how many original points are represented by all children
         for (const child of children) {
+            totalPointNumber += child.pointSizes.length;
             totalRepresentedPointNumber += child.representedPointNumber;
         }
 
-        // actual point number cannot be less then max, otherwise node would not be expanded
-        const pointLimit = dynamicNode.pointLimit;
+        const mergedPositions = new Float32Array(totalPointNumber * 3);
+        const mergedSizes = new Float32Array(totalPointNumber);
+        const mergedColors = new Float32Array(totalPointNumber * 3);
+        const mergedNormals = new Float32Array(totalPointNumber * 3);
+        const mergedWeights = new Float32Array(totalPointNumber);
 
-        // node_contribution: node.representedNumber / totalRepresentedPointNumber
-        // the child node gets represented by max_points * node_contribution points
-
-        const pointsPerChildren: Array<number> = [];
-        let lodPointsNumber: number = 0;
-        for (const child of children) {
-            const pointsPerChild = Math.round(child.representedPointNumber / totalRepresentedPointNumber * pointLimit);
-            const pointsInChild = child.pointPositions.length / 3;
-            const points = Math.min(pointsPerChild, pointsInChild);
-            pointsPerChildren.push(points);
-            lodPointsNumber += points;
-        }
-
-        // reduce points per node and write them to the merged array
-        const mergedPositions = new Float32Array(lodPointsNumber * 3);
-        const mergedSizes = new Float32Array(lodPointsNumber);
-        const mergedColors = new Float32Array(lodPointsNumber * 3);
-        const mergedNormals = new Float32Array(lodPointsNumber * 3);
         let writePos = 0;
-
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
-            const points = pointsPerChildren[i];
-            const {positions, sizes, colors, normals} = Octree.reducePointNumber(child, points);
-
-            mergedPositions.set(positions, writePos);
-            mergedSizes.set(sizes, writePos / 3);
-            mergedColors.set(colors, writePos);
-            mergedNormals.set(normals, writePos);
-            writePos += positions.length;
+        for (const child of children) {
+            mergedPositions.set(child.pointPositions, writePos * 3);
+            mergedSizes.set(child.pointSizes, writePos);
+            mergedColors.set(child.pointColors, writePos * 3);
+            mergedNormals.set(child.pointNormals, writePos * 3);
+            mergedWeights.set(child.pointWeights, writePos);
+            writePos += child.pointSizes.length;
         }
-        return new StaticOctreeNode(
+
+        const mergedNode = new StaticOctreeNode(
             dynamicNode.nodePosition,
             dynamicNode.nodeSize,
             totalRepresentedPointNumber,
@@ -134,41 +116,24 @@ export class Octree {
             mergedSizes,
             mergedColors,
             mergedNormals,
+            mergedWeights,
             children
-        )
+        );
 
-    }
+        // reduce resolution of that node
+        const { positions, sizes, colors, normals, weights } = LevelOfDetail.mergeToMany(mergedNode);
 
-    /**
-     * Reduce all points in a single node to target number of points
-     * @param node
-     * @param points
-     */
-    private static reducePointNumber(node: StaticOctreeNode, points: number): {positions: Float32Array, sizes: Float32Array, colors: Float32Array, normals: Float32Array}  {
-        const positions = new Float32Array(points * 3);
-        const sizes = new Float32Array(points);
-        const colors = new Float32Array(points * 3);
-        const normals = new Float32Array(points * 3);
-
-        const pointsInNode = node.pointPositions.length / 3;
-        const keepRatio = points / pointsInNode;
-        if (keepRatio > 1) {
-            throw new Error('keep ratio is larger than 1'); // todo add a test and remove this check
-        }
-        for (let i = 0; i < points; i++) {
-            const readOffset = Math.floor(i / keepRatio) * 3;
-            const writeOffset = i * 3;
-            for (let elm = 0; elm < 3; elm++) {
-                if (readOffset + elm >= node.pointPositions.length) {
-                    throw new Error('invalid index in reducePointNumber'); // todo add a test and remove this check
-                }
-                positions[writeOffset + elm] = node.pointPositions[readOffset + elm];
-                colors[writeOffset + elm] = node.pointColors[readOffset + elm];
-                normals[writeOffset + elm] = node.pointNormals[readOffset + elm];
-            }
-            sizes[i] = node.pointSizes[Math.floor(i / keepRatio)] * 2;
-        }
-        return {positions, sizes, colors, normals};
+        return new StaticOctreeNode(
+            dynamicNode.nodePosition,
+            dynamicNode.nodeSize,
+            totalRepresentedPointNumber,
+            positions,
+            sizes,
+            colors,
+            normals,
+            weights,
+            children
+        );
     }
 
 }

@@ -8,6 +8,7 @@ export class StaticOctreeNode {
         public readonly pointSizes: Float32Array,
         public readonly pointColors: Float32Array,
         public readonly pointNormals: Float32Array,
+        public readonly pointWeights: Float32Array,
         public readonly children: Array<StaticOctreeNode>
     ) {
     }
