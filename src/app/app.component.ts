@@ -5,6 +5,7 @@ import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { Octree } from '../point-cloud-rendering/octree/octree';
 import { StaticOctreeNode } from '../point-cloud-rendering/octree/static-octree-node';
+import { RendererConstants } from '../point-cloud-rendering/renderer2/renderer-constants';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 
 @Component({
@@ -15,7 +16,7 @@ import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
             <input #animCheck type="checkbox" (change)="benchmarkRunning = animCheck.checked">
             animate
         </div>
-        <div class="lod-overlay" *ngIf="dragonOctree">            
+        <div class="lod-overlay" *ngIf="dragonOctree">
             <input #lodSlider (input)="showDragonLoD(+lodSlider.value)" type="range" min="0" max="6" step="1" value="0">
             LoD level: {{lodSlider.value}}
         </div>
@@ -121,7 +122,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.checkCamera();
         }
 
-        // this.renderer.render(this.renderNormals);
         this.renderer2.render();
     }
 
@@ -211,7 +211,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.load().then(data => {
             console.log('data loaded');
-            this.dragonOctree = new Octree(data, pointLimitPerNode, maxDepth);
+            this.dragonOctree = new Octree(data, pointLimitPerNode, maxDepth, RendererConstants.POINT_SIZE);
             this.showDragonLoD(lodLevel);
         });
     }

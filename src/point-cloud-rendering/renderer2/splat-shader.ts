@@ -1,4 +1,3 @@
-import { RendererConstants } from './renderer-constants';
 import { WebGLUtils } from './web-gl-utils';
 
 const SHAPE_PRESERVING_DEPTH_PASS: 0 | 1 = 1;
@@ -45,7 +44,7 @@ export const quadVS = `
         
 		vec3 rot_axis = normalize(cross(quad_normal, point_normal));
 		float rot_angle = acos(dot(quad_normal, point_normal));
-		float world_point_size = ${RendererConstants.POINT_SIZE} * size;
+		float world_point_size = size;
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
 		

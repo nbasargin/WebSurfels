@@ -6,7 +6,7 @@ export class Octree {
 
     root: StaticOctreeNode;
 
-    constructor(data: PointCloudData, pointsLimitPerNode: number, maxDepth: number) {
+    constructor(data: PointCloudData, pointsLimitPerNode: number, maxDepth: number, leafNodePointSize: number) {
         const bb = this.getBoundingBox(data.positions);
         const min = Math.min(bb.minX, bb.minY, bb.minZ);
         const max = Math.max(bb.maxX, bb.maxY, bb.maxZ);
@@ -18,7 +18,7 @@ export class Octree {
             dynamicRoot.addPoint(i, data.positions, data.colors, data.normals);
         }
         // convert dynamic into static and generate LoD levels
-        this.root = this.createStaticTree(dynamicRoot);
+        this.root = this.createStaticTree(dynamicRoot, leafNodePointSize);
 
         console.log('Created octree. Nodes:', dynamicRoot.getNumberOfNodes(),
             ' Points:', dynamicRoot.getNumberOfPoints(), ' Depth:', dynamicRoot.getDepth());
@@ -44,8 +44,9 @@ export class Octree {
      * Convert a dynamic octree into a static one.
      * Leaf nodes of the static tree contain original points, internal nodes are LoD approximations of the children.
      * @param dynamicNode
+     * @param leafNodePointSize
      */
-    private createStaticTree(dynamicNode: DynamicOctreeNode): StaticOctreeNode {
+    private createStaticTree(dynamicNode: DynamicOctreeNode, leafNodePointSize: number): StaticOctreeNode {
         if (!dynamicNode.hasChildren()) {
             // single node
             const positions = dynamicNode.pointPositions.slice(0, dynamicNode.nodePointNumber * 3);
@@ -53,7 +54,7 @@ export class Octree {
             const colors = dynamicNode.pointColors.slice(0, dynamicNode.nodePointNumber * 3);
             const normals = dynamicNode.pointNormals.slice(0, dynamicNode.nodePointNumber * 3);
 
-            sizes.fill(1);
+            sizes.fill(leafNodePointSize);
 
             return new StaticOctreeNode(
                 dynamicNode.nodePosition,
@@ -70,7 +71,7 @@ export class Octree {
         const children: Array<StaticOctreeNode> = [];
         let numPointsInChildren = 0;
         for (const child of dynamicNode.children) {
-            const staticNode = this.createStaticTree(child);
+            const staticNode = this.createStaticTree(child, leafNodePointSize);
             numPointsInChildren += staticNode.pointPositions.length / 3;
             children.push(staticNode);
         }
