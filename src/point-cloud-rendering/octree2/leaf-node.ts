@@ -1,24 +1,42 @@
 import { PointCloudData } from '../data/point-cloud-data';
+import { Bitfield } from '../octree/bitfield';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
 
 /**
- * Non-expandable leaf node. Accepts all inserted points.
+ * A leaf node that stores points.
+ *
+ * If depth limit is not reached, the leaf can be expanded into an inner node.
+ * Expansion is needed when more than one point falls into the same sub-cell.
+ * A bit field tracks what sub-cells are already occupied.
  */
-export class FinalLeafNode implements OctreeNode, PointCloudData {
+export class LeafNode implements OctreeNode, PointCloudData {
+
+    private readonly occupied: Bitfield;
+    private readonly minX: number;
+    private readonly minY: number;
+    private readonly minZ: number;
 
     private capacity: number;
-    pointCount: number;
+    pointCount: number = 0;
 
-    // arrays to store currently inserted points
     positions: Float32Array;
     sizes: Float32Array;
     colors: Float32Array;
     normals: Float32Array;
 
     constructor(
-        public readonly nodeInfo: OctreeNodeInfo
+        public readonly nodeInfo: OctreeNodeInfo,
+        public readonly maxDepth: number
     ) {
+        if (maxDepth > 1) {
+            // node can be split
+            this.occupied = new Bitfield(nodeInfo.resolution ** 3);
+            this.minX = this.nodeInfo.centerX - this.nodeInfo.size / 2;
+            this.minY = this.nodeInfo.centerY - this.nodeInfo.size / 2;
+            this.minZ = this.nodeInfo.centerZ - this.nodeInfo.size / 2;
+        }
+
         this.capacity = nodeInfo.resolution; // initial capacity
 
         this.positions = new Float32Array(this.capacity * 3);
@@ -27,12 +45,27 @@ export class FinalLeafNode implements OctreeNode, PointCloudData {
         this.normals = new Float32Array(this.capacity * 3);
     }
 
-    addPoint(data: PointCloudData, pointIndex: number) {
+    addPoint(data: PointCloudData, pointIndex: number): boolean {
+        if (this.maxDepth > 1) {
+            // node is splittable
+            const r = this.nodeInfo.resolution;
+            const x = Math.floor((data.positions[pointIndex] - this.minX) / this.nodeInfo.resolution);
+            const y = Math.floor((data.positions[pointIndex + 1] - this.minY) / this.nodeInfo.resolution);
+            const z = Math.floor((data.positions[pointIndex + 2] - this.minZ) / this.nodeInfo.resolution);
+            const subCellIndex = x + y * r + z * r * r;
+
+            if (this.occupied.getBit(subCellIndex)) {
+                return false;
+            }
+            this.occupied.setBit(subCellIndex);
+        }
+
         if (this.pointCount === this.capacity) {
             this.doubleCapacity();
         }
         this.copyPoint(data, pointIndex, this.pointCount);
         this.pointCount++;
+        return true;
     }
 
     computeLOD(): LodNode {
@@ -66,6 +99,10 @@ export class FinalLeafNode implements OctreeNode, PointCloudData {
             this.normals[toIndex + i] = fromData.normals[fromIndex + i];
         }
         this.sizes[toIndex] = fromData.sizes[fromIndex];
+    }
+
+    debugHierarchy(): string {
+        return this.pointCount + (this.maxDepth > 1 ? '+' : '');
     }
 
 }

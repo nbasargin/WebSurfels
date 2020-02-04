@@ -1,11 +1,12 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { ExpandableLeafNode } from './expandable-leaf-node';
-import { FinalLeafNode } from './final-leaf-node';
+import { LeafNode } from './leaf-node';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
 
 /**
- * Inner octree node. Does not store any points but has children.
+ * Inner octree node. Does not store any points but has exactly 8 children.
+ * Children are initialized to leaf nodes automatically when this node is created.
+ * Whenever a child node overflows, it is expanded into another inner node.
  */
 export class InnerNode implements OctreeNode {
 
@@ -24,19 +25,29 @@ export class InnerNode implements OctreeNode {
                 for (const centerX of [nodeInfo.centerX - centerOffset, nodeInfo.centerX + centerOffset]) {
                     const childInfo: OctreeNodeInfo = {size, resolution, centerX, centerY, centerZ};
                     const index = this.getChildIndex(centerX, centerY, centerZ);
-                    if (maxDepth > 1) {
-                        this.children[index] = new ExpandableLeafNode(childInfo, maxDepth - 1, this);
-                    } else {
-                        this.children[index] = new FinalLeafNode(childInfo);
-                    }
+                    this.children[index] = new LeafNode(childInfo, maxDepth - 1);
                 }
             }
         }
     }
 
-    addPoint(data: PointCloudData, pointIndex: number) {
-        const child = this.getChildIndex(data.positions[pointIndex], data.positions[pointIndex + 1], data.positions[pointIndex + 2]);
-        this.children[child].addPoint(data, pointIndex);
+    addPoint(data: PointCloudData, pointIndex: number): boolean {
+        const childIndex = this.getChildIndex(data.positions[pointIndex], data.positions[pointIndex + 1], data.positions[pointIndex + 2]);
+        const success = this.children[childIndex].addPoint(data, pointIndex);
+
+        if (!success) {
+            // child node did not succeed and has to be expanded
+            const newInnerNode = new InnerNode(this.children[childIndex].nodeInfo, this.maxDepth - 1);
+            const child = this.children[childIndex] as LeafNode;
+
+            for (let i = 0; i < child.pointCount; i++) {
+                newInnerNode.addPoint(child, i); // add existing points
+            }
+            newInnerNode.addPoint(data, pointIndex);  // add new point
+            this.children[childIndex] = newInnerNode;
+        }
+
+        return true;
     }
 
     computeLOD(): LodNode {
@@ -48,5 +59,9 @@ export class InnerNode implements OctreeNode {
         const dy = y > this.nodeInfo.centerY ? 1 : 0;
         const dz = z > this.nodeInfo.centerZ ? 1 : 0;
         return dx + dy * 2 + dz * 4
+    }
+
+    debugHierarchy(): string {
+        return '[' + this.children.map(c => c.debugHierarchy()).join(', ') + ']';
     }
 }

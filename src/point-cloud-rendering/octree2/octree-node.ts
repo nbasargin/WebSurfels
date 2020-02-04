@@ -8,9 +8,11 @@ export interface OctreeNode {
 
     nodeInfo: OctreeNodeInfo;
 
-    addPoint(data: PointCloudData, pointIndex: number);
+    addPoint(data: PointCloudData, pointIndex: number): boolean;
 
     computeLOD(): LodNode;
+
+    debugHierarchy(): string;
 
 }
 
