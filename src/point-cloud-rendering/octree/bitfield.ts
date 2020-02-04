@@ -14,15 +14,18 @@ export class Bitfield {
         return !!(field & (1 << bit));
     }
 
-    setBit(pos: number, value: boolean) {
+    setBit(pos: number) {
         const byte = Math.floor(pos / 8);
         const bit = pos - byte * 8;
         const field = this.bits[byte];
-        if (value) {
-            this.bits[byte] = field | (1 << bit);
-        } else {
-            this.bits[byte] = field & (~(1 << bit));
-        }
+        this.bits[byte] = field | (1 << bit);
+    }
+
+    deleteBit(pos: number) {
+        const byte = Math.floor(pos / 8);
+        const bit = pos - byte * 8;
+        const field = this.bits[byte];
+        this.bits[byte] = field & (~(1 << bit));
     }
 
 }

@@ -8,7 +8,7 @@ import { OctreeNode, OctreeNodeInfo } from './octree-node';
 export class FinalLeafNode implements OctreeNode, PointCloudData {
 
     private capacity: number;
-    private pointCount: number;
+    pointCount: number;
 
     // arrays to store currently inserted points
     positions: Float32Array;
