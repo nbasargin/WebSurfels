@@ -60,9 +60,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     ngAfterViewInit(): void {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
-        // const instances = 64;
-        // this.addDragons(instances, Math.min(20, instances));
-        this.createDragonLod(0, 10000, 10);
+        const instances = 64;
+        this.addDragons(instances, Math.min(20, instances));
+        //this.createDragonLod(0, 10000, 10);
 
         this.renderLoop(0);
     }
@@ -201,10 +201,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                     data.positions[i + 2] += dz;
                 }
 
-                const sizes = new Float32Array(data.positions.length / 3);
-                sizes.fill(1);
-
-                this.renderer2.addData(data.positions, sizes, data.colors, data.normals);
+                this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
             }
 
         });

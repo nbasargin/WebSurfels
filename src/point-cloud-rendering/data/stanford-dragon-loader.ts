@@ -1,5 +1,6 @@
 import { PLYLoader } from '@loaders.gl/ply';
 import { load } from '@loaders.gl/core';
+import { RendererConstants } from '../renderer2/renderer-constants';
 import { PointCloudData } from './point-cloud-data';
 
 export class StanfordDragonLoader {
@@ -7,8 +8,11 @@ export class StanfordDragonLoader {
     async load(keepEveryNth: number = 1): Promise<PointCloudData> {
         const rawData = await load('assets/point-clouds/stanford_dragon.ply', PLYLoader);
 
+        const sizes = new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3 / keepEveryNth));
+        sizes.fill(RendererConstants.POINT_SIZE);
         const data: PointCloudData = {
             positions: rawData.attributes.POSITION.value,
+            sizes: sizes,
             normals: rawData.attributes.NORMAL.value,
             colors: new Float32Array(rawData.attributes.COLOR_0.value),
         };

@@ -5,6 +5,7 @@ export class PointCloudDataGenerator {
     generateSphere(pointNumber: number, randomizeColors: boolean = true): PointCloudData {
         const data: PointCloudData = {
             positions: new Float32Array(pointNumber * 3),
+            sizes: new Float32Array(pointNumber),
             colors: new Float32Array(pointNumber * 3),
             normals: new Float32Array(pointNumber * 3),
         };
@@ -31,6 +32,8 @@ export class PointCloudDataGenerator {
             data.normals[offset + 1] = randomPoint[7];
             data.normals[offset + 2] = randomPoint[8];
         }
+
+        data.sizes.fill(1);
 
         return data;
     }
