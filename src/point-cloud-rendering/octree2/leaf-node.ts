@@ -95,9 +95,9 @@ export class LeafNode implements OctreeNode, PointCloudData {
 
     private copyPoint(fromData: PointCloudData, fromIndex: number, toIndex: number) {
         for (let i = 0; i < 3; i++) {
-            this.positions[toIndex + i] = fromData.positions[fromIndex + i];
-            this.colors[toIndex + i] = fromData.colors[fromIndex + i];
-            this.normals[toIndex + i] = fromData.normals[fromIndex + i];
+            this.positions[toIndex * 3 + i] = fromData.positions[fromIndex * 3 + i];
+            this.colors[toIndex * 3 + i] = fromData.colors[fromIndex * 3 + i];
+            this.normals[toIndex * 3 + i] = fromData.normals[fromIndex * 3 + i];
         }
         this.sizes[toIndex] = fromData.sizes[fromIndex];
     }
