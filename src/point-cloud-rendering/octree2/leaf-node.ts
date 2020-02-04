@@ -10,7 +10,7 @@ import { OctreeNode, OctreeNodeInfo } from './octree-node';
  * Expansion is needed when more than one point falls into the same sub-cell.
  * A bit field tracks what sub-cells are already occupied.
  */
-export class LeafNode implements OctreeNode, PointCloudData {
+export class LeafNode implements OctreeNode {
 
     private readonly occupied: Bitfield;
     readonly minX: number;
@@ -54,6 +54,17 @@ export class LeafNode implements OctreeNode, PointCloudData {
             const y = Math.floor((data.positions[pointIndex + 1] - this.minY) / this.nodeInfo.size * r);
             const z = Math.floor((data.positions[pointIndex + 2] - this.minZ) / this.nodeInfo.size * r);
             const subCellIndex = x + y * r + z * r * r;
+
+            if (x >= r || y >= r || z >= r) {
+                console.log('LeafNode, invalid index', x, y, z);
+                console.log('LeafNode, x without floor', (data.positions[pointIndex] - this.minX) / this.nodeInfo.size * r);
+                console.log('LeafNode, x without floor', (data.positions[pointIndex + 1] - this.minY) / this.nodeInfo.size * r);
+                console.log('LeafNode, x without floor', (data.positions[pointIndex + 2] - this.minZ) / this.nodeInfo.size * r);
+            }
+            if (x < 0 || y < 0 || z < 0) {
+                console.log('invalid index', x, y, z)
+            }
+
 
             if (this.occupied.getBit(subCellIndex)) {
                 return false;
