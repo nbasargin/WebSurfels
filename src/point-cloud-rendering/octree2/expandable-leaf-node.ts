@@ -1,3 +1,4 @@
+import { PointCloudData } from '../data/point-cloud-data';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
 
@@ -18,7 +19,7 @@ export class ExpandableLeafNode implements OctreeNode {
     ) {
     }
 
-    addPoint() {
+    addPoint(data: PointCloudData, pointIndex: number) {
     }
 
     computeLOD(): LodNode {

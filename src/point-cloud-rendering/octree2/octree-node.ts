@@ -1,3 +1,4 @@
+import { PointCloudData } from '../data/point-cloud-data';
 import { LodNode } from './lod-node';
 
 /**
@@ -7,7 +8,7 @@ export interface OctreeNode {
 
     nodeInfo: OctreeNodeInfo;
 
-    addPoint();
+    addPoint(data: PointCloudData, pointIndex: number);
 
     computeLOD(): LodNode;
 
