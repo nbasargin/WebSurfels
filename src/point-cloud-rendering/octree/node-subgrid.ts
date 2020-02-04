@@ -19,11 +19,13 @@ export class NodeSubgrid {
     clear() {
         const length = this.resolution ** 3;
         for (let i = 0; i < length; i++) {
-            this.grid[i].positions = [];
-            this.grid[i].sizes = [];
-            this.grid[i].colors = [];
-            this.grid[i].normals = [];
-            this.grid[i].weights = [];
+            if (this.grid[i].positions.length > 0) {
+                this.grid[i].positions = [];
+                this.grid[i].sizes = [];
+                this.grid[i].colors = [];
+                this.grid[i].normals = [];
+                this.grid[i].weights = [];
+            }
         }
     }
 
