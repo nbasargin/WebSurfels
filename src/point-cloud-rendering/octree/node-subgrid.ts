@@ -1,6 +1,8 @@
+export type SubgridCell = {positions: Array<number>, sizes: Array<number>, colors: Array<number>, normals: Array<number>, weights: Array<number>};
+
 export class NodeSubgrid {
 
-    grid: Array<{positions: Array<number>, sizes: Array<number>, colors: Array<number>, normals: Array<number>, weights: Array<number>}>;
+    grid: Array<SubgridCell>;
 
     constructor(public readonly resolution: number = 64) {
         this.grid = [];
