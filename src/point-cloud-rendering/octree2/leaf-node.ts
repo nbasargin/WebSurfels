@@ -13,9 +13,9 @@ import { OctreeNode, OctreeNodeInfo } from './octree-node';
 export class LeafNode implements OctreeNode, PointCloudData {
 
     private readonly occupied: Bitfield;
-    private readonly minX: number;
-    private readonly minY: number;
-    private readonly minZ: number;
+    readonly minX: number;
+    readonly minY: number;
+    readonly minZ: number;
 
     private capacity: number;
     pointCount: number = 0;
@@ -32,10 +32,11 @@ export class LeafNode implements OctreeNode, PointCloudData {
         if (maxDepth > 1) {
             // node can be split
             this.occupied = new Bitfield(nodeInfo.resolution ** 3);
-            this.minX = this.nodeInfo.centerX - this.nodeInfo.size / 2;
-            this.minY = this.nodeInfo.centerY - this.nodeInfo.size / 2;
-            this.minZ = this.nodeInfo.centerZ - this.nodeInfo.size / 2;
         }
+
+        this.minX = this.nodeInfo.centerX - this.nodeInfo.size / 2;
+        this.minY = this.nodeInfo.centerY - this.nodeInfo.size / 2;
+        this.minZ = this.nodeInfo.centerZ - this.nodeInfo.size / 2;
 
         this.capacity = nodeInfo.resolution; // initial capacity
 
@@ -49,9 +50,9 @@ export class LeafNode implements OctreeNode, PointCloudData {
         if (this.maxDepth > 1) {
             // node is splittable
             const r = this.nodeInfo.resolution;
-            const x = Math.floor((data.positions[pointIndex] - this.minX) / this.nodeInfo.resolution);
-            const y = Math.floor((data.positions[pointIndex + 1] - this.minY) / this.nodeInfo.resolution);
-            const z = Math.floor((data.positions[pointIndex + 2] - this.minZ) / this.nodeInfo.resolution);
+            const x = Math.floor((data.positions[pointIndex] - this.minX) / this.nodeInfo.size * r);
+            const y = Math.floor((data.positions[pointIndex + 1] - this.minY) / this.nodeInfo.size * r);
+            const z = Math.floor((data.positions[pointIndex + 2] - this.minZ) / this.nodeInfo.size * r);
             const subCellIndex = x + y * r + z * r * r;
 
             if (this.occupied.getBit(subCellIndex)) {
