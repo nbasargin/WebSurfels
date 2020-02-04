@@ -7,16 +7,17 @@ export class StanfordDragonLoader {
     async load(keepEveryNth: number = 1): Promise<PointCloudData> {
         const rawData = await load('assets/point-clouds/stanford_dragon.ply', PLYLoader);
 
-        const data = new PointCloudData();
-        data.positions = rawData.attributes.POSITION.value;
+        const data: PointCloudData = {
+            positions: rawData.attributes.POSITION.value,
+            normals: rawData.attributes.NORMAL.value,
+            colors: new Float32Array(rawData.attributes.COLOR_0.value),
+        };
         for (let i = 0; i < data.positions.length; i++) {
             data.positions[i] *= 20.0;
         }
         for (let i = 1; i < data.positions.length; i+=3) {
             data.positions[i] -= 2.5;
         }
-        data.normals = rawData.attributes.NORMAL.value;
-        data.colors = new Float32Array(rawData.attributes.COLOR_0.value);
         for (let i = 0; i < data.colors.length; i++) {
             data.colors[i] /= 255.0;
         }
@@ -27,9 +28,6 @@ export class StanfordDragonLoader {
             data.colors = StanfordDragonLoader.dropPoints(data.colors, keepEveryNth);
             data.normals = StanfordDragonLoader.dropPoints(data.normals, keepEveryNth);
         }
-
-        data.sizes = new Float32Array(data.positions.length / 3);
-        data.sizes.fill(1);
 
         return data;
     }

@@ -3,12 +3,12 @@ import { PointCloudData } from "./point-cloud-data";
 export class PointCloudDataGenerator {
 
     generateSphere(pointNumber: number, randomizeColors: boolean = true): PointCloudData {
-        const data = new PointCloudData();
+        const data: PointCloudData = {
+            positions: new Float32Array(pointNumber * 3),
+            colors: new Float32Array(pointNumber * 3),
+            normals: new Float32Array(pointNumber * 3),
+        };
 
-        data.positions = new Float32Array(pointNumber * 3);
-        data.sizes = new Float32Array(pointNumber);
-        data.colors = new Float32Array(pointNumber * 3);
-        data.normals = new Float32Array(pointNumber * 3);
         for (let i = 0; i < pointNumber; i++) {
             const offset = i * 3;
             const randomPoint = PointCloudDataGenerator.randomPointOnSphere();
@@ -31,8 +31,6 @@ export class PointCloudDataGenerator {
             data.normals[offset + 1] = randomPoint[7];
             data.normals[offset + 2] = randomPoint[8];
         }
-
-        data.sizes.fill(1);
 
         return data;
     }

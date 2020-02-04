@@ -201,7 +201,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                     data.positions[i + 2] += dz;
                 }
 
-                this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
+                const sizes = new Float32Array(data.positions.length / 3);
+                sizes.fill(1);
+
+                this.renderer2.addData(data.positions, sizes, data.colors, data.normals);
             }
 
         });
