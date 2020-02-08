@@ -1,0 +1,59 @@
+import { PointCloudData } from '../data/point-cloud-data';
+import { NodeSubgrid } from '../octree/node-subgrid';
+import { InnerNode } from './inner-node';
+import { LodNode } from './lod-node';
+import { OctreeNode } from './octree-node';
+
+type BoundingBox = {minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number};
+
+export class Octree2 {
+
+    private readonly root: OctreeNode;
+
+    boundingBox: BoundingBox;
+
+    constructor(data: PointCloudData, public readonly resolution: number, public readonly maxDepth: number) {
+        this.boundingBox = this.getBoundingBox(data.positions);
+        const min = Math.min(this.boundingBox.minX, this.boundingBox.minY, this.boundingBox.minZ);
+        const max = Math.max(this.boundingBox.maxX, this.boundingBox.maxY, this.boundingBox.maxZ);
+        const size = max - min;
+
+        this.root = new InnerNode({
+            size,
+            resolution,
+            centerX: (this.boundingBox.maxX - this.boundingBox.minX) / 2 + this.boundingBox.minX,
+            centerY: (this.boundingBox.maxY - this.boundingBox.minY) / 2 + this.boundingBox.minY,
+            centerZ: (this.boundingBox.maxZ - this.boundingBox.minZ) / 2 + this.boundingBox.minZ,
+        }, maxDepth);
+
+        for (let i = 0; i < data.positions.length / 3; i++) {
+            this.root.addPoint(data, i);
+        }
+        console.log('octree built', this.root)
+    }
+
+    createLOD(): LodNode {
+        return this.root.computeLOD(new NodeSubgrid(this.resolution));
+    }
+
+    private getBoundingBox(positions: Float32Array): BoundingBox {
+        let minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, minZ = Number.MAX_VALUE;
+        let maxX = Number.MIN_VALUE, maxY = Number.MIN_VALUE, maxZ = Number.MIN_VALUE;
+
+        for (let i = 0; i < positions.length; i += 3) {
+            const x = positions[i], y = positions[i + 1], z = positions[i + 2];
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            minZ = Math.min(minZ, z);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+            maxZ = Math.max(maxZ, z);
+        }
+        return {minX, minY, minZ, maxX, maxY, maxZ}
+    }
+
+
+
+
+
+}

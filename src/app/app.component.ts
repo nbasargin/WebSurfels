@@ -5,6 +5,7 @@ import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { Octree } from '../point-cloud-rendering/octree/octree';
 import { StaticOctreeNode } from '../point-cloud-rendering/octree/static-octree-node';
+import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
 import { RendererConstants } from '../point-cloud-rendering/renderer2/renderer-constants';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 
@@ -62,7 +63,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
         //const instances = 64;
         //this.addDragons(instances, Math.min(20, instances));
-        this.createDragonLod(0, 10000, 10);
+        //this.createDragonLod(0, 10000, 10);
+        this.createDragonLod2(32, 5);
 
         this.renderLoop(0);
     }
@@ -206,6 +208,18 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         });
     }
+
+    createDragonLod2(resolution: number, maxDepth: number) {
+        const dragonLoader = new StanfordDragonLoader();
+        dragonLoader.load().then(data => {
+            console.log('data loaded');
+            const octree = new Octree2(data, resolution, maxDepth);
+            const lod = octree.createLOD();
+            this.renderer2.addData(lod.positions, lod.sizes, lod.colors, lod.normals);
+            console.log('rendering', lod.sizes.length, 'points')
+        });
+    }
+
 
     createDragonLod(lodLevel: number, pointLimitPerNode: number, maxDepth: number) {
         const dragonLoader = new StanfordDragonLoader();

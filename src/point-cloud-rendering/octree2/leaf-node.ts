@@ -60,14 +60,10 @@ export class LeafNode implements OctreeNode {
 
             if (x >= r || y >= r || z >= r) {
                 console.log('LeafNode, invalid index', x, y, z);
-                console.log('LeafNode, x without floor', (data.positions[pointIndex] - this.minX) / this.nodeInfo.size * r);
-                console.log('LeafNode, x without floor', (data.positions[pointIndex + 1] - this.minY) / this.nodeInfo.size * r);
-                console.log('LeafNode, x without floor', (data.positions[pointIndex + 2] - this.minZ) / this.nodeInfo.size * r);
             }
             if (x < 0 || y < 0 || z < 0) {
                 console.log('invalid index', x, y, z)
             }
-
 
             if (this.occupied.getBit(subCellIndex)) {
                 return false;
@@ -110,51 +106,10 @@ export class LeafNode implements OctreeNode {
             }
 
             // put point into cell
-            const cell = subgrid.grid[subcellIndex];
-            cell.positions.push(this.positions[i * 3]);
-            cell.positions.push(this.positions[i * 3 + 1]);
-            cell.positions.push(this.positions[i * 3 + 2]);
-
-            cell.sizes.push(this.sizes[i]);
-
-            cell.colors.push(this.colors[i * 3]);
-            cell.colors.push(this.colors[i * 3 + 1]);
-            cell.colors.push(this.colors[i * 3 + 2]);
-
-            cell.normals.push(this.normals[i * 3]);
-            cell.normals.push(this.normals[i * 3 + 1]);
-            cell.normals.push(this.normals[i * 3 + 2]);
-
-            cell.weights.push(1);
+            subgrid.addToCell(subcellIndex, this, i, 1);
         }
 
-        // merge every subgrid cell
-        const mergedPos: Array<number> = [];
-        const mergedSizes: Array<number> = [];
-        const mergedColors: Array<number> = [];
-        const mergedNormals: Array<number> = [];
-        const mergedWeights: Array<number> = [];
-        for (const cell of subgrid.grid) {
-            if (cell.positions.length === 0) {
-                continue;
-            }
-            const {x, y, z, r, g, b, nx, ny, nz, size, weight} = LevelOfDetail2.subcellToPoint(cell);
-            mergedPos.push(x, y, z);
-            mergedSizes.push(size);
-            mergedColors.push(r, g, b);
-            mergedNormals.push(nx, ny, nz);
-            mergedWeights.push(weight);
-        }
-
-        return {
-            nodeInfo: ni,
-            positions: new Float32Array(mergedPos),
-            sizes: new Float32Array(mergedSizes),
-            colors: new Float32Array(mergedColors),
-            normals: new Float32Array(mergedNormals),
-            weights: new Float32Array(mergedWeights),
-            children: []
-        };
+        return subgrid.mergeByCell(ni);
     }
 
     private doubleCapacity() {
