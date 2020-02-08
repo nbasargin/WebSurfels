@@ -218,20 +218,25 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             nodes: 0,
             visiblePoints: 0
         };
-        this.addNodesAtSpecificDepth2(this.dragonLod, lodLevel, stats);
-        console.log(`LOD level ${lodLevel}: ${stats.nodes} nodes with ${stats.visiblePoints} points`);
-    }
-
-    addNodesAtSpecificDepth2(node: LodNode, depth: number, stats) {
-        if (depth <= 0 || node.children.length == 0) {
+        const nodes = this.getNodesAtSpecificDepth(this.dragonLod, lodLevel);
+        for (const node of nodes) {
             this.renderer2.addData(node.positions, node.sizes, node.colors, node.normals);
             stats.nodes++;
             stats.visiblePoints += node.positions.length / 3;
+        }
 
+        console.log(`LOD level ${lodLevel}: ${stats.nodes} nodes with ${stats.visiblePoints} points`);
+    }
+
+    getNodesAtSpecificDepth(root: LodNode, depth: number): Array<LodNode> {
+        if (depth <= 0 || root.children.length == 0) {
+            return [root];
         } else {
-            for (const child of node.children) {
-                this.addNodesAtSpecificDepth2(child, depth - 1, stats);
+            let nodes: Array<LodNode> = [];
+            for (const child of root.children) {
+                nodes = nodes.concat(this.getNodesAtSpecificDepth(child, depth - 1));
             }
+            return nodes;
         }
     }
 
