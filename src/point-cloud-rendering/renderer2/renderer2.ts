@@ -95,6 +95,13 @@ export class Renderer2 {
         this.nodes.delete(node);
     }
 
+    removeAllNodes() {
+        const nodes = [...this.nodes];
+        for (const node of nodes) {
+            this.removeNode(node);
+        }
+    }
+
     setCanvasSize(width: number, height: number) {
         this.gl.viewport(0, 0, width, height);
         this.canvas.width = width;
