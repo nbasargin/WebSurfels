@@ -145,7 +145,7 @@ export class LevelOfDetail2 {
         };
     }
 
-    private static getCellIndex(pos, min, size, resolution) {
+    public static getCellIndex(pos, min, size, resolution) {
         const index = Math.floor((pos - min) / size * resolution);
         return Math.max(0, Math.min(resolution - 1, index));
     }

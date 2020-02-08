@@ -32,7 +32,7 @@ export class InnerNode implements OctreeNode {
     }
 
     addPoint(data: PointCloudData, pointIndex: number): boolean {
-        const childIndex = this.getChildIndex(data.positions[pointIndex], data.positions[pointIndex + 1], data.positions[pointIndex + 2]);
+        const childIndex = this.getChildIndex(data.positions[pointIndex * 3], data.positions[pointIndex * 3 + 1], data.positions[pointIndex * 3 + 2]);
         const success = this.children[childIndex].addPoint(data, pointIndex);
 
         if (!success) {
