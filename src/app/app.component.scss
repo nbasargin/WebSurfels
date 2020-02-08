@@ -49,3 +49,15 @@ canvas {
   display: flex;
   align-items: center;
 }
+
+.message-overlay {
+  position: fixed;
+  top: 45vh;
+  left: 0;
+  right: 0;
+
+  color: white;
+  text-align: center;
+  font-family: monospace;
+  font-size: 40px;
+}

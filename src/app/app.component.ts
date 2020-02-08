@@ -12,7 +12,7 @@ import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
     selector: 'app-root',
     template: `
         <div class="fps-overlay">FPS: {{fps}}</div>
-        <div class="animation-overlay">
+        <div class="animation-overlay" *ngIf="dragonLod">
             <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
             animate
         </div>
@@ -36,6 +36,7 @@ import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
         </div>
+        <div class="message-overlay" *ngIf="overlayMessage">{{overlayMessage}}</div>
     `,
     styleUrls: ['app.component.scss']
 })
@@ -69,6 +70,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         renderedPoints: 0,
         octreeNodes: 0
     };
+
+    overlayMessage = 'Loading...';
 
     constructor() {
         this.cameraPos = vec3.fromValues(-2, 1.2, 2.5);
@@ -245,6 +248,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
             this.optimizedLod.push(data); // last level is the original
 
+            this.overlayMessage = '';
             this.showDragonLoD2(3);
         });
     }
