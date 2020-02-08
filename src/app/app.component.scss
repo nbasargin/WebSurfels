@@ -19,14 +19,14 @@ canvas {
 .fps-overlay {
   position: fixed;
   top: 10px;
-  left: 10px;
+  right: 10px;
   color: white;
   font-family: monospace;
 }
 
 .animation-overlay {
   position: fixed;
-  top: 10px;
+  top: 30px;
   right: 10px;
   color: white;
   font-family: monospace;
@@ -37,12 +37,15 @@ canvas {
 
 .lod-overlay {
   position: fixed;
-  bottom: 10px;
+  top: 10px;
   left: 10px;
   color: white;
   font-family: monospace;
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.5);
+}
 
+.lod-overlay-line {
   display: flex;
   align-items: center;
-
 }
