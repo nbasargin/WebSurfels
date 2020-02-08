@@ -13,7 +13,7 @@ import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
     template: `
         <div class="fps-overlay">FPS: {{fps}}</div>
         <div class="animation-overlay">
-            <input #animCheck type="checkbox" (change)="benchmarkRunning = animCheck.checked">
+            <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
             animate
         </div>
         <div class="lod-overlay" *ngIf="dragonLod">
@@ -56,7 +56,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private pressedKeys: Set<string>;
 
-    private benchmarkRunning = false;
+    private benchmarkRunning = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
