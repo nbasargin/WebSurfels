@@ -1,5 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { Bitfield } from '../octree/bitfield';
+import { NodeSubgrid } from '../octree/node-subgrid';
 import { LevelOfDetail2 } from './level-of-detail2';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
@@ -82,8 +83,78 @@ export class LeafNode implements OctreeNode {
         return true;
     }
 
-    computeLOD(): LodNode {
-        return undefined as any;
+    computeLOD(subgrid: NodeSubgrid): LodNode {
+        // todo: do more efficient conversion if node could have been split but is not
+        // in that case, every subcell is guaranteed to contain at most one point
+
+        const ni = this.nodeInfo;
+        if (subgrid.resolution !== ni.resolution) {
+            subgrid = new NodeSubgrid(ni.resolution);
+        } else {
+            subgrid.clear();
+        }
+
+        // sort all the points into subgrid
+        for (let i = 0; i < this.pointCount; i++) {
+            // based on position, determine cell
+            const px = LevelOfDetail2.getCellIndex(this.positions[i * 3], this.minX, ni.size, ni.resolution);
+            const py = LevelOfDetail2.getCellIndex(this.positions[i * 3 + 1], this.minY, ni.size, ni.resolution);
+            const pz = LevelOfDetail2.getCellIndex(this.positions[i * 3 + 2], this.minZ, ni.size, ni.resolution);
+            const subcellIndex = px + py * ni.resolution + (pz * ni.resolution ** 2);
+
+            if (px < 0 || py < 0 || pz < 0) {
+                console.log('invalid index', px, py, pz)
+            }
+            if (px >= ni.resolution || py >= ni.resolution || pz >= ni.resolution) {
+                console.log('invalid index', px, py, pz);
+            }
+
+            // put point into cell
+            const cell = subgrid.grid[subcellIndex];
+            cell.positions.push(this.positions[i * 3]);
+            cell.positions.push(this.positions[i * 3 + 1]);
+            cell.positions.push(this.positions[i * 3 + 2]);
+
+            cell.sizes.push(this.sizes[i]);
+
+            cell.colors.push(this.colors[i * 3]);
+            cell.colors.push(this.colors[i * 3 + 1]);
+            cell.colors.push(this.colors[i * 3 + 2]);
+
+            cell.normals.push(this.normals[i * 3]);
+            cell.normals.push(this.normals[i * 3 + 1]);
+            cell.normals.push(this.normals[i * 3 + 2]);
+
+            cell.weights.push(1);
+        }
+
+        // merge every subgrid cell
+        const mergedPos: Array<number> = [];
+        const mergedSizes: Array<number> = [];
+        const mergedColors: Array<number> = [];
+        const mergedNormals: Array<number> = [];
+        const mergedWeights: Array<number> = [];
+        for (const cell of subgrid.grid) {
+            if (cell.positions.length === 0) {
+                continue;
+            }
+            const {x, y, z, r, g, b, nx, ny, nz, size, weight} = LevelOfDetail2.subcellToPoint(cell);
+            mergedPos.push(x, y, z);
+            mergedSizes.push(size);
+            mergedColors.push(r, g, b);
+            mergedNormals.push(nx, ny, nz);
+            mergedWeights.push(weight);
+        }
+
+        return {
+            nodeInfo: ni,
+            positions: new Float32Array(mergedPos),
+            sizes: new Float32Array(mergedSizes),
+            colors: new Float32Array(mergedColors),
+            normals: new Float32Array(mergedNormals),
+            weights: new Float32Array(mergedWeights),
+            children: []
+        };
     }
 
     private doubleCapacity() {

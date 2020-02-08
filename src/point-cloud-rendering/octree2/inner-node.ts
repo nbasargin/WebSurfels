@@ -1,4 +1,5 @@
 import { PointCloudData } from '../data/point-cloud-data';
+import { NodeSubgrid } from '../octree/node-subgrid';
 import { LeafNode } from './leaf-node';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
@@ -50,7 +51,7 @@ export class InnerNode implements OctreeNode {
         return true;
     }
 
-    computeLOD(): LodNode {
+    computeLOD(subgrid: NodeSubgrid): LodNode {
         return undefined as any;
     }
 
