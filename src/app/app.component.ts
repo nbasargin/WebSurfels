@@ -233,7 +233,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     createDragonLod2(resolution: number, maxDepth: number) {
         const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.load().then(data => {
+        dragonLoader.dropboxLoad().then(data => {
             console.log('data loaded');
             this.displayInfo.totalPoints = data.positions.length / 3;
 
