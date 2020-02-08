@@ -51,8 +51,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private readonly cameraPos: vec3;
     private readonly viewDirection: vec3;
     private readonly up: vec3;
-    private angleX: number = 0;
-    private angleY: number = 0;
+    private angleX: number = Math.PI / 180 * -27;
+    private angleY: number = Math.PI / 180 * -22;
 
     private pressedKeys: Set<string>;
 
@@ -72,13 +72,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     constructor() {
         this.cameraPos = vec3.fromValues(-2, 1.2, 2.5);
-        this.viewDirection = vec3.fromValues(0.5, -0.5, -1);
+        this.viewDirection = vec3.create();
         this.up = vec3.fromValues(0, 1, 0);
         this.pressedKeys = new Set();
     }
 
     ngAfterViewInit(): void {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
+        this.updateView();
         //const instances = 64;
         //this.addDragons(instances, Math.min(20, instances));
         this.createDragonLod2(8, 10);
@@ -111,12 +112,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         const degreesPerPixel = -0.1;
         const radians = Math.PI / 180;
-        const maxVerticalAngle = 85;
-        vec3.set(this.viewDirection, 0, 0, -1);
         this.angleX += radians * e.movementX * degreesPerPixel;
         this.angleY += radians * e.movementY * degreesPerPixel;
-        this.angleY = Math.max(radians * -maxVerticalAngle, Math.min(radians * maxVerticalAngle, this.angleY));
+        this.updateView();
+    }
 
+    private updateView() {
+        vec3.set(this.viewDirection, 0, 0, -1);
+        const maxVerticalAngle = 85;
+        const radians = Math.PI / 180;
+        this.angleY = Math.max(radians * -maxVerticalAngle, Math.min(radians * maxVerticalAngle, this.angleY));
         vec3.rotateX(this.viewDirection, this.viewDirection, vec3.create(), this.angleY);
         vec3.rotateY(this.viewDirection, this.viewDirection, vec3.create(), this.angleX);
     }
