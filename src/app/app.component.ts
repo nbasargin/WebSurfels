@@ -4,10 +4,8 @@ import { AnimatedCamera } from '../point-cloud-rendering/benchmark/animated-came
 import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { Octree } from '../point-cloud-rendering/octree/octree';
-import { StaticOctreeNode } from '../point-cloud-rendering/octree/static-octree-node';
 import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
-import { RendererConstants } from '../point-cloud-rendering/renderer2/renderer-constants';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 
 @Component({
@@ -17,10 +15,6 @@ import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
         <div class="animation-overlay">
             <input #animCheck type="checkbox" (change)="benchmarkRunning = animCheck.checked">
             animate
-        </div>
-        <div class="lod-overlay" *ngIf="dragonOctree">
-            <input #lodSlider (input)="showDragonLoD(+lodSlider.value)" type="range" min="0" max="6" step="1" value="0">
-            LoD level: {{lodSlider.value}}
         </div>
         <div class="lod-overlay" *ngIf="dragonLod">
             <input #lodSlider2 (input)="showDragonLoD2(+lodSlider2.value)" type="range" min="0" max="6" step="1" value="0">
@@ -68,7 +62,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
         //const instances = 64;
         //this.addDragons(instances, Math.min(20, instances));
-        //this.createDragonLod(0, 10000, 10);
         this.createDragonLod2(64, 10);
 
         this.renderLoop(0);
@@ -221,15 +214,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    createDragonLod(lodLevel: number, pointLimitPerNode: number, maxDepth: number) {
-        const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.load().then(data => {
-            console.log('data loaded');
-            this.dragonOctree = new Octree(data, pointLimitPerNode, maxDepth, RendererConstants.POINT_SIZE);
-            this.showDragonLoD(lodLevel);
-        });
-    }
-
     showDragonLoD2(lodLevel: number) {
         this.renderer2.removeAllNodes();
         const stats = {
@@ -238,33 +222,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         };
         this.addNodesAtSpecificDepth2(this.dragonLod, lodLevel, stats);
         console.log(`LOD level ${lodLevel}: ${stats.nodes} nodes with ${stats.visiblePoints} points`);
-    }
-
-    showDragonLoD(lodLevel) {
-        const nodes = [...this.renderer2.nodes];
-        for (const node of nodes) {
-            this.renderer2.removeNode(node);
-        }
-        const stats = {
-            nodes: 0,
-            representedPoints: 0,
-            visiblePoints: 0
-        };
-        this.addNodesAtSpecificDepth(this.dragonOctree.root, lodLevel, stats);
-        console.log(`LOD level ${lodLevel}: ${stats.nodes} nodes represent ${stats.representedPoints} points with ${stats.visiblePoints} points`);
-    }
-
-    addNodesAtSpecificDepth(node: StaticOctreeNode, depth: number, stats: { nodes: number, representedPoints: number, visiblePoints: number }) {
-        if (depth <= 0 || node.children.length == 0) {
-            this.renderer2.addData(node.pointPositions, node.pointSizes, node.pointColors, node.pointNormals);
-            stats.nodes++;
-            stats.representedPoints += node.representedPointNumber;
-            stats.visiblePoints += node.pointPositions.length / 3;
-        } else {
-            for (const child of node.children) {
-                this.addNodesAtSpecificDepth(child, depth - 1, stats);
-            }
-        }
     }
 
     addNodesAtSpecificDepth2(node: LodNode, depth: number, stats) {
