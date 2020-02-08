@@ -15,6 +15,8 @@ export interface OctreeNode {
 
     debugHierarchy(): string;
 
+    getDepth(): number;
+
 }
 
 export interface OctreeNodeInfo {

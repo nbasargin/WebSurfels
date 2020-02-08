@@ -93,4 +93,13 @@ export class InnerNode implements OctreeNode {
     debugHierarchy(): string {
         return '[' + this.children.map(c => c.debugHierarchy()).join(', ') + ']';
     }
+
+    getDepth(): number {
+        let childDepth = 0;
+        for (const child of this.children) {
+            childDepth = Math.max(childDepth, child.getDepth());
+        }
+        return 1 + childDepth;
+    }
+
 }

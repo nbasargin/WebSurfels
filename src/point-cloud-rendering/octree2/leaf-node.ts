@@ -145,4 +145,8 @@ export class LeafNode implements OctreeNode {
         return this.pointCount + (this.maxDepth > 1 ? '+' : '');
     }
 
+    getDepth(): number {
+        return 1;
+    }
+
 }

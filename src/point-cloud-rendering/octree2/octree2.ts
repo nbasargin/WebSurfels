@@ -8,7 +8,7 @@ type BoundingBox = {minX: number, minY: number, minZ: number, maxX: number, maxY
 
 export class Octree2 {
 
-    private readonly root: OctreeNode;
+    readonly root: OctreeNode;
 
     boundingBox: BoundingBox;
 
