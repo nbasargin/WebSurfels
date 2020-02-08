@@ -57,7 +57,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private pressedKeys: Set<string>;
 
-    private benchmarkRunning = true;
+    benchmarkRunning = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
