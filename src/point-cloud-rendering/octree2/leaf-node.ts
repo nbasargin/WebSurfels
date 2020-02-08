@@ -14,7 +14,10 @@ import { OctreeNode, OctreeNodeInfo } from './octree-node';
  */
 export class LeafNode implements OctreeNode {
 
+    public static readonly SPLIT_THRESHOLD = 10000;
+
     private readonly occupied: Bitfield;
+    private splitNeeded: boolean = false;  // at least one cell has a collision (two or mor points inside)
     readonly minX: number;
     readonly minY: number;
     readonly minZ: number;
@@ -64,8 +67,10 @@ export class LeafNode implements OctreeNode {
             if (x < 0 || y < 0 || z < 0) {
                 console.log('invalid index', x, y, z)
             }
-
-            if (this.occupied.getBit(subCellIndex)) {
+            if (!this.splitNeeded && this.occupied.getBit(subCellIndex)) {
+                this.splitNeeded = true;
+            }
+            if (this.splitNeeded && this.pointCount > LeafNode.SPLIT_THRESHOLD) {
                 return false;
             }
             this.occupied.setBit(subCellIndex);
@@ -80,8 +85,20 @@ export class LeafNode implements OctreeNode {
     }
 
     computeLOD(subgrid: NodeSubgrid): LodNode {
-        // todo: do more efficient conversion if node could have been split but is not
-        // in that case, every subcell is guaranteed to contain at most one point
+        if (!this.splitNeeded || this.pointCount <= LeafNode.SPLIT_THRESHOLD) {
+            // not enough points or all points in different subcells --> no need to compute LOD
+            const weights = new Float32Array(this.pointCount);
+            weights.fill(1);
+            return {
+                nodeInfo: this.nodeInfo,
+                positions: this.positions.slice(0, this.pointCount * 3),
+                sizes: this.sizes.slice(0, this.pointCount),
+                colors: this.colors.slice(0, this.pointCount * 3),
+                normals: this.normals.slice(0, this.pointCount * 3),
+                weights: weights,
+                children: []
+            }
+        }
 
         const ni = this.nodeInfo;
         if (subgrid.resolution !== ni.resolution) {
