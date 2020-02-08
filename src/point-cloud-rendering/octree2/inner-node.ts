@@ -90,8 +90,12 @@ export class InnerNode implements OctreeNode {
         return dx + dy * 2 + dz * 4
     }
 
-    debugHierarchy(): string {
-        return '[' + this.children.map(c => c.debugHierarchy()).join(', ') + ']';
+    getNumberOfNodes(): number {
+        let childNodes = 0;
+        for (const child of this.children) {
+            childNodes += child.getNumberOfNodes();
+        }
+        return 1 + childNodes;
     }
 
     getDepth(): number {

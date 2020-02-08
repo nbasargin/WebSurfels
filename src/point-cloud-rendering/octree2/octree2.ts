@@ -9,8 +9,7 @@ type BoundingBox = {minX: number, minY: number, minZ: number, maxX: number, maxY
 export class Octree2 {
 
     readonly root: OctreeNode;
-
-    boundingBox: BoundingBox;
+    readonly boundingBox: BoundingBox;
 
     constructor(data: PointCloudData, public readonly resolution: number, public readonly maxDepth: number) {
         this.boundingBox = this.getBoundingBox(data.positions);
@@ -29,7 +28,7 @@ export class Octree2 {
         for (let i = 0; i < data.positions.length / 3; i++) {
             this.root.addPoint(data, i);
         }
-        console.log('octree built', this.root)
+        console.log(`Created octree with ${this.root.getNumberOfNodes()} nodes and total depth of ${this.root.getDepth()}.`);
     }
 
     createLOD(): LodNode {
@@ -51,9 +50,5 @@ export class Octree2 {
         }
         return {minX, minY, minZ, maxX, maxY, maxZ}
     }
-
-
-
-
 
 }

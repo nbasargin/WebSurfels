@@ -14,10 +14,9 @@ import { OctreeNode, OctreeNodeInfo } from './octree-node';
  */
 export class LeafNode implements OctreeNode {
 
-    public static readonly SPLIT_THRESHOLD = 10000;
-
     private readonly occupied: Bitfield;
     private splitNeeded: boolean = false;  // at least one cell has a collision (two or mor points inside)
+    private splitThreshold: number;
     readonly minX: number;
     readonly minY: number;
     readonly minZ: number;
@@ -39,9 +38,11 @@ export class LeafNode implements OctreeNode {
             this.occupied = new Bitfield(nodeInfo.resolution ** 3);
         }
 
-        this.minX = this.nodeInfo.centerX - this.nodeInfo.size / 2;
-        this.minY = this.nodeInfo.centerY - this.nodeInfo.size / 2;
-        this.minZ = this.nodeInfo.centerZ - this.nodeInfo.size / 2;
+        this.splitThreshold = 4 * nodeInfo.resolution ** 2;
+
+        this.minX = nodeInfo.centerX - nodeInfo.size / 2;
+        this.minY = nodeInfo.centerY - nodeInfo.size / 2;
+        this.minZ = nodeInfo.centerZ - nodeInfo.size / 2;
 
         this.capacity = nodeInfo.resolution; // initial capacity
 
@@ -70,7 +71,7 @@ export class LeafNode implements OctreeNode {
             if (!this.splitNeeded && this.occupied.getBit(subCellIndex)) {
                 this.splitNeeded = true;
             }
-            if (this.splitNeeded && this.pointCount > LeafNode.SPLIT_THRESHOLD) {
+            if (this.splitNeeded && this.pointCount > this.splitThreshold) {
                 return false;
             }
             this.occupied.setBit(subCellIndex);
@@ -85,7 +86,7 @@ export class LeafNode implements OctreeNode {
     }
 
     computeLOD(subgrid: NodeSubgrid): LodNode {
-        if (!this.splitNeeded || this.pointCount <= LeafNode.SPLIT_THRESHOLD) {
+        if (!this.splitNeeded || this.pointCount <= this.splitThreshold) {
             // not enough points or all points in different subcells --> no need to compute LOD
             const weights = new Float32Array(this.pointCount);
             weights.fill(1);
@@ -158,8 +159,8 @@ export class LeafNode implements OctreeNode {
         this.sizes[toIndex] = fromData.sizes[fromIndex];
     }
 
-    debugHierarchy(): string {
-        return this.pointCount + (this.maxDepth > 1 ? '+' : '');
+    getNumberOfNodes(): number {
+        return 1;
     }
 
     getDepth(): number {

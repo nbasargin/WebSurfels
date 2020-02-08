@@ -13,7 +13,7 @@ export interface OctreeNode {
 
     computeLOD(subgrid: NodeSubgrid): LodNode;
 
-    debugHierarchy(): string;
+    getNumberOfNodes(): number;
 
     getDepth(): number;
 
