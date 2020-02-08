@@ -57,7 +57,7 @@ export class NodeSubgrid {
             if (cell.positions.length === 0) {
                 continue;
             }
-            const {x, y, z, r, g, b, nx, ny, nz, size, weight} = this.mergePoints(cell);
+            const {x, y, z, r, g, b, nx, ny, nz, size, weight} = this.mergePoints(cell, ni);
             mergedPos.push(x, y, z);
             mergedSizes.push(size);
             mergedColors.push(r, g, b);
@@ -92,7 +92,7 @@ export class NodeSubgrid {
     /**
      * Merge multiple points into one
      */
-    public mergePoints({positions, sizes, colors, normals, weights}: SubgridCell) {
+    public mergePoints({positions, sizes, colors, normals, weights}: SubgridCell, ni: OctreeNodeInfo) {
 
         const numPoints = positions.length / 3;
         let x = 0, y = 0, z = 0;
@@ -144,7 +144,8 @@ export class NodeSubgrid {
             maxRadius = Math.max(maxRadius, radius);
         }
 
-        const size = Math.min(constAreaSize, maxRadius); // maxRadius * Math.sqrt(2)
+        const cellSize = ni.size / ni.resolution * Math.sqrt(2);
+        const size = Math.min(constAreaSize, maxRadius * Math.sqrt(2), cellSize);
 
         return {
             x, y, z,
