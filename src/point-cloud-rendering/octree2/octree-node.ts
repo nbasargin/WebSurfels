@@ -1,5 +1,5 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { NodeSubgrid } from '../octree/node-subgrid';
+import { NodeSubgrid } from './node-subgrid';
 import { LodNode } from './lod-node';
 
 /**

@@ -1,5 +1,5 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { NodeSubgrid } from '../octree/node-subgrid';
+import { NodeSubgrid } from './node-subgrid';
 import { InnerNode } from './inner-node';
 import { LodNode } from './lod-node';
 import { OctreeNode } from './octree-node';
@@ -12,7 +12,7 @@ export class Octree2 {
     readonly boundingBox: BoundingBox;
 
     constructor(data: PointCloudData, public readonly resolution: number, public readonly maxDepth: number) {
-        this.boundingBox = this.getBoundingBox(data.positions);
+        this.boundingBox = Octree2.getBoundingBox(data.positions);
         const min = Math.min(this.boundingBox.minX, this.boundingBox.minY, this.boundingBox.minZ);
         const max = Math.max(this.boundingBox.maxX, this.boundingBox.maxY, this.boundingBox.maxZ);
         const size = max - min;
@@ -35,7 +35,7 @@ export class Octree2 {
         return this.root.computeLOD(new NodeSubgrid(this.resolution));
     }
 
-    private getBoundingBox(positions: Float32Array): BoundingBox {
+    private static getBoundingBox(positions: Float32Array): BoundingBox {
         let minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, minZ = Number.MAX_VALUE;
         let maxX = Number.MIN_VALUE, maxY = Number.MIN_VALUE, maxZ = Number.MIN_VALUE;
 

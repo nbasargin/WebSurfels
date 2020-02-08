@@ -1,7 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { NodeSubgrid } from '../octree/node-subgrid';
+import { NodeSubgrid } from './node-subgrid';
 import { LeafNode } from './leaf-node';
-import { LevelOfDetail2 } from './level-of-detail2';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
 
@@ -70,9 +69,9 @@ export class InnerNode implements OctreeNode {
         for (const lod of childLODs) {
             for (let i = 0; i < lod.positions.length / 3; i++) {
                 // based on position, determine cell
-                const px = LevelOfDetail2.getCellIndex(lod.positions[i * 3], minX, ni.size, ni.resolution);
-                const py = LevelOfDetail2.getCellIndex(lod.positions[i * 3 + 1], minY, ni.size, ni.resolution);
-                const pz = LevelOfDetail2.getCellIndex(lod.positions[i * 3 + 2], minZ, ni.size, ni.resolution);
+                const px = NodeSubgrid.getCellIndex(lod.positions[i * 3], minX, ni.size, ni.resolution);
+                const py = NodeSubgrid.getCellIndex(lod.positions[i * 3 + 1], minY, ni.size, ni.resolution);
+                const pz = NodeSubgrid.getCellIndex(lod.positions[i * 3 + 2], minZ, ni.size, ni.resolution);
                 const subcellIndex = px + py * ni.resolution + (pz * ni.resolution ** 2);
                 const weight = lod.weights[i];
                 // put point into cell

@@ -1,7 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { Bitfield } from '../octree/bitfield';
-import { NodeSubgrid } from '../octree/node-subgrid';
-import { LevelOfDetail2 } from './level-of-detail2';
+import { Bitfield } from './bitfield';
+import { NodeSubgrid } from './node-subgrid';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
 
@@ -11,6 +10,7 @@ import { OctreeNode, OctreeNodeInfo } from './octree-node';
  * If depth limit is not reached, the leaf can be expanded into an inner node.
  * Expansion is needed when more than one point falls into the same sub-cell.
  * A bit field tracks what sub-cells are already occupied.
+ * Nodes can only expand when a certain minimal number of points is collected.
  */
 export class LeafNode implements OctreeNode {
 
@@ -57,9 +57,9 @@ export class LeafNode implements OctreeNode {
             // node is splittable
             const r = this.nodeInfo.resolution;
 
-            const x = LevelOfDetail2.getCellIndex(pointIndex * 3, this.minX, this.nodeInfo.size, r);
-            const y = LevelOfDetail2.getCellIndex(pointIndex * 3 + 1, this.minY, this.nodeInfo.size, r);
-            const z = LevelOfDetail2.getCellIndex(pointIndex * 3 + 2, this.minZ, this.nodeInfo.size, r);
+            const x = NodeSubgrid.getCellIndex(pointIndex * 3, this.minX, this.nodeInfo.size, r);
+            const y = NodeSubgrid.getCellIndex(pointIndex * 3 + 1, this.minY, this.nodeInfo.size, r);
+            const z = NodeSubgrid.getCellIndex(pointIndex * 3 + 2, this.minZ, this.nodeInfo.size, r);
             const subCellIndex = x + y * r + z * r * r;
 
             if (x >= r || y >= r || z >= r) {
@@ -111,9 +111,9 @@ export class LeafNode implements OctreeNode {
         // sort all the points into subgrid
         for (let i = 0; i < this.pointCount; i++) {
             // based on position, determine cell
-            const px = LevelOfDetail2.getCellIndex(this.positions[i * 3], this.minX, ni.size, ni.resolution);
-            const py = LevelOfDetail2.getCellIndex(this.positions[i * 3 + 1], this.minY, ni.size, ni.resolution);
-            const pz = LevelOfDetail2.getCellIndex(this.positions[i * 3 + 2], this.minZ, ni.size, ni.resolution);
+            const px = NodeSubgrid.getCellIndex(this.positions[i * 3], this.minX, ni.size, ni.resolution);
+            const py = NodeSubgrid.getCellIndex(this.positions[i * 3 + 1], this.minY, ni.size, ni.resolution);
+            const pz = NodeSubgrid.getCellIndex(this.positions[i * 3 + 2], this.minZ, ni.size, ni.resolution);
             const subcellIndex = px + py * ni.resolution + (pz * ni.resolution ** 2);
 
             if (px < 0 || py < 0 || pz < 0) {

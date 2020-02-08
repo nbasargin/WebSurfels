@@ -3,7 +3,6 @@ import { vec3 } from 'gl-matrix';
 import { AnimatedCamera } from '../point-cloud-rendering/benchmark/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
-import { Octree } from '../point-cloud-rendering/octree/octree';
 import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
@@ -48,7 +47,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
-    dragonOctree: Octree;
     dragonLod: LodNode;
 
     constructor() {
