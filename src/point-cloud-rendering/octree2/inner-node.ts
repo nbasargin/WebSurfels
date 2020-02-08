@@ -53,8 +53,7 @@ export class InnerNode implements OctreeNode {
 
     computeLOD(subgrid: NodeSubgrid): LodNode {
 
-        // todo filter empty
-        const childLODs = this.children.map(child => child.computeLOD(subgrid));
+        const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.positions.length > 0);
 
         const ni = this.nodeInfo;
         if (subgrid.resolution !== ni.resolution) {
