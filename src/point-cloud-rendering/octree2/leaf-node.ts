@@ -127,7 +127,7 @@ export class LeafNode implements OctreeNode {
             subgrid.addToCell(subcellIndex, this, i, 1);
         }
 
-        return subgrid.mergeByCell(ni);
+        return subgrid.mergeByCell(ni, []);
     }
 
     private doubleCapacity() {

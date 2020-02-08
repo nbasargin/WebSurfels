@@ -41,7 +41,7 @@ export class NodeSubgrid {
         cell.weights.push(weight);
     }
 
-    mergeByCell(ni: OctreeNodeInfo): LodNode {
+    mergeByCell(ni: OctreeNodeInfo, children: Array<LodNode>): LodNode {
         // merge every subgrid cell
         const mergedPos: Array<number> = [];
         const mergedSizes: Array<number> = [];
@@ -67,7 +67,7 @@ export class NodeSubgrid {
             colors: new Float32Array(mergedColors),
             normals: new Float32Array(mergedNormals),
             weights: new Float32Array(mergedWeights),
-            children: []
+            children: children
         };
     }
 

@@ -80,7 +80,7 @@ export class InnerNode implements OctreeNode {
             }
         }
 
-        return subgrid.mergeByCell(ni);
+        return subgrid.mergeByCell(ni, childLODs);
     }
 
     private getChildIndex(x: number, y: number, z: number) {

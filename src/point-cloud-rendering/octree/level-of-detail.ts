@@ -28,13 +28,12 @@ export class LevelOfDetail {
             const index = px + py * spacing + pz * spacing ** 2;
 
             // put point into cell
-            const cell = LevelOfDetail.subgrid.grid[index];
             LevelOfDetail.subgrid.addToCell(index, data, i, node.pointWeights[i]);
         }
 
         // go over all (occupied) cells, merge points in them into one
 
-        return LevelOfDetail.subgrid.mergeByCell(null as any);
+        return LevelOfDetail.subgrid.mergeByCell(null as any, []);
 
     }
 
