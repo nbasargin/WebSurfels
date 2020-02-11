@@ -32,7 +32,7 @@ export class PointCloudFactory {
                     continue; // point does not belong to a plane
                 }
 
-                const phi = (w - x - 1) / (w - 1) * 2 * Math.PI; // + Math.PI/2
+                const phi = (w - x - 1) / (w - 1) * 2 * Math.PI + Math.PI / 2;
                 const theta = (h - y - 1) / (h - 1) * Math.PI;
 
                 const px = Math.sin(theta) * Math.cos(phi);
