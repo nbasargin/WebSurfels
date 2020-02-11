@@ -7,6 +7,7 @@ import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dra
 import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
+import { ViewDirection } from '../point-cloud-rendering/renderer2/view-direction';
 import { DepthData } from '../street-view/depth-data';
 import { PanoramaLoader } from '../street-view/panorama-loader';
 import { PointCloudFactory } from '../street-view/point-cloud-factory';
@@ -53,8 +54,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private renderer2: Renderer2;
 
     private readonly cameraPos: vec3;
-    private readonly viewDirection: vec3;
-    private readonly up: vec3;
+    private readonly view: ViewDirection;
     private angleX: number = Math.PI / 180 * -27;
     private angleY: number = Math.PI / 180 * -22;
 
@@ -78,14 +78,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     constructor() {
         this.cameraPos = vec3.fromValues(-2, 1.2, 2.5);
-        this.viewDirection = vec3.create();
-        this.up = vec3.fromValues(0, 1, 0);
+        this.view = new ViewDirection(true);
         this.pressedKeys = new Set();
     }
 
     ngAfterViewInit(): void {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
-        this.updateView();
+        this.view.update(this.angleX, this.angleY);
         //const instances = 64;
         //this.addDragons(instances, Math.min(20, instances));
         //this.createDragonLod2(8, 10);
@@ -119,18 +118,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         const degreesPerPixel = -0.1;
         const radians = Math.PI / 180;
+        const maxVerticalAngle = 85;
         this.angleX += radians * e.movementX * degreesPerPixel;
         this.angleY += radians * e.movementY * degreesPerPixel;
-        this.updateView();
-    }
-
-    private updateView() {
-        vec3.set(this.viewDirection, 0, 0, -1);
-        const maxVerticalAngle = 85;
-        const radians = Math.PI / 180;
         this.angleY = Math.max(radians * -maxVerticalAngle, Math.min(radians * maxVerticalAngle, this.angleY));
-        vec3.rotateX(this.viewDirection, this.viewDirection, vec3.create(), this.angleY);
-        vec3.rotateY(this.viewDirection, this.viewDirection, vec3.create(), this.angleX);
+        this.view.update(this.angleX, this.angleY);
     }
 
     @HostListener('window:blur')
@@ -165,10 +157,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     checkCamera() {
         const movementSpeed = 0.05;
         const right = vec3.create();
-        vec3.cross(right, this.viewDirection, this.up);
+        vec3.cross(right, this.view.direction, this.view.up);
         vec3.normalize(right, right);
         const front = vec3.create();
-        vec3.normalize(front, this.viewDirection);
+        vec3.normalize(front, this.view.direction);
 
         if (this.pressedKeys.has('KeyW')) {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, front, movementSpeed);
@@ -183,8 +175,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
         }
 
-        const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.viewDirection);
-        this.renderer2.setCameraOrientation(this.cameraPos, viewTarget, this.up);
+        const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.view.direction);
+        this.renderer2.setCameraOrientation(this.cameraPos, viewTarget, this.view.up);
     }
 
     checkCanvasSize() {
