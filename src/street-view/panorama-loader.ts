@@ -1,4 +1,4 @@
-export interface StreetViewData {
+export interface StreetViewResponse {
     Data: {
         image_width: string,
         image_height: string,
@@ -25,13 +25,15 @@ export interface StreetViewData {
 
 export class PanoramaLoader {
 
-    public static async loadById(panoID: string): Promise<StreetViewData> {
+    // ID like 'GTKQkr3G-rRZQisDUMzUtg'
+    public static async loadById(panoID: string): Promise<StreetViewResponse> {
         const url = `http://maps.google.com/cbk?output=json&panoid=${panoID}&dm=1`;
         const response = await fetch(url);
         return response.json();
     }
 
-    public static async loadByLocation(lat: number, lng: number): Promise<StreetViewData> {
+    // Location like 40.762475, -73.974363
+    public static async loadByLocation(lat: number, lng: number): Promise<StreetViewResponse> {
         const url = `http://maps.google.com/cbk?output=json&ll=${lat},${lng}&dm=1`;
         const response = await fetch(url);
         return response.json();
