@@ -16,14 +16,18 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
     selector: 'app-root',
     template: `
         <div class="fps-overlay">FPS: {{fps}}</div>
-        <div class="animation-overlay">
-            <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
+        <div class="animation-overlay flex-line">
+            <input #animCheck type="checkbox" [checked]="false" (change)="benchmarkRunning = animCheck.checked">
             animate
         </div>
+        <div class="info-overlay">
+            movement speed: {{movementSpeed.toFixed(2)}}
+        </div>
         <div class="lod-overlay" *ngIf="dragonLod">
-            <div class="lod-overlay-line">
+            <div class="flex-line">
                 LoD level:
-                <input #lodSlider2 (input)="showDragonLoD2(+lodSlider2.value)" type="range" min="0" max="{{optimizedLod.length - 1}}" step="1" value="3">
+                <input #lodSlider2 (input)="showDragonLoD2(+lodSlider2.value)" type="range" min="0"
+                       max="{{optimizedLod.length - 1}}" step="1" value="3">
                 {{+lodSlider2.value === optimizedLod.length - 1 ? 'original data' : lodSlider2.value}}
             </div>
             <div>
@@ -34,7 +38,7 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
             </div>
             <div>
                 LoD Octree nodes: {{displayInfo.octreeNodes}}
-                <br> (geometry merged into one node)                
+                <br> (geometry merged into one node)
             </div>
         </div>
         <div #wrapper class="full-size">
@@ -57,10 +61,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private readonly view: ViewDirection;
     private angleX: number = Math.PI / 180 * -27;
     private angleY: number = Math.PI / 180 * -22;
+    private movementSpeed = 1;
 
     private pressedKeys: Set<string>;
 
-    benchmarkRunning = true;
+    benchmarkRunning = false;
     private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
@@ -130,6 +135,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.pressedKeys.clear();
     }
 
+    @HostListener('window:wheel', ['$event'])
+    mousewheel(e: WheelEvent) {
+        const factor = 1.1;
+        if (e.deltaY < 0) {
+            this.movementSpeed *= factor;
+        } else {
+            this.movementSpeed /= factor;
+        }
+        this.movementSpeed = Math.max(0.01, Math.min(100, this.movementSpeed));
+    }
+
     renderLoop(timestamp) {
         this.updateFPS(timestamp);
 
@@ -155,7 +171,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     checkCamera() {
-        const movementSpeed = 0.05;
+        const movementSpeed = 0.05 * this.movementSpeed;
         const right = vec3.create();
         vec3.cross(right, this.view.direction, this.view.up);
         vec3.normalize(right, right);

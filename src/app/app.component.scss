@@ -30,9 +30,14 @@ canvas {
   right: 10px;
   color: white;
   font-family: monospace;
+}
 
-  display: flex;
-  align-items: center;
+.info-overlay {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  color: white;
+  font-family: monospace;
 }
 
 .lod-overlay {
@@ -45,7 +50,7 @@ canvas {
   background: rgba(0, 0, 0, 0.5);
 }
 
-.lod-overlay-line {
+.flex-line {
   display: flex;
   align-items: center;
 }
