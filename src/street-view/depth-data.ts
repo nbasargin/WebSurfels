@@ -11,6 +11,7 @@ export interface DepthDataHeader {
 export class DepthData {
 
     public readonly header: DepthDataHeader;
+    // todo: use low-level typed arrays, no need to copy data
     public readonly indices: Array<number>;
     public readonly planes: Array<{ normal: [number, number, number], distance: number }>;
 

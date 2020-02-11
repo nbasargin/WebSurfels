@@ -7,12 +7,15 @@ import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dra
 import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
+import { DepthData } from '../street-view/depth-data';
+import { PanoramaLoader } from '../street-view/panorama-loader';
+import { PointCloudFactory } from '../street-view/point-cloud-factory';
 
 @Component({
     selector: 'app-root',
     template: `
         <div class="fps-overlay">FPS: {{fps}}</div>
-        <div class="animation-overlay" *ngIf="dragonLod">
+        <div class="animation-overlay">
             <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
             animate
         </div>
@@ -71,7 +74,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         octreeNodes: 0
     };
 
-    overlayMessage = 'Loading...';
+    overlayMessage = '';
 
     constructor() {
         this.cameraPos = vec3.fromValues(-2, 1.2, 2.5);
@@ -85,7 +88,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.updateView();
         //const instances = 64;
         //this.addDragons(instances, Math.min(20, instances));
-        this.createDragonLod2(8, 10);
+        //this.createDragonLod2(8, 10);
+        this.testStreetView();
 
         this.renderLoop(0);
     }
@@ -198,6 +202,28 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
+    testStreetView() {
+
+        // panorama loader
+
+        const factory = new PointCloudFactory();
+
+        Promise.all([
+            PanoramaLoader.loadById('GTKQkr3G-rRZQisDUMzUtg'),
+            PanoramaLoader.loadImage('GTKQkr3G-rRZQisDUMzUtg', 0, 0, 0)
+        ]).then(([pano, bitmap]) => {
+            const depthData = new DepthData(pano.model.depth_map);
+
+            console.log('depth data', depthData);
+            console.log('color data bitmap', bitmap);
+
+            const pointCloud = factory.constructPointCloud(bitmap, depthData);
+
+            this.renderer2.addData(pointCloud.positions, pointCloud.sizes, pointCloud.colors, pointCloud.normals);
+
+        });
+    }
+
     addDragons(instances: number, keepEveryNthPoint: number) {
 
         const dragonLoader = new StanfordDragonLoader();
@@ -232,6 +258,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     createDragonLod2(resolution: number, maxDepth: number) {
+        this.overlayMessage = 'Loading...';
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.loadDropbox().then(data => {
             console.log('data loaded');
