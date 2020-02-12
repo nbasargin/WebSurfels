@@ -1,5 +1,6 @@
 import { PLYLoader } from '@loaders.gl/ply';
 import { load, parse } from '@loaders.gl/core';
+import { Timing } from '../benchmark/timing';
 import { RendererConstants } from '../renderer2/renderer-constants';
 import { PointCloudData } from './point-cloud-data';
 
@@ -55,6 +56,24 @@ export class StanfordDragonLoader {
             data.positions = StanfordDragonLoader.dropPoints(data.positions, keepEveryNth);
             data.colors = StanfordDragonLoader.dropPoints(data.colors, keepEveryNth);
             data.normals = StanfordDragonLoader.dropPoints(data.normals, keepEveryNth);
+        }
+        return data;
+    }
+
+    async loadCastle(): Promise<PointCloudData> {
+        console.log(Timing.measure(), 'START loading');
+        const rawData = await load('assets/point-clouds/3drm_neuschwanstein.ply', PLYLoader);
+        console.log(Timing.measure(), 'START parsing data');
+        const sizes = new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3));
+        sizes.fill(RendererConstants.POINT_SIZE * 1.5);
+        const data: PointCloudData = {
+            positions: rawData.attributes.POSITION.value,
+            sizes: sizes,
+            normals: rawData.attributes.NORMAL.value,
+            colors: new Float32Array(rawData.attributes.COLOR_0.value),
+        };
+        for (let i = 0; i < data.colors.length; i++) {
+            data.colors[i] /= 255.0;
         }
         return data;
     }

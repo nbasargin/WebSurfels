@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChil
 import { vec3 } from 'gl-matrix';
 import { AnimatedCamera } from '../point-cloud-rendering/benchmark/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
+import { Timing } from '../point-cloud-rendering/benchmark/timing';
 import { PointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
@@ -23,12 +24,12 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
         </div>
-        <div class="lod-overlay" *ngIf="dragonLod">
+        <div class="lod-overlay" *ngIf="lodTree">
             <div class="flex-line">
                 LoD level:
-                <input #lodSlider2 (input)="showDragonLoD2(+lodSlider2.value)" type="range" min="0"
+                <input #lodSlider2 (input)="showLodLevel(+lodSlider2.value)" type="range" min="0"
                        max="{{optimizedLod.length - 1}}" step="1" value="3">
-                {{+lodSlider2.value === optimizedLod.length - 1 ? 'original data' : lodSlider2.value}}
+                {{+lodSlider2.value === treeDepth ? 'original data' : lodSlider2.value}}
             </div>
             <div>
                 Total points: {{displayInfo.totalPoints}}
@@ -70,7 +71,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
-    dragonLod: LodNode;
+    lodTree: LodNode;
+    treeDepth: number;
     optimizedLod: Array<PointCloudData>;
 
     displayInfo = {
@@ -83,7 +85,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     constructor() {
         this.cameraPos = vec3.fromValues(-2, 1.2, 2.5);
-        this.view = new ViewDirection(true);
+        this.view = new ViewDirection(false);
         this.pressedKeys = new Set();
     }
 
@@ -92,8 +94,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.view.update(this.angleX, this.angleY);
         //const instances = 64;
         //this.addDragons(instances, Math.min(20, instances));
-        //this.createDragonLod2(8, 10);
-        this.testStreetView();
+        this.createDragonLod2(32, 12);
+        //this.testStreetView();
+        //this.castleTest(32, 12);
 
         this.renderLoop(0);
     }
@@ -273,24 +276,55 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.displayInfo.totalPoints = data.positions.length / 3;
 
             const octree = new Octree2(data, resolution, maxDepth);
-            this.dragonLod = octree.createLOD();
+            this.treeDepth = octree.root.getDepth();
+
+            this.lodTree = octree.createLOD();
             this.optimizedLod = [];
 
             for (let level = 0; level < octree.root.getDepth(); level++) {
-                const nodes = this.getNodesAtSpecificDepth(this.dragonLod, level);
+                const nodes = this.getNodesAtSpecificDepth(this.lodTree, level);
                 this.optimizedLod.push(this.mergeGeometry(nodes));
             }
 
             this.optimizedLod.push(data); // last level is the original
 
             this.overlayMessage = '';
-            this.showDragonLoD2(3);
+            this.showLodLevel(0);
         });
     }
 
-    showDragonLoD2(lodLevel: number) {
+    castleTest(resolution: number, maxDepth: number) {
+        this.overlayMessage = 'Loading...';
+        const dragonLoader = new StanfordDragonLoader();
+        dragonLoader.loadCastle().then(data => {
+            console.log(Timing.measure(), 'LOADED data');
+            this.displayInfo.totalPoints = data.positions.length / 3;
+
+            const octree = new Octree2(data, resolution, maxDepth);
+            this.treeDepth = octree.root.getDepth();
+
+            console.log(Timing.measure(), 'octree created');
+
+            this.lodTree = octree.createLOD();
+
+            console.log(Timing.measure(), 'LOD created');
+            this.optimizedLod = [];
+
+            for (let level = 0; level < 7; level++) {
+                const nodes = this.getNodesAtSpecificDepth(this.lodTree, level);
+                this.optimizedLod.push(this.mergeGeometry(nodes));
+            }
+
+            console.log(Timing.measure(), 'LOD optimized');
+
+            this.overlayMessage = '';
+            this.showLodLevel(0);
+        });
+    }
+
+    showLodLevel(lodLevel: number) {
         this.renderer2.removeAllNodes();
-        const nodes = this.getNodesAtSpecificDepth(this.dragonLod, lodLevel);
+        const nodes = this.getNodesAtSpecificDepth(this.lodTree, lodLevel);
         this.displayInfo.octreeNodes = nodes.length;
         for (const node of nodes) {
             // this.renderer2.addData(node.positions, node.sizes, node.colors, node.normals);
