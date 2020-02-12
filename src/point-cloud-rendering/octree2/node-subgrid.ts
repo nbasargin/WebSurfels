@@ -144,7 +144,7 @@ export class NodeSubgrid {
             maxRadius = Math.max(maxRadius, radius);
         }
 
-        const cellSize = ni.size / ni.resolution * Math.sqrt(2);
+        const cellSize = ni.size / ni.resolution * Math.sqrt(3);
         const size = Math.min(constAreaSize, maxRadius * Math.sqrt(2), cellSize);
 
         return {
