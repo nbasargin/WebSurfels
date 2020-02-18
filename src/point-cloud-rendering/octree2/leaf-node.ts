@@ -86,48 +86,18 @@ export class LeafNode implements OctreeNode {
     }
 
     computeLOD(subgrid: NodeSubgrid): LodNode {
-        if (!this.splitNeeded || this.pointCount <= this.splitThreshold) {
-            // not enough points or all points in different subcells --> no need to compute LOD
-            const weights = new Float32Array(this.pointCount);
-            weights.fill(1);
-            return {
-                nodeInfo: this.nodeInfo,
-                positions: this.positions.slice(0, this.pointCount * 3),
-                sizes: this.sizes.slice(0, this.pointCount),
-                colors: this.colors.slice(0, this.pointCount * 3),
-                normals: this.normals.slice(0, this.pointCount * 3),
-                weights: weights,
-                children: []
-            }
+        // no need to compute LOD (leaf nodes have all points in different subcells or there are not enough points)
+        const weights = new Float32Array(this.pointCount);
+        weights.fill(1);
+        return {
+            nodeInfo: this.nodeInfo,
+            positions: this.positions.slice(0, this.pointCount * 3),
+            sizes: this.sizes.slice(0, this.pointCount),
+            colors: this.colors.slice(0, this.pointCount * 3),
+            normals: this.normals.slice(0, this.pointCount * 3),
+            weights: weights,
+            children: []
         }
-
-        const ni = this.nodeInfo;
-        if (subgrid.resolution !== ni.resolution) {
-            subgrid = new NodeSubgrid(ni.resolution);
-        } else {
-            subgrid.clear();
-        }
-
-        // sort all the points into subgrid
-        for (let i = 0; i < this.pointCount; i++) {
-            // based on position, determine cell
-            const px = NodeSubgrid.getCellIndex(this.positions[i * 3], this.minX, ni.size, ni.resolution);
-            const py = NodeSubgrid.getCellIndex(this.positions[i * 3 + 1], this.minY, ni.size, ni.resolution);
-            const pz = NodeSubgrid.getCellIndex(this.positions[i * 3 + 2], this.minZ, ni.size, ni.resolution);
-            const subcellIndex = px + py * ni.resolution + (pz * ni.resolution ** 2);
-
-            if (px < 0 || py < 0 || pz < 0) {
-                console.log('invalid index', px, py, pz)
-            }
-            if (px >= ni.resolution || py >= ni.resolution || pz >= ni.resolution) {
-                console.log('invalid index', px, py, pz);
-            }
-
-            // put point into cell
-            subgrid.addToCell(subcellIndex, this, i, 1);
-        }
-
-        return subgrid.mergeByCell(ni, []);
     }
 
     private doubleCapacity() {
