@@ -93,13 +93,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     ngAfterViewInit(): void {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
         this.view.update(this.angleX, this.angleY);
-        //const instances = 64;
-        //this.addDragons(instances, Math.min(20, instances));
-        this.createDragonLod2(32, 12);
-        //this.testStreetView();
-        //this.castleTest(32, 12);
+        setTimeout(() => {
+            //const instances = 64;
+            //this.addDragons(instances, Math.min(20, instances));
+            this.createDragonLod2(32, 12);
+            //this.testStreetView();
+            //this.castleTest(32, 12);
 
-        this.renderLoop(0);
+            this.renderLoop(0);
+        }, 0);
     }
 
     ngOnDestroy(): void {
