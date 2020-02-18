@@ -2,10 +2,10 @@
  * Level of detail node optimized for rendering.
  * Does not allow adding new points.
  */
-import { PointCloudData } from '../data/point-cloud-data';
+import { WeightedPointCloudData } from '../data/point-cloud-data';
 import { OctreeNodeInfo } from './octree-node';
 
-export interface LodNode extends PointCloudData {
+export interface LodNode extends WeightedPointCloudData {
 
     nodeInfo: OctreeNodeInfo;
 
