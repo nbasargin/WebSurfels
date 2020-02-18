@@ -1,9 +1,9 @@
-import { PointCloudData } from '../data/point-cloud-data';
+import { WeightedPointCloudData } from '../data/point-cloud-data';
 import { LodNode } from '../octree2/lod-node';
 
 export class Geometry {
 
-    public static mergeLoD(nodes: Array<LodNode>): PointCloudData & {weights: Float32Array} {
+    public static mergeLoD(nodes: Array<LodNode>): WeightedPointCloudData {
         let points = 0;
         for (const node of nodes) {
             points += node.positions.length / 3;
