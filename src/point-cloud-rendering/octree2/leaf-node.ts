@@ -3,6 +3,7 @@ import { Bitfield } from './bitfield';
 import { NodeSubgrid } from './node-subgrid';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
+import { Subgrid } from './subgrid';
 
 /**
  * A leaf node that stores points.
@@ -85,7 +86,7 @@ export class LeafNode implements OctreeNode {
         return true;
     }
 
-    computeLOD(subgrid: NodeSubgrid): LodNode {
+    computeLOD(subgrid: Subgrid): LodNode {
         // no need to compute LOD (leaf nodes have all points in different subcells or there are not enough points)
         const weights = new Float32Array(this.pointCount);
         weights.fill(1);

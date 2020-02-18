@@ -1,8 +1,8 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { NodeSubgrid } from './node-subgrid';
 import { LeafNode } from './leaf-node';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
+import { Subgrid } from './subgrid';
 
 /**
  * Inner octree node. Does not store any points but has exactly 8 children.
@@ -51,34 +51,9 @@ export class InnerNode implements OctreeNode {
         return true;
     }
 
-    computeLOD(subgrid: NodeSubgrid): LodNode {
-
+    computeLOD(subgrid: Subgrid): LodNode {
         const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.positions.length > 0);
-
-        const ni = this.nodeInfo;
-        if (subgrid.resolution !== ni.resolution) {
-            subgrid = new NodeSubgrid(ni.resolution);
-        } else {
-            subgrid.clear();
-        }
-
-        const minX = this.nodeInfo.centerX - this.nodeInfo.size / 2;
-        const minY = this.nodeInfo.centerY - this.nodeInfo.size / 2;
-        const minZ = this.nodeInfo.centerZ - this.nodeInfo.size / 2;
-        for (const lod of childLODs) {
-            for (let i = 0; i < lod.positions.length / 3; i++) {
-                // based on position, determine cell
-                const px = NodeSubgrid.getCellIndex(lod.positions[i * 3], minX, ni.size, ni.resolution);
-                const py = NodeSubgrid.getCellIndex(lod.positions[i * 3 + 1], minY, ni.size, ni.resolution);
-                const pz = NodeSubgrid.getCellIndex(lod.positions[i * 3 + 2], minZ, ni.size, ni.resolution);
-                const subcellIndex = px + py * ni.resolution + (pz * ni.resolution ** 2);
-                const weight = lod.weights[i];
-                // put point into cell
-                subgrid.addToCell(subcellIndex, lod, i, weight);
-            }
-        }
-
-        return subgrid.mergeByCell(ni, childLODs);
+        return subgrid.mergeLoD(childLODs, this.nodeInfo);
     }
 
     private getChildIndex(x: number, y: number, z: number) {

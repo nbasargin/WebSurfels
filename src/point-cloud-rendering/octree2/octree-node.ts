@@ -1,6 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { NodeSubgrid } from './node-subgrid';
 import { LodNode } from './lod-node';
+import { Subgrid } from './subgrid';
 
 /**
  * Octree node that allows adding new points to grow the tree.
@@ -11,7 +11,7 @@ export interface OctreeNode {
 
     addPoint(data: PointCloudData, pointIndex: number): boolean;
 
-    computeLOD(subgrid: NodeSubgrid): LodNode;
+    computeLOD(subgrid: Subgrid): LodNode;
 
     getNumberOfNodes(): number;
 

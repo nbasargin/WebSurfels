@@ -1,8 +1,8 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { NodeSubgrid } from './node-subgrid';
 import { InnerNode } from './inner-node';
 import { LodNode } from './lod-node';
 import { OctreeNode } from './octree-node';
+import { Subgrid } from './subgrid';
 
 type BoundingBox = {minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number};
 
@@ -32,7 +32,7 @@ export class Octree2 {
     }
 
     createLOD(): LodNode {
-        return this.root.computeLOD(new NodeSubgrid(this.resolution));
+        return this.root.computeLOD(new Subgrid(this.resolution));
     }
 
     private static getBoundingBox(positions: Float32Array): BoundingBox {
