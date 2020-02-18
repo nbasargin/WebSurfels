@@ -53,7 +53,7 @@ export class Subgrid {
         for (let i = 0; i < this.indexGrid.length; i++) {
             let nextPointIndex = this.indexGrid[i];
             const pointIndices: Array<number> = [];
-            while (this.indexGrid[i] !== -1) {
+            while (nextPointIndex !== -1) {
                 pointIndices.push(nextPointIndex);
                 nextPointIndex = indexChains[nextPointIndex];
             }
