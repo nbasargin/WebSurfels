@@ -1,6 +1,5 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { Bitfield } from './bitfield';
-import { NodeSubgrid } from './node-subgrid';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
 import { Subgrid } from './subgrid';
@@ -58,9 +57,9 @@ export class LeafNode implements OctreeNode {
             // node is splittable
             const r = this.nodeInfo.resolution;
 
-            const x = NodeSubgrid.getCellIndex(pointIndex * 3, this.minX, this.nodeInfo.size, r);
-            const y = NodeSubgrid.getCellIndex(pointIndex * 3 + 1, this.minY, this.nodeInfo.size, r);
-            const z = NodeSubgrid.getCellIndex(pointIndex * 3 + 2, this.minZ, this.nodeInfo.size, r);
+            const x = Subgrid.getCellIndex(pointIndex * 3, this.minX, this.nodeInfo.size, r);
+            const y = Subgrid.getCellIndex(pointIndex * 3 + 1, this.minY, this.nodeInfo.size, r);
+            const z = Subgrid.getCellIndex(pointIndex * 3 + 2, this.minZ, this.nodeInfo.size, r);
             const subCellIndex = x + y * r + z * r * r;
 
             if (x >= r || y >= r || z >= r) {

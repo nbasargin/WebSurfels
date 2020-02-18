@@ -1,10 +1,14 @@
 import { WeightedPointCloudData } from '../data/point-cloud-data';
 import { Geometry } from '../utils/geometry';
 import { LodNode } from './lod-node';
-import { NodeSubgrid } from './node-subgrid';
 import { OctreeNodeInfo } from './octree-node';
 
 export class Subgrid {
+
+    public static getCellIndex(pos, min, size, resolution) {
+        const index = Math.floor((pos - min) / size * resolution);
+        return Math.max(0, Math.min(resolution - 1, index));
+    }
 
     private readonly indexGrid: Int32Array;
 
@@ -26,9 +30,9 @@ export class Subgrid {
         const indexChains = new Int32Array(pointCount);
         let occupiedCells = 0;
         for (let i = 0; i < pointCount; i++) {
-            const px = NodeSubgrid.getCellIndex(pos[i * 3], minX, nodeInfo.size, nodeInfo.resolution);
-            const py = NodeSubgrid.getCellIndex(pos[i * 3 + 1], minY, nodeInfo.size, nodeInfo.resolution);
-            const pz = NodeSubgrid.getCellIndex(pos[i * 3 + 2], minZ, nodeInfo.size, nodeInfo.resolution);
+            const px = Subgrid.getCellIndex(pos[i * 3], minX, nodeInfo.size, nodeInfo.resolution);
+            const py = Subgrid.getCellIndex(pos[i * 3 + 1], minY, nodeInfo.size, nodeInfo.resolution);
+            const pz = Subgrid.getCellIndex(pos[i * 3 + 2], minZ, nodeInfo.size, nodeInfo.resolution);
             const subcellIndex = px + py * nodeInfo.resolution + (pz * nodeInfo.resolution ** 2);
 
             const prevPoint = this.indexGrid[subcellIndex];
