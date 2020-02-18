@@ -9,6 +9,7 @@ import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 import { ViewDirection } from '../point-cloud-rendering/renderer2/view-direction';
+import { Geometry } from '../point-cloud-rendering/utils/geometry';
 import { DepthData } from '../street-view/depth-data';
 import { PanoramaLoader } from '../street-view/panorama-loader';
 import { PointCloudFactory } from '../street-view/point-cloud-factory';
@@ -278,12 +279,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const octree = new Octree2(data, resolution, maxDepth);
             this.treeDepth = octree.root.getDepth();
 
+            const start = Date.now();
             this.lodTree = octree.createLOD();
+            console.log('LoD computation took ', Date.now() - start, 'ms');
             this.optimizedLod = [];
 
             for (let level = 0; level < octree.root.getDepth(); level++) {
                 const nodes = this.getNodesAtSpecificDepth(this.lodTree, level);
-                this.optimizedLod.push(this.mergeGeometry(nodes));
+                this.optimizedLod.push(Geometry.mergeLoD(nodes));
             }
 
             this.optimizedLod.push(data); // last level is the original
@@ -312,7 +315,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
             for (let level = 0; level < 7; level++) {
                 const nodes = this.getNodesAtSpecificDepth(this.lodTree, level);
-                this.optimizedLod.push(this.mergeGeometry(nodes));
+                this.optimizedLod.push(Geometry.mergeLoD(nodes));
             }
 
             console.log(Timing.measure(), 'LOD optimized');
@@ -345,28 +348,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             }
             return nodes;
         }
-    }
-
-    mergeGeometry(nodes: Array<LodNode>): PointCloudData {
-        let points = 0;
-        for (const node of nodes) {
-            points += node.positions.length / 3;
-        }
-        const merged = {
-            positions: new Float32Array(points * 3),
-            sizes: new Float32Array(points),
-            colors: new Float32Array(points * 3),
-            normals: new Float32Array(points * 3),
-        };
-        let writePos = 0;
-        for (const node of nodes) {
-            merged.positions.set(node.positions, writePos * 3);
-            merged.sizes.set(node.sizes, writePos);
-            merged.colors.set(node.colors, writePos * 3);
-            merged.normals.set(node.normals, writePos * 3);
-            writePos += node.positions.length / 3;
-        }
-        return merged;
     }
 
 }
