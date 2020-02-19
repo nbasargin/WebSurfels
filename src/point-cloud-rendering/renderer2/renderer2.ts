@@ -1,4 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
+import { Frustum } from '../frustum-culling/frustum';
 
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
 import { NormShader } from './norm-shader';
@@ -8,7 +9,8 @@ import { WebGLUtils } from './web-gl-utils';
 
 export class Renderer2 {
 
-    nodes: Set<PointDataNode> = new Set();
+    public readonly nodes: Set<PointDataNode> = new Set();
+    public readonly frustum: Frustum;
 
     private readonly gl: WebGL2RenderingContext;
     private readonly offscreenFramebuffer: OffscreenFramebuffer;
@@ -35,6 +37,7 @@ export class Renderer2 {
         }
         this.gl = context;
         this.offscreenFramebuffer = new OffscreenFramebuffer(this.gl);
+        this.frustum = new Frustum();
 
         // ext check
         const extensions = ["EXT_color_buffer_float", "EXT_float_blend"];
@@ -72,6 +75,7 @@ export class Renderer2 {
         mat4.lookAt(this.uniforms.modelViewMatrix, eye, target, up);
         mat4.invert(this.uniforms.modelViewMatrixIT, this.uniforms.modelViewMatrix);
         mat4.transpose(this.uniforms.modelViewMatrixIT, this.uniforms.modelViewMatrixIT);
+        this.frustum.setCameraOrientation(eye, target, up);
     }
 
     addData(positions: Float32Array, sizes: Float32Array, colors: Float32Array, normals: Float32Array): PointDataNode {
@@ -200,6 +204,7 @@ export class Renderer2 {
         const aspectRatio = this.canvas.clientWidth / Math.max(this.canvas.clientHeight, 1);
         const p = this.perspectiveParams;
         mat4.perspective(this.uniforms.projectionMatrix, p.fovRadians, aspectRatio, p.near, p.far);
+        this.frustum.setPerspectiveParams(p.fovRadians, aspectRatio, p.near, p.far);
     }
 
 }
