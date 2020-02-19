@@ -19,9 +19,15 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
     selector: 'app-root',
     template: `
         <div class="fps-overlay">FPS: {{fps}}</div>
-        <div class="animation-overlay flex-line">
-            <input #animCheck type="checkbox" [checked]="false" (change)="benchmarkRunning = animCheck.checked">
-            animate
+        <div class="animation-overlay">
+            <div class="flex-line">
+                <input #animCheck type="checkbox" [checked]="false" (change)="benchmarkRunning = animCheck.checked">
+                animate
+            </div>
+            <div class="flex-line">
+                <input #splatCheck type="checkbox" [checked]="true" (change)="splattingEnabled = splatCheck.checked">
+                HQ splats
+            </div>
         </div>
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
@@ -70,6 +76,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private pressedKeys: Set<string>;
 
     benchmarkRunning = false;
+    splattingEnabled = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
@@ -167,7 +174,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.checkCamera();
         }
 
-        this.renderer2.render();
+        this.renderer2.render(this.renderer2.nodes, !this.splattingEnabled);
     }
 
     updateFPS(timestamp: number) {
