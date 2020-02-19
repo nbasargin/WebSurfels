@@ -10,13 +10,19 @@ export class Subgrid {
         return Math.max(0, Math.min(resolution - 1, index));
     }
 
+    // adds some randomness to indices (points could move to adjacent cells)
+    public static getRandomizedCellIndex(pos, min, size, resolution, randomness) {
+        const index = Math.floor((pos - min) / size * resolution  + (Math.random() - 0.5) * randomness);
+        return Math.max(0, Math.min(resolution - 1, index));
+    }
+
     private readonly indexGrid: Int32Array;
 
     constructor(public readonly resolution: number = 64) {
         this.indexGrid = new Int32Array(resolution ** 3);
     }
 
-    mergeLoD(childLoDs: Array<LodNode>, nodeInfo: OctreeNodeInfo): LodNode {
+    mergeLoD(childLoDs: Array<LodNode>, nodeInfo: OctreeNodeInfo, indexRandomness: number = 0): LodNode {
         this.indexGrid.fill(-1);
         const mergedLoD = Geometry.mergeLoD(childLoDs);
         const pos = mergedLoD.positions;
@@ -30,9 +36,16 @@ export class Subgrid {
         const indexChains = new Int32Array(pointCount);
         let occupiedCells = 0;
         for (let i = 0; i < pointCount; i++) {
-            const px = Subgrid.getCellIndex(pos[i * 3], minX, nodeInfo.size, nodeInfo.resolution);
-            const py = Subgrid.getCellIndex(pos[i * 3 + 1], minY, nodeInfo.size, nodeInfo.resolution);
-            const pz = Subgrid.getCellIndex(pos[i * 3 + 2], minZ, nodeInfo.size, nodeInfo.resolution);
+            let px: number, py: number, pz: number;
+            if (indexRandomness === 0) {
+                px = Subgrid.getCellIndex(pos[i * 3], minX, nodeInfo.size, nodeInfo.resolution);
+                py = Subgrid.getCellIndex(pos[i * 3 + 1], minY, nodeInfo.size, nodeInfo.resolution);
+                pz = Subgrid.getCellIndex(pos[i * 3 + 2], minZ, nodeInfo.size, nodeInfo.resolution);
+            } else {
+                px = Subgrid.getRandomizedCellIndex(pos[i * 3], minX, nodeInfo.size, nodeInfo.resolution, indexRandomness);
+                py = Subgrid.getRandomizedCellIndex(pos[i * 3 + 1], minY, nodeInfo.size, nodeInfo.resolution, indexRandomness);
+                pz = Subgrid.getRandomizedCellIndex(pos[i * 3 + 2], minZ, nodeInfo.size, nodeInfo.resolution, indexRandomness);
+            }
             const subcellIndex = px + py * nodeInfo.resolution + (pz * nodeInfo.resolution ** 2);
 
             const prevPoint = this.indexGrid[subcellIndex];

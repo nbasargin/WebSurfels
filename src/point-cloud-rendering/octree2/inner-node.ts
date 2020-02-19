@@ -11,6 +11,8 @@ import { Subgrid } from './subgrid';
  */
 export class InnerNode implements OctreeNode {
 
+    public static readonly LOD_RANDOMNESS = 1;
+
     public readonly children: Array<OctreeNode>;
 
     constructor(
@@ -53,7 +55,7 @@ export class InnerNode implements OctreeNode {
 
     computeLOD(subgrid: Subgrid): LodNode {
         const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.positions.length > 0);
-        return subgrid.mergeLoD(childLODs, this.nodeInfo);
+        return subgrid.mergeLoD(childLODs, this.nodeInfo, InnerNode.LOD_RANDOMNESS);
     }
 
     private getChildIndex(x: number, y: number, z: number) {
