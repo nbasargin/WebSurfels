@@ -93,6 +93,7 @@ export class Renderer2 {
 
     removeNode(node: PointDataNode) {
         this.gl.deleteBuffer(node.buffers.positions);
+        this.gl.deleteBuffer(node.buffers.sizes);
         this.gl.deleteBuffer(node.buffers.colors);
         this.gl.deleteBuffer(node.buffers.normals);
         node.numPoints = 0;
