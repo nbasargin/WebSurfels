@@ -40,7 +40,7 @@ export class Renderer2 {
         this.frustum = new Frustum();
 
         // ext check
-        const extensions = ["EXT_color_buffer_float", "EXT_float_blend"];
+        const extensions = ['EXT_color_buffer_float', 'EXT_float_blend'];
         for (const ext of extensions) {
             if (!this.gl.getExtension(ext)) {
                 console.error(`Required WebGL extensions missing: ${ext}`);
@@ -63,11 +63,11 @@ export class Renderer2 {
             far: 1000,
         };
 
-        this.gl.clearColor(0,0,0,0);
+        this.gl.clearColor(0, 0, 0, 0);
         this.gl.clearDepth(1.0);
 
         this.setCanvasSize(initialWidth, initialHeight);
-        this.setCameraOrientation([0,0,0], [0,0,-1], [0,1,0]);
+        this.setCameraOrientation([0, 0, 0], [0, 0, -1], [0, 1, 0]);
     }
 
     setCameraOrientation(eye: vec3 | number[], target: vec3 | number[], up: vec3 | number[]) {
@@ -121,11 +121,7 @@ export class Renderer2 {
         this.updatePerspectiveMatrix();
     }
 
-    render() {
-        if (this.nodes.size === 0) {
-            return;
-        }
-
+    render(nodes: Iterable<PointDataNode> = this.nodes): {nodesDrawn: number, pointsDrawn: number} {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
@@ -157,13 +153,13 @@ export class Renderer2 {
         this.gl.depthMask(true);
         this.gl.colorMask(false, false, false, false);
         this.gl.uniform1i(this.splatShader.uniformLocations.depthPass, 1);
-        this.drawNodes();
+        this.drawNodes(nodes);
 
         // color pass
         this.gl.depthMask(false);
         this.gl.colorMask(true, true, true, true);
         this.gl.uniform1i(this.splatShader.uniformLocations.depthPass, 0);
-        this.drawNodes();
+        const drawStats = this.drawNodes(nodes);
 
         this.offscreenFramebuffer.unbind();
 
@@ -174,14 +170,22 @@ export class Renderer2 {
         this.gl.depthMask(true);
         this.gl.colorMask(true, true, true, true);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+
+        if (drawStats.nodesDrawn > 0) {
+            this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+        }
+        return drawStats;
     }
 
-    private drawNodes() {
-        for (const node of this.nodes) {
+    private drawNodes(nodes: Iterable<PointDataNode>): {nodesDrawn: number, pointsDrawn: number} {
+        let nodesDrawn = 0;
+        let pointsDrawn = 0;
+        for (const node of nodes) {
             if (!node.visible) {
                 continue;
             }
+            nodesDrawn++;
+            pointsDrawn += node.numPoints;
 
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, node.buffers.positions);
             this.gl.vertexAttribPointer(this.splatShader.attributeLocations.pos, 3, this.gl.FLOAT, false, 0, 0);
@@ -198,6 +202,8 @@ export class Renderer2 {
             const verticesPerQuad = 4;
             this.gl.drawArraysInstanced(this.gl.TRIANGLE_STRIP, 0, verticesPerQuad, node.numPoints);
         }
+
+        return {nodesDrawn, pointsDrawn};
     }
 
     private updatePerspectiveMatrix() {
