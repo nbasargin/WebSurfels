@@ -43,6 +43,7 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
                 LoD Octree nodes: {{displayInfo.octreeNodes}}
                 <br> (geometry merged into one node)
             </div>
+            <button (click)="logFrustumPlanes()">log frustum planes</button>
         </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
@@ -375,6 +376,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             optimizedLod.push(Geometry.mergeLoD(nodes));
         }
         return optimizedLod;
+    }
+
+    logFrustumPlanes() {
+        console.log(this.renderer2.frustum.getFrustumPlanes());
     }
 
 }
