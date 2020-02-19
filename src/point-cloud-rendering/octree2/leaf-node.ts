@@ -1,4 +1,5 @@
 import { PointCloudData } from '../data/point-cloud-data';
+import { Geometry } from '../utils/geometry';
 import { Bitfield } from './bitfield';
 import { LodNode } from './lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
@@ -89,10 +90,14 @@ export class LeafNode implements OctreeNode {
         // no need to compute LOD (leaf nodes have all points in different subcells or there are not enough points)
         const weights = new Float32Array(this.pointCount);
         weights.fill(1);
+        const positions = this.positions.slice(0, this.pointCount * 3);
+        const sizes = this.sizes.slice(0, this.pointCount);
+        const boundingSphere = Geometry.getBoundingSphere(positions, sizes);
         return {
             nodeInfo: this.nodeInfo,
-            positions: this.positions.slice(0, this.pointCount * 3),
-            sizes: this.sizes.slice(0, this.pointCount),
+            boundingSphere: boundingSphere,
+            positions: positions,
+            sizes: sizes,
             colors: this.colors.slice(0, this.pointCount * 3),
             normals: this.normals.slice(0, this.pointCount * 3),
             weights: weights,

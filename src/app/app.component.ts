@@ -3,14 +3,14 @@ import { vec3 } from 'gl-matrix';
 import { AnimatedCamera } from '../point-cloud-rendering/utils/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/utils/fps-counter';
 import { Timing } from '../point-cloud-rendering/utils/timing';
-import { PointCloudData, WeightedPointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
+import { WeightedPointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
 import { PointCloudDataGenerator } from '../point-cloud-rendering/data/point-cloud-data-generator';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 import { ViewDirection } from '../point-cloud-rendering/renderer2/view-direction';
-import { Geometry } from '../point-cloud-rendering/utils/geometry';
+import { BoundingSphere, Geometry } from '../point-cloud-rendering/utils/geometry';
 import { DepthData } from '../street-view/depth-data';
 import { PanoramaLoader } from '../street-view/panorama-loader';
 import { PointCloudFactory } from '../street-view/point-cloud-factory';
@@ -49,7 +49,7 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
                 LoD Octree nodes: {{displayInfo.octreeNodes}}
                 <br> (geometry merged into one node)
             </div>
-            <button (click)="logFrustumPlanes()">log frustum planes</button>
+            {{frustumInfo}}
         </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
@@ -83,7 +83,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     lodTree: LodNode;
     treeDepth: number;
-    optimizedLod: Array<PointCloudData>;
+    optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere}>;
+    boundingSphere: BoundingSphere;
 
     displayInfo = {
         totalPoints: 0,
@@ -92,6 +93,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     };
 
     overlayMessage = '';
+    frustumInfo = '';
 
     constructor() {
         this.cameraPos = vec3.fromValues(-2, 1.2, 2.5);
@@ -105,10 +107,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.addDragons(instances, Math.min(20, instances));
-            //this.createDragonLod2(32, 12);
+            this.createDragonLod2(32, 12);
             //this.testStreetView();
             //this.castleTest(32, 12);
-            this.sphereTest(300000, 0.02, 4, 12);
+            //this.sphereTest(300000, 0.02, 4, 12);
 
             this.renderLoop(0);
         }, 0);
@@ -174,7 +176,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.checkCamera();
         }
 
-        this.renderer2.render(this.renderer2.nodes, !this.splattingEnabled);
+        // TEMP: assuming one node with bounding sphere defined
+        this.renderer2.frustum.updateFrustumPlanes();
+        const s = this.boundingSphere;
+        const inside = s && this.renderer2.frustum.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius);
+        this.frustumInfo = s ? 'sphere inside frustum ' + inside : 'no bounding sphere!';
+
+        this.renderer2.render(inside ? this.renderer2.nodes : [], !this.splattingEnabled);
+
     }
 
     updateFPS(timestamp: number) {
@@ -283,25 +292,19 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     createDragonLod2(resolution: number, maxDepth: number) {
         this.overlayMessage = 'Loading...';
+        Timing.measure();
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.loadDropbox().then(data => {
-            console.log('data loaded');
+            console.log(Timing.measure(), 'data loaded');
             this.displayInfo.totalPoints = data.positions.length / 3;
 
             const octree = new Octree2(data, resolution, maxDepth);
+            console.log(Timing.measure(), 'octree created');
             this.treeDepth = octree.root.getDepth();
-
-            const start = Date.now();
             this.lodTree = octree.createLOD();
-            console.log('LoD computation took ', Date.now() - start, 'ms');
-            this.optimizedLod = [];
-
-            for (let level = 0; level < octree.root.getDepth(); level++) {
-                const nodes = this.getNodesAtSpecificDepth(this.lodTree, level);
-                this.optimizedLod.push(Geometry.mergeLoD(nodes));
-            }
-
-            this.optimizedLod.push(data); // last level is the original
+            console.log(Timing.measure(), 'lod computed');
+            this.optimizedLod = this.optimizeLod(this.lodTree, octree.root.getDepth());
+            console.log(Timing.measure(), 'lod optimized');
 
             this.overlayMessage = '';
             this.showLodLevel(0);
@@ -359,8 +362,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             // this.renderer2.addData(node.positions, node.sizes, node.colors, node.normals);
         }
 
-        const data = this.optimizedLod[lodLevel];
+        const {data, boundingSphere} = this.optimizedLod[lodLevel];
         this.displayInfo.renderedPoints = data.positions.length / 3;
+        this.boundingSphere = boundingSphere;
         this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
     }
 
@@ -376,17 +380,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    optimizeLod(lodTree: LodNode, levels: number) {
-        const optimizedLod: Array<WeightedPointCloudData> = [];
+    optimizeLod(lodTree: LodNode, levels: number): Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere}> {
+        const optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere}> = [];
         for (let level = 0; level < levels; level++) {
             const nodes = this.getNodesAtSpecificDepth(lodTree, level);
-            optimizedLod.push(Geometry.mergeLoD(nodes));
+            const data = Geometry.mergeData(nodes);
+            const boundingSphere = Geometry.getBoundingSphere(data.positions, data.sizes);
+            optimizedLod.push({data, boundingSphere});
         }
         return optimizedLod;
-    }
-
-    logFrustumPlanes() {
-        console.log(this.renderer2.frustum.getFrustumPlanes());
     }
 
 }

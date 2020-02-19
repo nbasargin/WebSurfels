@@ -3,11 +3,13 @@
  * Does not allow adding new points.
  */
 import { WeightedPointCloudData } from '../data/point-cloud-data';
+import { BoundingSphere } from '../utils/geometry';
 import { OctreeNodeInfo } from './octree-node';
 
 export interface LodNode extends WeightedPointCloudData {
 
     nodeInfo: OctreeNodeInfo;
+    boundingSphere: BoundingSphere;
 
     positions: Float32Array;
     sizes: Float32Array;

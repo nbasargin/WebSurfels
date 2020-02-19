@@ -59,6 +59,7 @@ export class Subgrid {
         // create output
         const result: LodNode = {
             nodeInfo: nodeInfo,
+            boundingSphere: {centerX: 0, centerY: 0, centerZ: 0, radius: 0},
             positions: new Float32Array(occupiedCells * 3),
             sizes: new Float32Array(occupiedCells),
             colors: new Float32Array(occupiedCells * 3),
@@ -79,6 +80,7 @@ export class Subgrid {
                 writePos++;
             }
         }
+        result.boundingSphere = Geometry.getBoundingSphere(result.positions, result.sizes);
 
         if (writePos != occupiedCells) {
             console.error('write position and number of occupied cells do not match!');
