@@ -2,12 +2,12 @@ import { vec3 } from 'gl-matrix';
 
 export class Plane2 {
 
-    public readonly nx: number;
-    public readonly ny: number;
-    public readonly nz: number;
-    public readonly d: number;
+    public nx: number;
+    public ny: number;
+    public nz: number;
+    public d: number;
 
-    constructor(normal: vec3, point: vec3) {
+    setNormalAndPoint(normal: vec3, point: vec3) {
         this.nx = normal[0];
         this.ny = normal[1];
         this.nz = normal[2];
