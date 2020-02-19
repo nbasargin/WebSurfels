@@ -1,5 +1,5 @@
 import { vec3 } from 'gl-matrix';
-import { Plane } from './plane';
+import { Plane2 } from './plane2';
 
 export class Frustum {
 
@@ -29,8 +29,8 @@ export class Frustum {
         const fovTan = 2 * Math.tan(this.fovRadians / 2);
         const hNear = fovTan * this.nearDist;
         const wNear = hNear * this.aspectRatio;
-        const hFar = fovTan * this.farDist;
-        const wFar = hFar * this.aspectRatio;
+        // const hFar = fovTan * this.farDist;
+        // const wFar = hFar * this.aspectRatio;
 
         // Z axis: points in the opposite direction from the looking direction
         const zAxis = vec3.create();
@@ -55,14 +55,8 @@ export class Frustum {
         const negZ = vec3.create();
         vec3.scale(negZ, zAxis, -1);
 
-        const near: Plane = {
-            normal: negZ,
-            point: centerNear
-        };
-        const far: Plane = {
-            normal: zAxis,
-            point: centerFar
-        };
+        const near = new Plane2(negZ, centerNear);
+        const far = new Plane2(zAxis, centerFar);
 
         // top plane
         // point = centerNear + yAxis * hNear
@@ -74,10 +68,7 @@ export class Frustum {
         vec3.normalize(eyeToNearTop, eyeToNearTop);
         const normalTop = vec3.create();
         vec3.cross(normalTop, eyeToNearTop, xAxis);
-        const top: Plane = {
-            normal: normalTop,
-            point: nearTop
-        };
+        const top = new Plane2(normalTop, nearTop);
 
         // bottom plane
         // point = centerNear - yAxis * hNear
@@ -89,10 +80,7 @@ export class Frustum {
         vec3.normalize(eyeToNearBottom, eyeToNearBottom);
         const normalBottom = vec3.create();
         vec3.cross(normalBottom, xAxis, eyeToNearBottom);
-        const bottom: Plane = {
-            normal: normalBottom,
-            point: nearBottom
-        };
+        const bottom = new Plane2(normalBottom, nearBottom);
 
         // left plane
         // point = centerNear - xAxis * wNear
@@ -104,10 +92,7 @@ export class Frustum {
         vec3.normalize(eyeToNearLeft, eyeToNearLeft);
         const normalLeft = vec3.create();
         vec3.cross(normalLeft, eyeToNearLeft, yAxis);
-        const left: Plane = {
-            normal: normalLeft,
-            point: nearLeft
-        };
+        const left = new Plane2(normalLeft, nearLeft);
 
         // right plane
         // point = centerNear + xAxis * wNear
@@ -119,10 +104,7 @@ export class Frustum {
         vec3.normalize(eyeToNearRight, eyeToNearRight);
         const normalRight = vec3.create();
         vec3.cross(normalRight, yAxis, eyeToNearRight);
-        const right: Plane = {
-            normal: normalRight,
-            point: nearRight
-        };
+        const right = new Plane2(normalRight, nearRight);
 
         return {near, far, top, bottom, left, right};
     }
