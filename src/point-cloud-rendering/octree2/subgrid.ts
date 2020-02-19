@@ -24,7 +24,7 @@ export class Subgrid {
 
     mergeLoD(childLoDs: Array<LodNode>, nodeInfo: OctreeNodeInfo, indexRandomness: number = 0): LodNode {
         this.indexGrid.fill(-1);
-        const mergedLoD = Geometry.mergeLoD(childLoDs);
+        const mergedLoD = Geometry.mergeData(childLoDs);
         const pos = mergedLoD.positions;
 
         const minX = nodeInfo.centerX - nodeInfo.size / 2;
