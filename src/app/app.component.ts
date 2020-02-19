@@ -326,6 +326,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     sphereTest(pointNumber: number, pointSize: number, resolution: number, maxDepth: number) {
+        vec3.set(this.cameraPos, 0, 0, 3);
+        this.angleX = 0;
+        this.angleY = 0;
+        this.view.update(this.angleX, this.angleY);
         Timing.measure();
         const data = PointCloudDataGenerator.generateSphere(pointNumber, pointSize);
         console.log(Timing.measure(), 'data generated');
