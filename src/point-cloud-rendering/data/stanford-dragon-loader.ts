@@ -1,6 +1,6 @@
 import { PLYLoader } from '@loaders.gl/ply';
 import { load, parse } from '@loaders.gl/core';
-import { Timing } from '../benchmark/timing';
+import { Timing } from '../utils/timing';
 import { PointCloudData } from './point-cloud-data';
 
 export class StanfordDragonLoader {

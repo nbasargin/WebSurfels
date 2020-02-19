@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { vec3 } from 'gl-matrix';
-import { AnimatedCamera } from '../point-cloud-rendering/benchmark/animated-camera';
-import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
-import { Timing } from '../point-cloud-rendering/benchmark/timing';
+import { AnimatedCamera } from '../point-cloud-rendering/utils/animated-camera';
+import { FpsCounter } from '../point-cloud-rendering/utils/fps-counter';
+import { Timing } from '../point-cloud-rendering/utils/timing';
 import { PointCloudData, WeightedPointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
 import { PointCloudDataGenerator } from '../point-cloud-rendering/data/point-cloud-data-generator';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
