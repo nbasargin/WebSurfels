@@ -13,6 +13,7 @@ export class Frustum {
     private up: vec3 | Array<number>;
 
     public readonly planes: { near: Plane2, far: Plane2, top: Plane2, bottom: Plane2, left: Plane2, right: Plane2 };
+    private readonly planesArray: Array<Plane2>;
 
     constructor() {
         this.planes = {
@@ -22,7 +23,8 @@ export class Frustum {
             bottom: new Plane2(),
             left: new Plane2(),
             right: new Plane2()
-        }
+        };
+        this.planesArray = Object.values(this.planes);
     }
 
     setPerspectiveParams(fovRadians: number, aspectRatio: number, near: number, far: number) {
@@ -39,7 +41,7 @@ export class Frustum {
     }
 
     updateFrustumPlanes() {
-        const fovTan = 2 * Math.tan(this.fovRadians / 2);
+        const fovTan = Math.tan(this.fovRadians / 2);
         const hNear = fovTan * this.nearDist;
         const wNear = hNear * this.aspectRatio;
         // const hFar = fovTan * this.farDist;
@@ -118,6 +120,17 @@ export class Frustum {
         const normalRight = vec3.create();
         vec3.cross(normalRight, yAxis, eyeToNearRight);
         this.planes.right.setNormalAndPoint(normalRight, nearRight);
+    }
+
+    isSphereInFrustum(cx: number, cy: number, cz: number, r: number): boolean {
+        for (const plane of this.planesArray) {
+            const dist = plane.pointDistance(cx, cy, cz);
+            if (dist < -r) {
+                return false;
+            }
+            // if dist < radius -> intersection with plane
+        }
+        return true;
     }
 
 }
