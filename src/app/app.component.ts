@@ -100,7 +100,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.createDragonLod2(32, 12);
             //this.testStreetView();
             //this.castleTest(32, 12);
-            this.sphereTest(300000, 0.03, 4, 12);
+            this.sphereTest(300000, 0.02, 4, 12);
 
             this.renderLoop(0);
         }, 0);

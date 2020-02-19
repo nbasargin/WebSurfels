@@ -1,6 +1,7 @@
 import { WebGLUtils } from './web-gl-utils';
 
 const SHAPE_PRESERVING_DEPTH_PASS: 0 | 1 = 1;
+const SPLAT_DEPTH: 'auto' | number = 'auto';
 
 export const quadVS = `
     #version 300 es
@@ -55,7 +56,7 @@ export const quadVS = `
             // for non shape-preserving depth pass, move points away from the camera to create a depth margin 
             if (uDepthPass) {
                 vec3 view_direction = normalize(vertex_pos - uEyePos);
-                vertex_pos += view_direction * world_point_size * 0.5 * 2.5;		
+                vertex_pos += view_direction * ${SPLAT_DEPTH === 'auto' ? 'world_point_size * 0.5 * 2.5' : SPLAT_DEPTH};		
             }
         #endif
 		  
@@ -65,7 +66,7 @@ export const quadVS = `
             // for shape-preserving depth pass, modify z as if point would be more far away 
             if (uDepthPass) {
                 vec3 view_direction = normalize(vertex_pos - uEyePos);
-                vertex_pos += view_direction * world_point_size * 0.5 * 2.5;	
+                vertex_pos += view_direction * ${SPLAT_DEPTH === 'auto' ? 'world_point_size * 0.5 * 2.5' : SPLAT_DEPTH};	
                 vec4 new = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0); 	
                 gl_Position.z = new.z / new.w * gl_Position.w;
             }
