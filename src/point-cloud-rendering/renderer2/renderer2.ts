@@ -121,7 +121,7 @@ export class Renderer2 {
         this.updatePerspectiveMatrix();
     }
 
-    render(nodes: Iterable<PointDataNode> = this.nodes): {nodesDrawn: number, pointsDrawn: number} {
+    render(nodes: Iterable<PointDataNode> = this.nodes, disableSplatting: boolean = false): {nodesDrawn: number, pointsDrawn: number} {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
@@ -148,18 +148,30 @@ export class Renderer2 {
 
         this.offscreenFramebuffer.bind();
 
-        // depth pass
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        this.gl.depthMask(true);
-        this.gl.colorMask(false, false, false, false);
-        this.gl.uniform1i(this.splatShader.uniformLocations.depthPass, 1);
-        this.drawNodes(nodes);
 
-        // color pass
-        this.gl.depthMask(false);
-        this.gl.colorMask(true, true, true, true);
-        this.gl.uniform1i(this.splatShader.uniformLocations.depthPass, 0);
-        const drawStats = this.drawNodes(nodes);
+        let drawStats: {nodesDrawn: number, pointsDrawn: number};
+        if (!disableSplatting) {
+            // depth pass
+            this.gl.depthMask(true);
+            this.gl.colorMask(false, false, false, false);
+            this.gl.uniform1i(this.splatShader.uniformLocations.depthPass, 1);
+            this.drawNodes(nodes);
+
+            // color pass
+            this.gl.depthMask(false);
+            this.gl.colorMask(true, true, true, true);
+            this.gl.uniform1i(this.splatShader.uniformLocations.depthPass, 0);
+            drawStats = this.drawNodes(nodes);
+
+        } else {
+            // one single pass
+            this.gl.disable(this.gl.BLEND);
+            this.gl.depthMask(true);
+            this.gl.colorMask(true, true, true, true);
+            this.gl.uniform1i(this.splatShader.uniformLocations.depthPass, 0);
+            drawStats = this.drawNodes(nodes);
+        }
 
         this.offscreenFramebuffer.unbind();
 
