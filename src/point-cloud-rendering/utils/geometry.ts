@@ -1,6 +1,8 @@
 import { WeightedPointCloudData } from '../data/point-cloud-data';
 
-export type BoundingBox = {minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number};
+export type BoundingBox = { minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number };
+
+export type BoundingSphere = { centerX: number, centerY: number, centerZ: number, radius: number };
 
 export class Geometry {
 
@@ -42,8 +44,8 @@ export class Geometry {
             maxZ = Math.max(maxZ, z);
         }
 
-        let maxSize = 0;
         if (sizes) {
+            let maxSize = 0;
             for (let i = 0; i < sizes.length; i++) {
                 maxSize = Math.max(maxSize, sizes[i]);
             }
@@ -56,6 +58,39 @@ export class Geometry {
         }
 
         return {minX, minY, minZ, maxX, maxY, maxZ}
+    }
+
+    public static getBoundingSphere(positions: Float32Array, sizes?: Float32Array): BoundingSphere {
+        let centerX = 0, centerY = 0, centerZ = 0;
+        for (let i = 0; i < positions.length; i += 3) {
+            centerX += positions[i];
+            centerY += positions[i + 1];
+            centerZ += positions[i + 2];
+        }
+        const numPoints = positions.length / 3;
+        centerX /= numPoints;
+        centerY /= numPoints;
+        centerZ /= numPoints;
+
+        let maxSqrRadius = 0;
+        for (let i = 0; i < positions.length; i += 3) {
+            const dx = centerX - positions[i];
+            const dy = centerY - positions[i + 1];
+            const dz = centerZ - positions[i + 2];
+            const sqrRadius = dx * dx + dy * dy + dz * dz;
+            maxSqrRadius = Math.max(maxSqrRadius, sqrRadius);
+        }
+        let radius = Math.sqrt(maxSqrRadius);
+
+        if (sizes) {
+            let maxSize = 0;
+            for (let i = 0; i < sizes.length; i++) {
+                maxSize = Math.max(maxSize, sizes[i]);
+            }
+            radius += maxSize;
+        }
+
+        return {centerX, centerY, centerZ, radius};
     }
 
 }
