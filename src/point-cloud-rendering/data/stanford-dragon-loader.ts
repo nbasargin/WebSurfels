@@ -1,10 +1,12 @@
 import { PLYLoader } from '@loaders.gl/ply';
 import { load, parse } from '@loaders.gl/core';
 import { Timing } from '../benchmark/timing';
-import { RendererConstants } from '../renderer2/renderer-constants';
 import { PointCloudData } from './point-cloud-data';
 
 export class StanfordDragonLoader {
+
+    public static readonly DRAGON_POINT_SIZE = 0.03;
+    public static readonly CASTLE_POINT_SIZE = 0.03 * 1.5;
 
     async load(keepEveryNth: number = 1): Promise<PointCloudData> {
         const rawData = await load('assets/point-clouds/stanford_dragon.ply', PLYLoader);
@@ -34,7 +36,7 @@ export class StanfordDragonLoader {
 
     parseDragonData(rawData, keepEveryNth: number = 1) {
         const sizes = new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3 / keepEveryNth));
-        sizes.fill(RendererConstants.POINT_SIZE);
+        sizes.fill(StanfordDragonLoader.DRAGON_POINT_SIZE);
         const data: PointCloudData = {
             positions: rawData.attributes.POSITION.value,
             sizes: sizes,
@@ -65,7 +67,7 @@ export class StanfordDragonLoader {
         const rawData = await load('assets/point-clouds/3drm_neuschwanstein.ply', PLYLoader);
         console.log(Timing.measure(), 'START parsing data');
         const sizes = new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3));
-        sizes.fill(RendererConstants.POINT_SIZE * 1.5);
+        sizes.fill(StanfordDragonLoader.CASTLE_POINT_SIZE);
         const data: PointCloudData = {
             positions: rawData.attributes.POSITION.value,
             sizes: sizes,
