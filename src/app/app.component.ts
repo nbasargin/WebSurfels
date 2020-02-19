@@ -3,7 +3,8 @@ import { vec3 } from 'gl-matrix';
 import { AnimatedCamera } from '../point-cloud-rendering/benchmark/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/benchmark/fps-counter';
 import { Timing } from '../point-cloud-rendering/benchmark/timing';
-import { PointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
+import { PointCloudData, WeightedPointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
+import { PointCloudDataGenerator } from '../point-cloud-rendering/data/point-cloud-data-generator';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
@@ -29,7 +30,7 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
             <div class="flex-line">
                 LoD level:
                 <input #lodSlider2 (input)="showLodLevel(+lodSlider2.value)" type="range" min="0"
-                       max="{{optimizedLod.length - 1}}" step="1" value="3">
+                       max="{{optimizedLod.length - 1}}" step="1" value="0">
                 {{+lodSlider2.value === treeDepth ? 'original data' : lodSlider2.value}}
             </div>
             <div>
@@ -96,9 +97,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.addDragons(instances, Math.min(20, instances));
-            this.createDragonLod2(32, 12);
+            //this.createDragonLod2(32, 12);
             //this.testStreetView();
             //this.castleTest(32, 12);
+            this.sphereTest(300000, 0.03, 4, 12);
 
             this.renderLoop(0);
         }, 0);
@@ -313,18 +315,28 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.lodTree = octree.createLOD();
 
             console.log(Timing.measure(), 'LOD created');
-            this.optimizedLod = [];
 
-            for (let level = 0; level < 7; level++) {
-                const nodes = this.getNodesAtSpecificDepth(this.lodTree, level);
-                this.optimizedLod.push(Geometry.mergeLoD(nodes));
-            }
+            this.optimizedLod = this.optimizeLod(this.lodTree, 7);
 
             console.log(Timing.measure(), 'LOD optimized');
 
             this.overlayMessage = '';
             this.showLodLevel(0);
         });
+    }
+
+    sphereTest(pointNumber: number, pointSize: number, resolution: number, maxDepth: number) {
+        Timing.measure();
+        const data = PointCloudDataGenerator.generateSphere(pointNumber, pointSize);
+        console.log(Timing.measure(), 'data generated');
+        const octree = new Octree2(data, resolution, maxDepth);
+        this.treeDepth = octree.root.getDepth();
+        console.log(Timing.measure(), 'octree created');
+        this.lodTree = octree.createLOD();
+        console.log(Timing.measure(), 'lod computed');
+        this.optimizedLod = this.optimizeLod(this.lodTree, this.treeDepth + 1);
+        console.log(Timing.measure(), 'lod optimized');
+        this.showLodLevel(0);
     }
 
     showLodLevel(lodLevel: number) {
@@ -350,6 +362,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             }
             return nodes;
         }
+    }
+
+    optimizeLod(lodTree: LodNode, levels: number) {
+        const optimizedLod: Array<WeightedPointCloudData> = [];
+        for (let level = 0; level < levels; level++) {
+            const nodes = this.getNodesAtSpecificDepth(lodTree, level);
+            optimizedLod.push(Geometry.mergeLoD(nodes));
+        }
+        return optimizedLod;
     }
 
 }
