@@ -31,8 +31,11 @@ export class Geometry {
     }
 
     public static getBoundingBox(positions: Float32Array, sizes?: Float32Array): BoundingBox {
-        let minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, minZ = Number.MAX_VALUE;
-        let maxX = Number.MIN_VALUE, maxY = Number.MIN_VALUE, maxZ = Number.MIN_VALUE;
+        if (positions.length === 0) {
+            return {minX: 0, minY: 0, minZ: 0, maxX: 0, maxY: 0, maxZ: 0};
+        }
+        let minX = Number.POSITIVE_INFINITY, minY = Number.POSITIVE_INFINITY, minZ = Number.POSITIVE_INFINITY;
+        let maxX = Number.NEGATIVE_INFINITY, maxY = Number.NEGATIVE_INFINITY, maxZ = Number.NEGATIVE_INFINITY;
 
         for (let i = 0; i < positions.length; i += 3) {
             const x = positions[i], y = positions[i + 1], z = positions[i + 2];
@@ -49,12 +52,12 @@ export class Geometry {
             for (let i = 0; i < sizes.length; i++) {
                 maxSize = Math.max(maxSize, sizes[i]);
             }
-            minX -= maxSize;
-            minY -= maxSize;
-            minZ -= maxSize;
-            maxX += maxSize;
-            maxY += maxSize;
-            maxZ += maxSize;
+            minX -= maxSize / 2;
+            minY -= maxSize / 2;
+            minZ -= maxSize / 2;
+            maxX += maxSize / 2;
+            maxY += maxSize / 2;
+            maxZ += maxSize / 2;
         }
 
         return {minX, minY, minZ, maxX, maxY, maxZ}
