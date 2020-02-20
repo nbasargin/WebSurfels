@@ -1,6 +1,23 @@
-import { PointCloudData } from "./point-cloud-data";
+import { BoundingSphere } from '../utils/geometry';
+import { PointCloudData } from './point-cloud-data';
 
 export class PointCloudDataGenerator {
+
+    public static generateBoundingSphere(sphere: BoundingSphere) {
+        const pointNumber = 1000;
+        const data = PointCloudDataGenerator.generateSphere(pointNumber, sphere.radius / 10, false);
+        for (let i = 0; i < pointNumber; i++) {
+            const offset = i * 3;
+            data.positions[offset] = data.positions[offset] * sphere.radius + sphere.centerX;
+            data.positions[offset + 1] = data.positions[offset + 1] * sphere.radius + sphere.centerY;
+            data.positions[offset + 2] = data.positions[offset + 2] * sphere.radius + sphere.centerZ;
+
+            data.colors[offset] = 0.5;
+            data.colors[offset + 1] = 0.5;
+            data.colors[offset + 2] = 0.5;
+        }
+        return data;
+    }
 
     public static generateSphere(pointNumber: number, pointSize: number, randomizeColors: boolean = true): PointCloudData {
         const data: PointCloudData = {

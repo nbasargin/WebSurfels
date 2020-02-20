@@ -1,9 +1,10 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { vec3 } from 'gl-matrix';
+import { PointDataNode } from '../point-cloud-rendering/renderer2/point-data-node';
 import { AnimatedCamera } from '../point-cloud-rendering/utils/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/utils/fps-counter';
 import { Timing } from '../point-cloud-rendering/utils/timing';
-import { WeightedPointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
+import { PointCloudData, WeightedPointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
 import { PointCloudDataGenerator } from '../point-cloud-rendering/data/point-cloud-data-generator';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
@@ -27,6 +28,10 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
             <div class="flex-line">
                 <input #splatCheck type="checkbox" [checked]="true" (change)="splattingEnabled = splatCheck.checked">
                 HQ splats
+            </div>
+            <div class="flex-line">
+                <input #boundsCheck type="checkbox" [checked]="false" (change)="drawBoundingSphere = boundsCheck.checked">
+                Bounds
             </div>
         </div>
         <div class="info-overlay">
@@ -77,14 +82,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     benchmarkRunning = false;
     splattingEnabled = true;
+    drawBoundingSphere = false;
     private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
     lodTree: LodNode;
     treeDepth: number;
-    optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere}>;
+    optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}>;
     boundingSphere: BoundingSphere;
+    sphereData: PointDataNode;
+    lodData: PointDataNode;
 
     displayInfo = {
         totalPoints: 0,
@@ -182,7 +190,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const inside = s && this.renderer2.frustum.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius);
         this.frustumInfo = s ? 'sphere inside frustum ' + inside : 'no bounding sphere!';
 
-        this.renderer2.render(inside ? this.renderer2.nodes : [], !this.splattingEnabled);
+        const renderedNodes: Array<PointDataNode> = [];
+        if (inside) {
+            renderedNodes.push(this.lodData);
+        }
+        if (this.drawBoundingSphere) {
+            renderedNodes.push(this.sphereData);
+        }
+
+        this.renderer2.render(renderedNodes, !this.splattingEnabled);
 
     }
 
@@ -362,10 +378,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             // this.renderer2.addData(node.positions, node.sizes, node.colors, node.normals);
         }
 
-        const {data, boundingSphere} = this.optimizedLod[lodLevel];
+        const {data, boundingSphere, sphereData} = this.optimizedLod[lodLevel];
         this.displayInfo.renderedPoints = data.positions.length / 3;
         this.boundingSphere = boundingSphere;
-        this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
+        this.lodData = this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
+        this.sphereData = this.renderer2.addData(sphereData.positions, sphereData.sizes, sphereData.colors, sphereData.normals);
     }
 
     getNodesAtSpecificDepth(root: LodNode, depth: number): Array<LodNode> {
@@ -380,13 +397,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    optimizeLod(lodTree: LodNode, levels: number): Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere}> {
-        const optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere}> = [];
+    optimizeLod(lodTree: LodNode, levels: number): Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}> {
+        const optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}> = [];
         for (let level = 0; level < levels; level++) {
             const nodes = this.getNodesAtSpecificDepth(lodTree, level);
             const data = Geometry.mergeData(nodes);
             const boundingSphere = Geometry.getBoundingSphere(data.positions, data.sizes);
-            optimizedLod.push({data, boundingSphere});
+            const sphereData = PointCloudDataGenerator.generateBoundingSphere(boundingSphere);
+            optimizedLod.push({data, boundingSphere, sphereData});
         }
         return optimizedLod;
     }
