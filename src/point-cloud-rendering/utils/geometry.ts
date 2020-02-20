@@ -39,25 +39,14 @@ export class Geometry {
 
         for (let i = 0; i < positions.length; i += 3) {
             const x = positions[i], y = positions[i + 1], z = positions[i + 2];
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            minZ = Math.min(minZ, z);
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
-            maxZ = Math.max(maxZ, z);
-        }
+            const size = sizes ? sizes[i / 3] / 2 : 0;
 
-        if (sizes) {
-            let maxSize = 0;
-            for (let i = 0; i < sizes.length; i++) {
-                maxSize = Math.max(maxSize, sizes[i]);
-            }
-            minX -= maxSize / 2;
-            minY -= maxSize / 2;
-            minZ -= maxSize / 2;
-            maxX += maxSize / 2;
-            maxY += maxSize / 2;
-            maxZ += maxSize / 2;
+            minX = Math.min(minX, x - size);
+            minY = Math.min(minY, y - size);
+            minZ = Math.min(minZ, z - size);
+            maxX = Math.max(maxX, x + size);
+            maxY = Math.max(maxY, y + size);
+            maxZ = Math.max(maxZ, z + size);
         }
 
         return {minX, minY, minZ, maxX, maxY, maxZ}
