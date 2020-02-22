@@ -133,13 +133,16 @@ export class Frustum {
         return true;
     }
 
+    getDistanceToEye(x: number, y: number, z: number) {
+        const dx = this.eye[0] - x;
+        const dy = this.eye[1] - y;
+        const dz = this.eye[2] - z;
+        return  Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
     getProjectedSphereSize(cx: number, cy: number, cz: number, r: number) {
         // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
-        const dx = this.eye[0] - cx;
-        const dy = this.eye[1] - cy;
-        const dz = this.eye[2] - cz;
-        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
+        const dist = this.getDistanceToEye(cx, cy, cz);
         const horizon = dist ** 2 - r ** 2;
         if (horizon < 0) {
             return Number.MAX_VALUE; // inside the sphere -> size is larger than the screen
