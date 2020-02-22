@@ -120,9 +120,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.addDragons(instances, Math.min(20, instances));
             // this.createDragonLod2(32, 12);
             //this.testStreetView();
-            //this.castleTest(32, 12);
+            this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            this.createDynamicLod(64, 12, 0.25);
+            //this.createDynamicLod(64, 12, 0.25);
 
             this.renderLoop(0);
         }, 0);
@@ -336,28 +336,19 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    castleTest(resolution: number, maxDepth: number) {
+    castleTest(resolution: number, maxDepth: number, sizeThreshold: number) {
         this.overlayMessage = 'Loading...';
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.loadCastle().then(data => {
             console.log(Timing.measure(), 'LOADED data');
             this.displayInfo.totalPoints = data.positions.length / 3;
-
-            const octree = new Octree2(data, resolution, maxDepth);
-            this.treeDepth = octree.root.getDepth();
-
+            let octree = new Octree2(data, resolution, maxDepth);
             console.log(Timing.measure(), 'octree created');
-
             this.lodTree = octree.createLOD();
-
             console.log(Timing.measure(), 'LOD created');
-
-            this.optimizedLod = this.optimizeLod(this.lodTree, 7);
-
-            console.log(Timing.measure(), 'LOD optimized');
-
-            this.overlayMessage = '';
-            this.showLodLevel(0);
+            this.cullingTree = new CullingTree(this.renderer2, 0.25, this.lodTree);
+            console.log(Timing.measure(), 'culling ready');
+            this.lodTree = null as any;
         });
     }
 

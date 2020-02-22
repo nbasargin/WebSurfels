@@ -6,7 +6,7 @@ import { PointCloudData } from './point-cloud-data';
 export class StanfordDragonLoader {
 
     public static readonly DRAGON_POINT_SIZE = 0.03;
-    public static readonly CASTLE_POINT_SIZE = 0.03 * 1.5;
+    public static readonly CASTLE_POINT_SIZE = 0.07;
 
     async load(keepEveryNth: number = 1): Promise<PointCloudData> {
         const rawData = await load('assets/point-clouds/stanford_dragon.ply', PLYLoader);
