@@ -32,7 +32,7 @@ export class CullingTree {
         }
     }
 
-    render(): {nodesDrawn: number, pointsDrawn: number} {
+    render(disableSplatting: boolean = false): {nodesDrawn: number, pointsDrawn: number} {
         const renderList: Array<RendererNode> = [];
         const frontier: Array<CullingNode> = [this.root];
         let frontierPosition: number = 0;
@@ -57,7 +57,7 @@ export class CullingTree {
             }
         }
 
-        return this.renderer.render(renderList);
+        return this.renderer.render(renderList, disableSplatting);
     }
 
 

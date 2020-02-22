@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { vec3 } from 'gl-matrix';
+import { CullingTree } from '../point-cloud-rendering/culling-tree/culling-tree';
 import { RendererNode } from '../point-cloud-rendering/renderer2/renderer-node';
 import { AnimatedCamera } from '../point-cloud-rendering/utils/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/utils/fps-counter';
@@ -29,15 +30,11 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
                 <input #splatCheck type="checkbox" [checked]="true" (change)="splattingEnabled = splatCheck.checked">
                 HQ splats
             </div>
-            <div class="flex-line">
-                <input #boundsCheck type="checkbox" [checked]="false" (change)="drawBoundingSphere = boundsCheck.checked">
-                Bounds
-            </div>
         </div>
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
         </div>
-        <div class="lod-overlay" *ngIf="lodTree">
+        <div class="lod-overlay" *ngIf="lodTree && optimizedLod">
             <div class="flex-line">
                 LoD level:
                 <input #lodSlider2 (input)="showLodLevel(+lodSlider2.value)" type="range" min="0"
@@ -55,6 +52,10 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
                 <br> (geometry merged into one node)
             </div>
             {{frustumInfo}}
+        </div>
+        <div class="lod-overlay" *ngIf="rendererDetails">
+            Nodes rendered: {{rendererDetails.nodesDrawn}}<br>
+            Points rendered: {{rendererDetails.pointsDrawn}}<br>
         </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
@@ -82,7 +83,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     benchmarkRunning = false;
     splattingEnabled = true;
-    drawBoundingSphere = false;
     private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
@@ -93,6 +93,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     boundingSphere: BoundingSphere;
     sphereData: RendererNode;
     lodData: RendererNode;
+
+    private cullingTree: CullingTree;
+    rendererDetails: {nodesDrawn: number, pointsDrawn: number};
 
     displayInfo = {
         totalPoints: 0,
@@ -115,10 +118,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.addDragons(instances, Math.min(20, instances));
-            this.createDragonLod2(32, 12);
+            // this.createDragonLod2(32, 12);
             //this.testStreetView();
             //this.castleTest(32, 12);
             //this.sphereTest(300000, 0.02, 4, 12);
+            this.createDynamicLod(64, 12);
 
             this.renderLoop(0);
         }, 0);
@@ -186,20 +190,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         // TEMP: assuming one node with bounding sphere defined
         this.renderer2.frustum.updateFrustumPlanes();
-        const s = this.boundingSphere;
-        const inside = s && this.renderer2.frustum.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius);
-        this.frustumInfo = s ? 'sphere inside frustum ' + inside : 'no bounding sphere!';
-
-        const renderedNodes: Array<RendererNode> = [];
-        if (inside) {
-            renderedNodes.push(this.lodData);
+        if (this.cullingTree) {
+            this.rendererDetails = this.cullingTree.render(!this.splattingEnabled);
+        } else {
+            this.renderer2.render(this.renderer2.nodes, !this.splattingEnabled);
         }
-        if (this.drawBoundingSphere) {
-            renderedNodes.push(this.sphereData);
-        }
-
-        this.renderer2.render(renderedNodes, !this.splattingEnabled);
-
     }
 
     updateFPS(timestamp: number) {
@@ -324,6 +319,20 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
             this.overlayMessage = '';
             this.showLodLevel(0);
+        });
+    }
+
+    createDynamicLod(resolution: number, maxDepth: number) {
+        Timing.measure();
+        const dragonLoader = new StanfordDragonLoader();
+        dragonLoader.loadDropbox().then(data => {
+            console.log(Timing.measure(), 'data loaded');
+            const octree = new Octree2(data, resolution, maxDepth);
+            console.log(Timing.measure(), 'octree created');
+            this.lodTree = octree.createLOD();
+            console.log(Timing.measure(), 'lod computed');
+            this.cullingTree = new CullingTree(this.renderer2, 0.25, this.lodTree);
+            console.log(Timing.measure(), 'culling ready');
         });
     }
 
