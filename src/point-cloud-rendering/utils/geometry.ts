@@ -58,6 +58,13 @@ export class Geometry {
         return {centerX, centerY, centerZ, radius};
     }
 
+    public static sphereDist(s1: BoundingSphere, s2: BoundingSphere) {
+        const dx = s1.centerX - s2.centerX;
+        const dy = s1.centerY - s2.centerY;
+        const dz = s1.centerZ - s2.centerZ;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
     /**
      * Bounding sphere center computation: use average of all point positions as center
      */

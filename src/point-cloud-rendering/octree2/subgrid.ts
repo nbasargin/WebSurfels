@@ -81,6 +81,15 @@ export class Subgrid {
             }
         }
         result.boundingSphere = Geometry.getBoundingSphere(result.positions, result.sizes);
+        // ensure that resulting bounding sphere contains children bounding spheres
+        // advantage: if parent is outside of frustum, children are guaranteed to be outside frustum as well
+        for (const child of childLoDs) {
+            const dist = Geometry.sphereDist(result.boundingSphere, child.boundingSphere);
+            const minRadius = dist + child.boundingSphere.radius;
+            if (result.boundingSphere.radius < minRadius) {
+                result.boundingSphere.radius = minRadius;
+            }
+        }
 
         if (writePos != occupiedCells) {
             console.error('write position and number of occupied cells do not match!');
