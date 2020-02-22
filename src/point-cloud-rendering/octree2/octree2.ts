@@ -1,9 +1,9 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { Geometry } from '../utils/geometry';
 import { InnerNode } from './inner-node';
-import { LodNode } from './lod-node';
+import { LodNode } from '../level-of-detail/lod-node';
 import { OctreeNode } from './octree-node';
-import { Subgrid } from './subgrid';
+import { Subgrid } from '../level-of-detail/subgrid';
 
 type BoundingBox = {minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number};
 

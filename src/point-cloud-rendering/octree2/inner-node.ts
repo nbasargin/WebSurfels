@@ -1,8 +1,8 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { LeafNode } from './leaf-node';
-import { LodNode } from './lod-node';
+import { LodNode } from '../level-of-detail/lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
-import { Subgrid } from './subgrid';
+import { Subgrid } from '../level-of-detail/subgrid';
 
 /**
  * Inner octree node. Does not store any points but has exactly 8 children.

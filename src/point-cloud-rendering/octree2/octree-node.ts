@@ -1,6 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { LodNode } from './lod-node';
-import { Subgrid } from './subgrid';
+import { LodNode } from '../level-of-detail/lod-node';
+import { Subgrid } from '../level-of-detail/subgrid';
 
 /**
  * Octree node that allows adding new points to grow the tree.

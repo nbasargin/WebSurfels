@@ -1,13 +1,13 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { vec3 } from 'gl-matrix';
-import { PointDataNode } from '../point-cloud-rendering/renderer2/point-data-node';
+import { RendererNode } from '../point-cloud-rendering/renderer2/renderer-node';
 import { AnimatedCamera } from '../point-cloud-rendering/utils/animated-camera';
 import { FpsCounter } from '../point-cloud-rendering/utils/fps-counter';
 import { Timing } from '../point-cloud-rendering/utils/timing';
 import { PointCloudData, WeightedPointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
 import { PointCloudDataGenerator } from '../point-cloud-rendering/data/point-cloud-data-generator';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
-import { LodNode } from '../point-cloud-rendering/octree2/lod-node';
+import { LodNode } from '../point-cloud-rendering/level-of-detail/lod-node';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 import { ViewDirection } from '../point-cloud-rendering/renderer2/view-direction';
@@ -91,8 +91,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     treeDepth: number;
     optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}>;
     boundingSphere: BoundingSphere;
-    sphereData: PointDataNode;
-    lodData: PointDataNode;
+    sphereData: RendererNode;
+    lodData: RendererNode;
 
     displayInfo = {
         totalPoints: 0,
@@ -190,7 +190,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const inside = s && this.renderer2.frustum.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius);
         this.frustumInfo = s ? 'sphere inside frustum ' + inside : 'no bounding sphere!';
 
-        const renderedNodes: Array<PointDataNode> = [];
+        const renderedNodes: Array<RendererNode> = [];
         if (inside) {
             renderedNodes.push(this.lodData);
         }

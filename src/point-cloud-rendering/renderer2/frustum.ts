@@ -1,5 +1,5 @@
 import { vec3 } from 'gl-matrix';
-import { Plane2 } from './plane2';
+import { Plane2 } from '../utils/plane2';
 
 export class Frustum {
 

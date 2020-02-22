@@ -1,9 +1,9 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { Geometry } from '../utils/geometry';
-import { Bitfield } from './bitfield';
-import { LodNode } from './lod-node';
+import { Bitfield } from '../utils/bitfield';
+import { LodNode } from '../level-of-detail/lod-node';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
-import { Subgrid } from './subgrid';
+import { Subgrid } from '../level-of-detail/subgrid';
 
 /**
  * A leaf node that stores points.

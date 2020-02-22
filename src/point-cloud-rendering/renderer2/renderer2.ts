@@ -1,15 +1,15 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { Frustum } from '../frustum-culling/frustum';
+import { Frustum } from './frustum';
 
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
 import { NormShader } from './norm-shader';
-import { PointDataNode } from './point-data-node';
+import { RendererNode } from './renderer-node';
 import { SplatShader } from './splat-shader';
 import { WebGLUtils } from './web-gl-utils';
 
 export class Renderer2 {
 
-    public readonly nodes: Set<PointDataNode> = new Set();
+    public readonly nodes: Set<RendererNode> = new Set();
     public readonly frustum: Frustum;
 
     private readonly gl: WebGL2RenderingContext;
@@ -78,8 +78,8 @@ export class Renderer2 {
         this.frustum.setCameraOrientation(eye, target, up);
     }
 
-    addData(positions: Float32Array, sizes: Float32Array, colors: Float32Array, normals: Float32Array): PointDataNode {
-        const node = new PointDataNode();
+    addData(positions: Float32Array, sizes: Float32Array, colors: Float32Array, normals: Float32Array): RendererNode {
+        const node = new RendererNode();
         node.numPoints = positions.length / 3;
         node.buffers = {
             positions: WebGLUtils.createBuffer(this.gl, positions),
@@ -91,7 +91,7 @@ export class Renderer2 {
         return node;
     }
 
-    removeNode(node: PointDataNode) {
+    removeNode(node: RendererNode) {
         this.gl.deleteBuffer(node.buffers.positions);
         this.gl.deleteBuffer(node.buffers.sizes);
         this.gl.deleteBuffer(node.buffers.colors);
@@ -122,7 +122,7 @@ export class Renderer2 {
         this.updatePerspectiveMatrix();
     }
 
-    render(nodes: Iterable<PointDataNode> = this.nodes, disableSplatting: boolean = false): {nodesDrawn: number, pointsDrawn: number} {
+    render(nodes: Iterable<RendererNode> = this.nodes, disableSplatting: boolean = false): {nodesDrawn: number, pointsDrawn: number} {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
@@ -190,7 +190,7 @@ export class Renderer2 {
         return drawStats;
     }
 
-    private drawNodes(nodes: Iterable<PointDataNode>): {nodesDrawn: number, pointsDrawn: number} {
+    private drawNodes(nodes: Iterable<RendererNode>): {nodesDrawn: number, pointsDrawn: number} {
         let nodesDrawn = 0;
         let pointsDrawn = 0;
         for (const node of nodes) {

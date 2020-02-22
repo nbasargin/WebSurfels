@@ -4,7 +4,7 @@
  */
 import { WeightedPointCloudData } from '../data/point-cloud-data';
 import { BoundingSphere } from '../utils/geometry';
-import { OctreeNodeInfo } from './octree-node';
+import { OctreeNodeInfo } from '../octree2/octree-node';
 
 export interface LodNode extends WeightedPointCloudData {
 

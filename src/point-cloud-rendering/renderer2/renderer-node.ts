@@ -1,4 +1,4 @@
-export class PointDataNode {
+export class RendererNode {
 
     visible = true;
     numPoints: number;
