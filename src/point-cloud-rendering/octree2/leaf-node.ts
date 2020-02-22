@@ -94,7 +94,6 @@ export class LeafNode implements OctreeNode {
         const sizes = this.sizes.slice(0, this.pointCount);
         const boundingSphere = Geometry.getBoundingSphere(positions, sizes);
         return {
-            nodeInfo: this.nodeInfo,
             boundingSphere: boundingSphere,
             positions: positions,
             sizes: sizes,
