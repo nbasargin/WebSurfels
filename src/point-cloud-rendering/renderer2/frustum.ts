@@ -139,7 +139,12 @@ export class Frustum {
         const dy = this.eye[1] - cy;
         const dz = this.eye[2] - cz;
         const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        return (1 / Math.tan(this.fovRadians / 2)) * r / Math.sqrt(dist ** 2 - r ** 2);
+
+        const horizon = dist ** 2 - r ** 2;
+        if (horizon < 0) {
+            return Number.MAX_VALUE; // inside the sphere -> size is larger than the screen
+        }
+        return (1 / Math.tan(this.fovRadians / 2)) * r / Math.sqrt(horizon);
     }
 
 }
