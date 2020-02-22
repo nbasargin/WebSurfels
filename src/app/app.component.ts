@@ -122,7 +122,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.testStreetView();
             //this.castleTest(32, 12);
             //this.sphereTest(300000, 0.02, 4, 12);
-            this.createDynamicLod(64, 12);
+            this.createDynamicLod(64, 12, 0.25);
 
             this.renderLoop(0);
         }, 0);
@@ -322,7 +322,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    createDynamicLod(resolution: number, maxDepth: number) {
+    createDynamicLod(resolution: number, maxDepth: number, sizeThreshold: number) {
         Timing.measure();
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.loadDropbox().then(data => {
@@ -331,7 +331,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log(Timing.measure(), 'octree created');
             this.lodTree = octree.createLOD();
             console.log(Timing.measure(), 'lod computed');
-            this.cullingTree = new CullingTree(this.renderer2, 0.25, this.lodTree);
+            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.lodTree);
             console.log(Timing.measure(), 'culling ready');
         });
     }
