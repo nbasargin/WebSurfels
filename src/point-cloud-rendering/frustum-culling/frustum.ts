@@ -133,4 +133,13 @@ export class Frustum {
         return true;
     }
 
+    getProjectedSphereSize(cx: number, cy: number, cz: number, r: number) {
+        // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
+        const dx = this.eye[0] - cx;
+        const dy = this.eye[1] - cy;
+        const dz = this.eye[2] - cz;
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        return (1 / Math.tan(this.fovRadians / 2)) * r / Math.sqrt(dist ** 2 - r ** 2);
+    }
+
 }
