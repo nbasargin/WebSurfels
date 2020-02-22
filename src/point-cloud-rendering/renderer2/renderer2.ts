@@ -79,13 +79,15 @@ export class Renderer2 {
     }
 
     addData(positions: Float32Array, sizes: Float32Array, colors: Float32Array, normals: Float32Array): RendererNode {
-        const node = new RendererNode();
-        node.numPoints = positions.length / 3;
-        node.buffers = {
-            positions: WebGLUtils.createBuffer(this.gl, positions),
-            sizes: WebGLUtils.createBuffer(this.gl, sizes),
-            colors: WebGLUtils.createBuffer(this.gl, colors),
-            normals: WebGLUtils.createBuffer(this.gl, normals),
+        const node: RendererNode = {
+            visible: true,
+            numPoints: positions.length / 3,
+            buffers: {
+                positions: WebGLUtils.createBuffer(this.gl, positions),
+                sizes: WebGLUtils.createBuffer(this.gl, sizes),
+                colors: WebGLUtils.createBuffer(this.gl, colors),
+                normals: WebGLUtils.createBuffer(this.gl, normals),
+            }
         };
         this.nodes.add(node);
         return node;

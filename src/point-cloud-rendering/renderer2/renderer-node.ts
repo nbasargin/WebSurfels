@@ -1,6 +1,6 @@
-export class RendererNode {
+export interface RendererNode {
 
-    visible = true;
+    visible: boolean;
     numPoints: number;
 
     // when adding buffers, make sure that renderer deletes them during cleanup
@@ -10,6 +10,5 @@ export class RendererNode {
         colors: WebGLBuffer;
         normals: WebGLBuffer;
     };
-
 
 }
