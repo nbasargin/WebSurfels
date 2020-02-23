@@ -66,6 +66,10 @@ export class Renderer2 {
         this.gl.clearColor(0, 0, 0, 0);
         this.gl.clearDepth(1.0);
 
+        // enable backface culling, could be an optional setting
+        this.gl.enable(this.gl.CULL_FACE);
+        this.gl.cullFace(this.gl.BACK);
+
         this.setCanvasSize(initialWidth, initialHeight);
         this.setCameraOrientation([0, 0, 0], [0, 0, -1], [0, 1, 0]);
     }

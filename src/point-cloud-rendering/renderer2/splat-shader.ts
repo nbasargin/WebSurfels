@@ -158,10 +158,10 @@ export class SplatShader {
 
     constructor(private gl: WebGL2RenderingContext) {
         const quadData = [
-            -0.5, -0.5, 0,
-            -0.5, 0.5, 0,
             0.5, -0.5, 0,
             0.5, 0.5, 0,
+            -0.5, -0.5, 0,
+            -0.5, 0.5, 0,
         ];
         this.quadVertexBuffer = WebGLUtils.createBuffer(gl, new Float32Array(quadData));
 

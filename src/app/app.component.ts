@@ -120,9 +120,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.addDragons(instances, Math.min(20, instances));
             // this.createDragonLod2(32, 12);
             //this.testStreetView();
-            this.castleTest(64, 12, 0.25);
+            //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            //this.createDynamicLod(64, 12, 0.25);
+            this.createDynamicLod(64, 12, 0.25);
 
             this.renderLoop(0);
         }, 0);
@@ -346,7 +346,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log(Timing.measure(), 'octree created');
             this.lodTree = octree.createLOD();
             console.log(Timing.measure(), 'LOD created');
-            this.cullingTree = new CullingTree(this.renderer2, 0.25, this.lodTree);
+            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.lodTree);
             console.log(Timing.measure(), 'culling ready');
             this.lodTree = null as any;
         });
