@@ -309,7 +309,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log(Timing.measure(), 'data loaded');
             this.displayInfo.totalPoints = data.positions.length / 3;
 
-            const octree = new Octree2(data, resolution, maxDepth);
+            const bb = Geometry.getBoundingBox(data.positions);
+            const octree = new Octree2(bb, resolution, maxDepth);
+            octree.addData(data);
+
             console.log(Timing.measure(), 'octree created');
             this.treeDepth = octree.root.getDepth();
             this.lodTree = octree.createLOD();
@@ -327,7 +330,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.loadDropbox().then(data => {
             console.log(Timing.measure(), 'data loaded');
-            const octree = new Octree2(data, resolution, maxDepth);
+            const bb = Geometry.getBoundingBox(data.positions);
+            const octree = new Octree2(bb, resolution, maxDepth);
+            octree.addData(data);
             console.log(Timing.measure(), 'octree created');
             this.lodTree = octree.createLOD();
             console.log(Timing.measure(), 'lod computed');
@@ -342,7 +347,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         dragonLoader.loadCastle().then(data => {
             console.log(Timing.measure(), 'LOADED data');
             this.displayInfo.totalPoints = data.positions.length / 3;
-            let octree = new Octree2(data, resolution, maxDepth);
+            const bb = Geometry.getBoundingBox(data.positions);
+            const octree = new Octree2(bb, resolution, maxDepth);
+            octree.addData(data);
             console.log(Timing.measure(), 'octree created');
             this.lodTree = octree.createLOD();
             console.log(Timing.measure(), 'LOD created');
@@ -360,7 +367,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         Timing.measure();
         const data = PointCloudDataGenerator.generateSphere(pointNumber, pointSize);
         console.log(Timing.measure(), 'data generated');
-        const octree = new Octree2(data, resolution, maxDepth);
+        const bb = Geometry.getBoundingBox(data.positions);
+        const octree = new Octree2(bb, resolution, maxDepth);
+        octree.addData(data);
         this.treeDepth = octree.root.getDepth();
         console.log(Timing.measure(), 'octree created');
         this.lodTree = octree.createLOD();
