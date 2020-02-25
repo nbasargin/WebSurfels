@@ -23,8 +23,8 @@ import { PointCloudFactory } from '../street-view/point-cloud-factory';
         <div class="fps-overlay">FPS: {{fps}}</div>
         <div class="animation-overlay">
             <div class="flex-line">
-                <input #animCheck type="checkbox" [checked]="false" (change)="benchmarkRunning = animCheck.checked">
-                animate
+                <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
+                Animate
             </div>
             <div class="flex-line">
                 <input #splatCheck type="checkbox" [checked]="true" (change)="splattingEnabled = splatCheck.checked">
@@ -81,7 +81,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private pressedKeys: Set<string>;
 
-    benchmarkRunning = false;
+    benchmarkRunning = true;
     splattingEnabled = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
@@ -117,12 +117,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.view.update(this.angleX, this.angleY);
         setTimeout(() => {
             //const instances = 64;
-            //this.addDragons(instances, Math.min(20, instances));
             // this.createDragonLod2(32, 12);
             //this.testStreetView();
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            this.createDynamicLod(64, 12, 0.25);
+            this.createDynamicLod(64, 12, 0.20);
 
             this.renderLoop(0);
         }, 0);
@@ -268,39 +267,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    addDragons(instances: number, keepEveryNthPoint: number) {
-
-        const dragonLoader = new StanfordDragonLoader();
-
-        dragonLoader.load(keepEveryNthPoint).then(data => {
-            console.log('data loaded');
-
-            let x = 0;
-            let z = 0;
-            const sideLength = Math.floor(Math.sqrt(instances));
-            const spacing = 4;
-
-            for (let inst = 0; inst < instances; inst++) {
-                const goalX = ((inst % sideLength) - sideLength / 2) * spacing;
-                const goalZ = (Math.floor(inst / sideLength) - sideLength / 2) * spacing;
-
-                const dx = goalX - x;
-                const dz = goalZ - z;
-
-                x = goalX;
-                z = goalZ;
-
-                for (let i = 0; i < data.positions.length; i += 3) {
-                    data.positions[i] += dx;
-                    data.positions[i + 2] += dz;
-                }
-
-                this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
-            }
-
-        });
-    }
-
     createDragonLod2(resolution: number, maxDepth: number) {
         this.overlayMessage = 'Loading...';
         Timing.measure();
@@ -326,18 +292,22 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     createDynamicLod(resolution: number, maxDepth: number, sizeThreshold: number) {
+        this.overlayMessage = 'Loading...';
         Timing.measure();
         const dragonLoader = new StanfordDragonLoader();
         dragonLoader.loadDropbox().then(data => {
             console.log(Timing.measure(), 'data loaded');
-            const bb = Geometry.getBoundingBox(data.positions);
+            const multipliedData = Geometry.multiplyData(data, 16, 8);
+            console.log(Timing.measure(), 'data multiplied');
+            const bb = Geometry.getBoundingBox(multipliedData.positions);
             const octree = new Octree2(bb, resolution, maxDepth);
-            octree.addData(data);
+            octree.addData(multipliedData);
             console.log(Timing.measure(), 'octree created');
             this.lodTree = octree.createLOD();
             console.log(Timing.measure(), 'lod computed');
             this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.lodTree);
             console.log(Timing.measure(), 'culling ready');
+            this.overlayMessage = '';
         });
     }
 
