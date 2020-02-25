@@ -8,9 +8,9 @@ export class Frustum {
     private nearDist: number;
     private farDist: number;
 
-    private eye: vec3 | Array<number>;
-    private target: vec3 | Array<number>;
-    private up: vec3 | Array<number>;
+    private eye: vec3;
+    private target: vec3;
+    private up: vec3;
 
     public readonly planes: { near: Plane2, far: Plane2, top: Plane2, bottom: Plane2, left: Plane2, right: Plane2 };
     private readonly planesArray: Array<Plane2>;
@@ -34,7 +34,7 @@ export class Frustum {
         this.farDist = far;
     }
 
-    setCameraOrientation(eye: vec3 | Array<number>, target: vec3 | Array<number>, up: vec3 | Array<number>) {
+    setCameraOrientation(eye: vec3, target: vec3, up: vec3) {
         this.eye = eye;
         this.target = target;
         this.up = up;

@@ -71,10 +71,10 @@ export class Renderer2 {
         this.gl.cullFace(this.gl.BACK);
 
         this.setCanvasSize(initialWidth, initialHeight);
-        this.setCameraOrientation([0, 0, 0], [0, 0, -1], [0, 1, 0]);
+        this.setCameraOrientation( vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, -1), vec3.fromValues(0, 1, 0));
     }
 
-    setCameraOrientation(eye: vec3 | number[], target: vec3 | number[], up: vec3 | number[]) {
+    setCameraOrientation(eye: vec3, target: vec3, up: vec3) {
         vec3.copy(this.uniforms.eyePosition, eye);
         mat4.lookAt(this.uniforms.modelViewMatrix, eye, target, up);
         mat4.invert(this.uniforms.modelViewMatrixIT, this.uniforms.modelViewMatrix);
