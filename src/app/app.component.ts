@@ -77,7 +77,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private readonly view: ViewDirection;
     private angleX: number = Math.PI / 180 * -27;
     private angleY: number = Math.PI / 180 * -22;
-    private movementSpeed = 1;
+    movementSpeed = 1;
 
     private pressedKeys: Set<string>;
 
