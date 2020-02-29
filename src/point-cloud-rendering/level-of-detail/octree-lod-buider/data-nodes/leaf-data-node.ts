@@ -1,9 +1,9 @@
 import { PointCloudData } from '../../../data/point-cloud-data';
-import { Subcell } from '../subcell';
+import { Subcell } from '../subgrid/subcell';
 import { Geometry } from '../../../utils/geometry';
 import { Bitfield } from '../../../utils/bitfield';
 import { LodTree } from '../../lod-tree';
-import { Subgrid } from '../subgrid';
+import { Subgrid } from '../subgrid/subgrid';
 import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
 
 /**

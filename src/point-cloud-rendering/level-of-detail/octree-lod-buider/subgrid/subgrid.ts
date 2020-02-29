@@ -1,7 +1,7 @@
-import { WeightedPointCloudData } from '../../data/point-cloud-data';
-import { OctreeNodeInfo } from './data-nodes/octree-data-node';
-import { Geometry } from '../../utils/geometry';
-import { LodTree } from '../lod-tree';
+import { WeightedPointCloudData } from '../../../data/point-cloud-data';
+import { OctreeNodeInfo } from '../data-nodes/octree-data-node';
+import { Geometry } from '../../../utils/geometry';
+import { LodTree } from '../../lod-tree';
 import { Subcell } from './subcell';
 
 export class Subgrid {

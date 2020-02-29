@@ -1,7 +1,7 @@
 import { PointCloudData } from '../../../data/point-cloud-data';
 import { LodTree } from '../../lod-tree';
 import { LeafDataNode } from './leaf-data-node';
-import { Subgrid } from '../subgrid';
+import { Subgrid } from '../subgrid/subgrid';
 import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
 
 /**

@@ -4,7 +4,7 @@ import { InnerDataNode } from './data-nodes/inner-data-node';
 import { OctreeDataNode } from './data-nodes/octree-data-node';
 import { BoundingBox } from '../../utils/geometry';
 import { LodTree } from '../lod-tree';
-import { Subgrid } from './subgrid';
+import { Subgrid } from './subgrid/subgrid';
 
 /**
  * Creates a lod representation using an octree.
