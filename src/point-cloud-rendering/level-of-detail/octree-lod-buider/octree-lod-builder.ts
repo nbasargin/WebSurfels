@@ -1,9 +1,9 @@
-import { PointCloudData } from '../data/point-cloud-data';
-import { LodBuilder } from '../level-of-detail/lod-builder';
-import { BoundingBox } from '../utils/geometry';
-import { InnerNode } from './inner-node';
-import { LodTree } from '../level-of-detail/lod-tree';
-import { OctreeNode } from './octree-node';
+import { PointCloudData } from '../../data/point-cloud-data';
+import { LodBuilder } from '../lod-builder';
+import { InnerDataNode } from './data-nodes/inner-data-node';
+import { OctreeDataNode } from './data-nodes/octree-data-node';
+import { BoundingBox } from '../../utils/geometry';
+import { LodTree } from '../lod-tree';
 import { Subgrid } from './subgrid';
 
 /**
@@ -14,7 +14,7 @@ import { Subgrid } from './subgrid';
  */
 export class OctreeLodBuilder implements LodBuilder {
 
-    root: OctreeNode;
+    root: OctreeDataNode;
 
     constructor(public readonly boundingBox: BoundingBox, public readonly resolution: number, public readonly maxDepth: number) {
         this.root = this.constructInitialRoot();
@@ -33,12 +33,12 @@ export class OctreeLodBuilder implements LodBuilder {
         return lod;
     }
 
-    private constructInitialRoot(): OctreeNode {
+    private constructInitialRoot(): OctreeDataNode {
         const min = Math.min(this.boundingBox.minX, this.boundingBox.minY, this.boundingBox.minZ);
         const max = Math.max(this.boundingBox.maxX, this.boundingBox.maxY, this.boundingBox.maxZ);
         const size = max - min;
 
-        return new InnerNode({
+        return new InnerDataNode({
             size,
             resolution: this.resolution,
             centerX: (this.boundingBox.maxX - this.boundingBox.minX) / 2 + this.boundingBox.minX,

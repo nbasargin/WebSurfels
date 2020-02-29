@@ -1,8 +1,8 @@
-import { PointCloudData } from '../data/point-cloud-data';
-import { LeafNode } from './leaf-node';
-import { LodTree } from '../level-of-detail/lod-tree';
-import { OctreeNode, OctreeNodeInfo } from './octree-node';
-import { Subgrid } from './subgrid';
+import { PointCloudData } from '../../../data/point-cloud-data';
+import { LodTree } from '../../lod-tree';
+import { LeafDataNode } from './leaf-data-node';
+import { Subgrid } from '../subgrid';
+import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
 
 /**
  * Inner octree node. Does not store any points and redirects the data into child nodes.
@@ -11,11 +11,11 @@ import { Subgrid } from './subgrid';
  *
  * After a lod representation is computed, all the children are removed to free memory.
  */
-export class InnerNode implements OctreeNode {
+export class InnerDataNode implements OctreeDataNode {
 
     public static readonly LOD_RANDOMNESS = 1;
 
-    private children: Array<OctreeNode>;
+    private children: Array<OctreeDataNode>;
 
     constructor(
         public readonly nodeInfo: OctreeNodeInfo,
@@ -30,7 +30,7 @@ export class InnerNode implements OctreeNode {
                 for (const centerX of [nodeInfo.centerX - centerOffset, nodeInfo.centerX + centerOffset]) {
                     const childInfo: OctreeNodeInfo = {size, resolution, centerX, centerY, centerZ};
                     const index = this.getChildIndex(centerX, centerY, centerZ);
-                    this.children[index] = new LeafNode(childInfo, maxDepth - 1);
+                    this.children[index] = new LeafDataNode(childInfo, maxDepth - 1);
                 }
             }
         }
@@ -42,8 +42,8 @@ export class InnerNode implements OctreeNode {
 
         if (!success) {
             // child node did not succeed and has to be expanded
-            const newInnerNode = new InnerNode(this.children[childIndex].nodeInfo, this.maxDepth - 1);
-            const child = this.children[childIndex] as LeafNode;
+            const newInnerNode = new InnerDataNode(this.children[childIndex].nodeInfo, this.maxDepth - 1);
+            const child = this.children[childIndex] as LeafDataNode;
 
             for (let i = 0; i < child.pointCount; i++) {
                 newInnerNode.addPoint(child, i); // add existing points
@@ -58,7 +58,7 @@ export class InnerNode implements OctreeNode {
     computeLOD(subgrid: Subgrid): LodTree {
         const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.positions.length > 0);
         this.children = []; // free space
-        return subgrid.mergeLoD(childLODs, this.nodeInfo, InnerNode.LOD_RANDOMNESS);
+        return subgrid.mergeLoD(childLODs, this.nodeInfo, InnerDataNode.LOD_RANDOMNESS);
     }
 
     private getChildIndex(x: number, y: number, z: number) {

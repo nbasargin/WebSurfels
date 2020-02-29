@@ -1,9 +1,10 @@
-import { PointCloudData } from '../data/point-cloud-data';
-import { Geometry } from '../utils/geometry';
-import { Bitfield } from '../utils/bitfield';
-import { LodTree } from '../level-of-detail/lod-tree';
-import { OctreeNode, OctreeNodeInfo } from './octree-node';
-import { Subgrid } from './subgrid';
+import { PointCloudData } from '../../../data/point-cloud-data';
+import { Subcell } from '../subcell';
+import { Geometry } from '../../../utils/geometry';
+import { Bitfield } from '../../../utils/bitfield';
+import { LodTree } from '../../lod-tree';
+import { Subgrid } from '../subgrid';
+import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
 
 /**
  * A leaf node that stores points.
@@ -13,7 +14,7 @@ import { Subgrid } from './subgrid';
  * A bit field tracks what sub-cells are already occupied.
  * Nodes can only expand when a certain minimal number of points is collected.
  */
-export class LeafNode implements OctreeNode {
+export class LeafDataNode implements OctreeDataNode {
 
     private readonly occupied: Bitfield;
     private splitNeeded: boolean = false;  // at least one cell has a collision (two or mor points inside)
@@ -58,9 +59,9 @@ export class LeafNode implements OctreeNode {
             // node is splittable
             const r = this.nodeInfo.resolution;
 
-            const x = Subgrid.getCellIndex(pointIndex * 3, this.minX, this.nodeInfo.size, r);
-            const y = Subgrid.getCellIndex(pointIndex * 3 + 1, this.minY, this.nodeInfo.size, r);
-            const z = Subgrid.getCellIndex(pointIndex * 3 + 2, this.minZ, this.nodeInfo.size, r);
+            const x = Subcell.getCellIndex(pointIndex * 3, this.minX, this.nodeInfo.size, r);
+            const y = Subcell.getCellIndex(pointIndex * 3 + 1, this.minY, this.nodeInfo.size, r);
+            const z = Subcell.getCellIndex(pointIndex * 3 + 2, this.minZ, this.nodeInfo.size, r);
             const subCellIndex = x + y * r + z * r * r;
 
             if (x >= r || y >= r || z >= r) {

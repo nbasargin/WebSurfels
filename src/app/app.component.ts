@@ -9,7 +9,7 @@ import { PointCloudData, WeightedPointCloudData } from '../point-cloud-rendering
 import { PointCloudDataGenerator } from '../point-cloud-rendering/data/point-cloud-data-generator';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { LodTree } from '../point-cloud-rendering/level-of-detail/lod-tree';
-import { OctreeLodBuilder } from '../point-cloud-rendering/octree2/octree-lod-builder';
+import { OctreeLodBuilder } from '../point-cloud-rendering/level-of-detail/octree-lod-buider/octree-lod-builder';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 import { ViewDirection } from '../point-cloud-rendering/renderer2/view-direction';
 import { BoundingSphere, Geometry } from '../point-cloud-rendering/utils/geometry';
