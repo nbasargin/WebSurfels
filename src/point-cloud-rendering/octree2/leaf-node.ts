@@ -3,7 +3,7 @@ import { Geometry } from '../utils/geometry';
 import { Bitfield } from '../utils/bitfield';
 import { LodTree } from '../level-of-detail/lod-tree';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
-import { Subgrid } from '../level-of-detail/subgrid';
+import { Subgrid } from './subgrid';
 
 /**
  * A leaf node that stores points.
@@ -88,20 +88,22 @@ export class LeafNode implements OctreeNode {
 
     computeLOD(subgrid: Subgrid): LodTree {
         // no need to compute LOD (leaf nodes have all points in different subcells or there are not enough points)
-        const weights = new Float32Array(this.pointCount);
-        weights.fill(1);
         const positions = this.positions.slice(0, this.pointCount * 3);
         const sizes = this.sizes.slice(0, this.pointCount);
+        const colors = this.colors.slice(0, this.pointCount * 3);
+        const normals = this.normals.slice(0, this.pointCount * 3);
+        const weights = new Float32Array(this.pointCount);
+        weights.fill(1);
         const boundingSphere = Geometry.getBoundingSphere(positions, sizes);
-        return {
-            boundingSphere: boundingSphere,
-            positions: positions,
-            sizes: sizes,
-            colors: this.colors.slice(0, this.pointCount * 3),
-            normals: this.normals.slice(0, this.pointCount * 3),
-            weights: weights,
-            children: []
-        }
+
+        // free memory
+        this.capacity = 0;
+        this.positions = new Float32Array(0);
+        this.sizes = new Float32Array(0);
+        this.colors = new Float32Array(0);
+        this.normals = new Float32Array(0);
+
+        return {boundingSphere, positions, sizes, colors, normals, weights, children: []}
     }
 
     private doubleCapacity() {

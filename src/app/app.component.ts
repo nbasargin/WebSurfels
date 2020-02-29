@@ -9,7 +9,7 @@ import { PointCloudData, WeightedPointCloudData } from '../point-cloud-rendering
 import { PointCloudDataGenerator } from '../point-cloud-rendering/data/point-cloud-data-generator';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
 import { LodTree } from '../point-cloud-rendering/level-of-detail/lod-tree';
-import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
+import { OctreeLodBuilder } from '../point-cloud-rendering/octree2/octree-lod-builder';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 import { ViewDirection } from '../point-cloud-rendering/renderer2/view-direction';
 import { BoundingSphere, Geometry } from '../point-cloud-rendering/utils/geometry';
@@ -119,9 +119,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //const instances = 64;
             // this.createDragonLod2(32, 12);
             //this.testStreetView();
-            //this.castleTest(64, 12, 0.25);
+            this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            this.createDynamicLod(64, 12, 0.20);
+            //this.createDynamicLod(64, 12, 0.20);
 
             this.renderLoop(0);
         }, 0);
@@ -276,12 +276,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.displayInfo.totalPoints = data.positions.length / 3;
 
             const bb = Geometry.getBoundingBox(data.positions);
-            const octree = new Octree2(bb, resolution, maxDepth);
+            const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
             octree.addData(data);
 
             console.log(Timing.measure(), 'octree created');
             this.treeDepth = octree.root.getDepth();
-            this.lodTree = octree.createLOD();
+            this.lodTree = octree.buildLod();
             console.log(Timing.measure(), 'lod computed');
             this.optimizedLod = this.optimizeLod(this.lodTree, octree.root.getDepth());
             console.log(Timing.measure(), 'lod optimized');
@@ -300,10 +300,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const multipliedData = Geometry.multiplyData(data, 16, 8);
             console.log(Timing.measure(), 'data multiplied');
             const bb = Geometry.getBoundingBox(multipliedData.positions);
-            const octree = new Octree2(bb, resolution, maxDepth);
+            const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
             octree.addData(multipliedData);
             console.log(Timing.measure(), 'octree created');
-            this.lodTree = octree.createLOD();
+            this.lodTree = octree.buildLod();
             console.log(Timing.measure(), 'lod computed');
             this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.lodTree);
             console.log(Timing.measure(), 'culling ready');
@@ -318,14 +318,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log(Timing.measure(), 'LOADED data');
             this.displayInfo.totalPoints = data.positions.length / 3;
             const bb = Geometry.getBoundingBox(data.positions);
-            const octree = new Octree2(bb, resolution, maxDepth);
+            const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
             octree.addData(data);
             console.log(Timing.measure(), 'octree created');
-            this.lodTree = octree.createLOD();
+            this.lodTree = octree.buildLod();
             console.log(Timing.measure(), 'LOD created');
             this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.lodTree);
             console.log(Timing.measure(), 'culling ready');
             this.lodTree = null as any;
+            this.overlayMessage = '';
         });
     }
 
@@ -338,11 +339,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const data = PointCloudDataGenerator.generateSphere(pointNumber, pointSize);
         console.log(Timing.measure(), 'data generated');
         const bb = Geometry.getBoundingBox(data.positions);
-        const octree = new Octree2(bb, resolution, maxDepth);
+        const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
         octree.addData(data);
         this.treeDepth = octree.root.getDepth();
         console.log(Timing.measure(), 'octree created');
-        this.lodTree = octree.createLOD();
+        this.lodTree = octree.buildLod();
         console.log(Timing.measure(), 'lod computed');
         this.optimizedLod = this.optimizeLod(this.lodTree, this.treeDepth + 1);
         console.log(Timing.measure(), 'lod optimized');

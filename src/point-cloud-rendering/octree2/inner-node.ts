@@ -2,18 +2,20 @@ import { PointCloudData } from '../data/point-cloud-data';
 import { LeafNode } from './leaf-node';
 import { LodTree } from '../level-of-detail/lod-tree';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
-import { Subgrid } from '../level-of-detail/subgrid';
+import { Subgrid } from './subgrid';
 
 /**
- * Inner octree node. Does not store any points but has exactly 8 children.
+ * Inner octree node. Does not store any points and redirects the data into child nodes.
  * Children are initialized to leaf nodes automatically when this node is created.
  * Whenever a child node overflows, it is expanded into another inner node.
+ *
+ * After a lod representation is computed, all the children are removed to free memory.
  */
 export class InnerNode implements OctreeNode {
 
     public static readonly LOD_RANDOMNESS = 1;
 
-    public readonly children: Array<OctreeNode>;
+    private children: Array<OctreeNode>;
 
     constructor(
         public readonly nodeInfo: OctreeNodeInfo,
@@ -55,6 +57,7 @@ export class InnerNode implements OctreeNode {
 
     computeLOD(subgrid: Subgrid): LodTree {
         const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.positions.length > 0);
+        this.children = []; // free space
         return subgrid.mergeLoD(childLODs, this.nodeInfo, InnerNode.LOD_RANDOMNESS);
     }
 
