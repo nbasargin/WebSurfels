@@ -1,6 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { InnerNode } from './inner-node';
-import { LodNode } from '../level-of-detail/lod-node';
+import { LodTree } from '../level-of-detail/lod-tree';
 import { OctreeNode } from './octree-node';
 import { Subgrid } from '../level-of-detail/subgrid';
 
@@ -31,7 +31,7 @@ export class Octree2 {
         console.log(`Added data to octree. The tree now has ${this.root.getNumberOfNodes()} nodes and a total depth of ${this.root.getDepth()}.`);
     }
 
-    createLOD(): LodNode {
+    createLOD(): LodTree {
         return this.root.computeLOD(new Subgrid(this.resolution));
     }
 

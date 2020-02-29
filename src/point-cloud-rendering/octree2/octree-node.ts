@@ -1,5 +1,5 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { LodNode } from '../level-of-detail/lod-node';
+import { LodTree } from '../level-of-detail/lod-tree';
 import { Subgrid } from '../level-of-detail/subgrid';
 
 /**
@@ -11,7 +11,7 @@ export interface OctreeNode {
 
     addPoint(data: PointCloudData, pointIndex: number): boolean;
 
-    computeLOD(subgrid: Subgrid): LodNode;
+    computeLOD(subgrid: Subgrid): LodTree;
 
     getNumberOfNodes(): number;
 

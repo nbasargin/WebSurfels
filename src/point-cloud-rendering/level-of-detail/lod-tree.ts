@@ -5,7 +5,7 @@
 import { WeightedPointCloudData } from '../data/point-cloud-data';
 import { BoundingSphere } from '../utils/geometry';
 
-export interface LodNode extends WeightedPointCloudData {
+export interface LodTree extends WeightedPointCloudData {
 
     boundingSphere: BoundingSphere;
 
@@ -15,6 +15,6 @@ export interface LodNode extends WeightedPointCloudData {
     normals: Float32Array;
     weights: Float32Array;
 
-    children: Array<LodNode>;
+    children: Array<LodTree>;
 
 }

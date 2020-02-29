@@ -8,7 +8,7 @@ import { Timing } from '../point-cloud-rendering/utils/timing';
 import { PointCloudData, WeightedPointCloudData } from '../point-cloud-rendering/data/point-cloud-data';
 import { PointCloudDataGenerator } from '../point-cloud-rendering/data/point-cloud-data-generator';
 import { StanfordDragonLoader } from '../point-cloud-rendering/data/stanford-dragon-loader';
-import { LodNode } from '../point-cloud-rendering/level-of-detail/lod-node';
+import { LodTree } from '../point-cloud-rendering/level-of-detail/lod-tree';
 import { Octree2 } from '../point-cloud-rendering/octree2/octree2';
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 import { ViewDirection } from '../point-cloud-rendering/renderer2/view-direction';
@@ -87,7 +87,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
-    lodTree: LodNode;
+    lodTree: LodTree;
     treeDepth: number;
     optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}>;
     boundingSphere: BoundingSphere;
@@ -364,11 +364,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.sphereData = this.renderer2.addData(sphereData.positions, sphereData.sizes, sphereData.colors, sphereData.normals);
     }
 
-    getNodesAtSpecificDepth(root: LodNode, depth: number): Array<LodNode> {
+    getNodesAtSpecificDepth(root: LodTree, depth: number): Array<LodTree> {
         if (depth <= 0 || root.children.length == 0) {
             return [root];
         } else {
-            let nodes: Array<LodNode> = [];
+            let nodes: Array<LodTree> = [];
             for (const child of root.children) {
                 nodes = nodes.concat(this.getNodesAtSpecificDepth(child, depth - 1));
             }
@@ -376,7 +376,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    optimizeLod(lodTree: LodNode, levels: number): Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}> {
+    optimizeLod(lodTree: LodTree, levels: number): Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}> {
         const optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}> = [];
         for (let level = 0; level < levels; level++) {
             const nodes = this.getNodesAtSpecificDepth(lodTree, level);

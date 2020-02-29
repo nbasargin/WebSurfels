@@ -1,7 +1,7 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { Geometry } from '../utils/geometry';
 import { Bitfield } from '../utils/bitfield';
-import { LodNode } from '../level-of-detail/lod-node';
+import { LodTree } from '../level-of-detail/lod-tree';
 import { OctreeNode, OctreeNodeInfo } from './octree-node';
 import { Subgrid } from '../level-of-detail/subgrid';
 
@@ -86,7 +86,7 @@ export class LeafNode implements OctreeNode {
         return true;
     }
 
-    computeLOD(subgrid: Subgrid): LodNode {
+    computeLOD(subgrid: Subgrid): LodTree {
         // no need to compute LOD (leaf nodes have all points in different subcells or there are not enough points)
         const weights = new Float32Array(this.pointCount);
         weights.fill(1);

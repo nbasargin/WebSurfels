@@ -1,6 +1,6 @@
 import { WeightedPointCloudData } from '../data/point-cloud-data';
 import { Geometry } from '../utils/geometry';
-import { LodNode } from './lod-node';
+import { LodTree } from './lod-tree';
 import { OctreeNodeInfo } from '../octree2/octree-node';
 
 export class Subgrid {
@@ -22,7 +22,7 @@ export class Subgrid {
         this.indexGrid = new Int32Array(resolution ** 3);
     }
 
-    mergeLoD(childLoDs: Array<LodNode>, nodeInfo: OctreeNodeInfo, indexRandomness: number = 0): LodNode {
+    mergeLoD(childLoDs: Array<LodTree>, nodeInfo: OctreeNodeInfo, indexRandomness: number = 0): LodTree {
         this.indexGrid.fill(-1);
         const mergedLoD = Geometry.mergeData(childLoDs);
         const pos = mergedLoD.positions;
@@ -57,7 +57,7 @@ export class Subgrid {
         }
 
         // create output
-        const result: LodNode = {
+        const result: LodTree = {
             boundingSphere: {centerX: 0, centerY: 0, centerZ: 0, radius: 0},
             positions: new Float32Array(occupiedCells * 3),
             sizes: new Float32Array(occupiedCells),
