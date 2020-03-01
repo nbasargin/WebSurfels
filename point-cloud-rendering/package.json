@@ -1,0 +1,12 @@
+{
+  "name": "point-cloud-rendering",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "pako": "^1.0.11"
+  },
+  "devDependencies": {
+    "typescript": "~3.5.3",
+    "tslib": "^1.10.0"
+  }
+}

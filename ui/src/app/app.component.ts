@@ -13,9 +13,9 @@ import { OctreeLodBuilder } from '../point-cloud-rendering/level-of-detail/octre
 import { Renderer2 } from '../point-cloud-rendering/renderer2/renderer2';
 import { ViewDirection } from '../point-cloud-rendering/renderer2/view-direction';
 import { BoundingSphere, Geometry } from '../point-cloud-rendering/utils/geometry';
-import { DepthData } from '../street-view/depth-data';
-import { PanoramaLoader } from '../street-view/panorama-loader';
-import { PointCloudFactory } from '../street-view/point-cloud-factory';
+import { DepthData } from '../../../point-cloud-rendering/street-view/depth-data';
+import { PanoramaLoader } from '../../../point-cloud-rendering/street-view/panorama-loader';
+import { PointCloudFactory } from '../../../point-cloud-rendering/street-view/point-cloud-factory';
 
 @Component({
     selector: 'app-root',
