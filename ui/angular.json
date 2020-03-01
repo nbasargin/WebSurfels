@@ -25,7 +25,8 @@
             "aot": false,
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {"glob": "**/*.ply", "input": "../point-clouds/", "output": "assets/point-clouds"}
             ],
             "styles": [
               "src/styles.scss"

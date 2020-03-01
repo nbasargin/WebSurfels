@@ -119,9 +119,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //const instances = 64;
             // this.createDragonLod2(32, 12);
             //this.testStreetView();
-            this.castleTest(64, 12, 0.25);
+            //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            //this.createDynamicLod(64, 12, 0.20);
+            this.createDynamicLod(64, 12, 0.20);
 
             this.renderLoop(0);
         }, 0);
@@ -295,7 +295,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.overlayMessage = 'Loading...';
         Timing.measure();
         const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.loadDropbox().then(data => {
+        dragonLoader.load().then(data => {
             console.log(Timing.measure(), 'data loaded');
             const multipliedData = Geometry.multiplyData(data, 16, 8);
             console.log(Timing.measure(), 'data multiplied');
