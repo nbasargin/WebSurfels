@@ -1,4 +1,5 @@
-import { PointCloudData } from '../../ui/src/point-cloud-rendering/data/point-cloud-data';
+
+import { PointCloudData } from '../data/point-cloud-data';
 import { DepthData } from './depth-data';
 
 export class PointCloudFactory {

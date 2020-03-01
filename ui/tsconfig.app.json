@@ -11,7 +11,8 @@
     "src/polyfills.ts"
   ],
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "../point-cloud-rendering/**/*.ts"
   ],
   "exclude": [
     "src/test.ts",
