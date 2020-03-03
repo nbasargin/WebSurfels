@@ -12,7 +12,7 @@
   ],
   "include": [
     "src/**/*.ts",
-    "../point-cloud-rendering/**/*.ts"
+    "../web-surfels/**/*.ts"
   ],
   "exclude": [
     "src/test.ts",
