@@ -1,21 +1,21 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { vec3 } from '../../../point-cloud-rendering/reexport'
-import { CullingTree } from '../../../point-cloud-rendering/culling-tree/culling-tree';
-import { RendererNode } from '../../../point-cloud-rendering/renderer2/renderer-node';
-import { AnimatedCamera } from '../../../point-cloud-rendering/utils/animated-camera';
-import { FpsCounter } from '../../../point-cloud-rendering/utils/fps-counter';
-import { Timing } from '../../../point-cloud-rendering/utils/timing';
-import { PointCloudData, WeightedPointCloudData } from '../../../point-cloud-rendering/data/point-cloud-data';
-import { PointCloudDataGenerator } from '../../../point-cloud-rendering/data/point-cloud-data-generator';
-import { StanfordDragonLoader } from '../../../point-cloud-rendering/data/stanford-dragon-loader';
-import { LodTree } from '../../../point-cloud-rendering/level-of-detail/lod-tree';
-import { OctreeLodBuilder } from '../../../point-cloud-rendering/level-of-detail/octree-lod-buider/octree-lod-builder';
-import { Renderer2 } from '../../../point-cloud-rendering/renderer2/renderer2';
-import { ViewDirection } from '../../../point-cloud-rendering/renderer2/view-direction';
-import { BoundingSphere, Geometry } from '../../../point-cloud-rendering/utils/geometry';
-import { DepthData } from '../../../point-cloud-rendering/street-view/depth-data';
-import { PanoramaLoader } from '../../../point-cloud-rendering/street-view/panorama-loader';
-import { PointCloudFactory } from '../../../point-cloud-rendering/street-view/point-cloud-factory';
+import { vec3 } from 'web-surfels';
+import { CullingTree } from 'web-surfels';
+import { RendererNode } from 'web-surfels';
+import { AnimatedCamera } from 'web-surfels';
+import { FpsCounter } from 'web-surfels';
+import { Timing } from 'web-surfels';
+import { PointCloudData, WeightedPointCloudData } from 'web-surfels';
+import { PointCloudDataGenerator } from 'web-surfels';
+import { StanfordDragonLoader } from 'web-surfels';
+import { LodTree } from 'web-surfels';
+import { OctreeLodBuilder } from 'web-surfels';
+import { Renderer2 } from 'web-surfels';
+import { ViewDirection } from 'web-surfels';
+import { BoundingSphere, Geometry } from 'web-surfels';
+import { DepthData } from 'web-surfels';
+import { PanoramaLoader } from 'web-surfels';
+import { PointCloudFactory } from 'web-surfels';
 
 @Component({
     selector: 'app-root',
@@ -89,13 +89,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     lodTree: LodTree;
     treeDepth: number;
-    optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}>;
+    optimizedLod: Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }>;
     boundingSphere: BoundingSphere;
     sphereData: RendererNode;
     lodData: RendererNode;
 
     private cullingTree: CullingTree;
-    rendererDetails: {nodesDrawn: number, pointsDrawn: number};
+    rendererDetails: { nodesDrawn: number, pointsDrawn: number };
 
     displayInfo = {
         totalPoints: 0,
@@ -377,8 +377,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    optimizeLod(lodTree: LodTree, levels: number): Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}> {
-        const optimizedLod: Array<{data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData}> = [];
+    optimizeLod(lodTree: LodTree, levels: number): Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }> {
+        const optimizedLod: Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }> = [];
         for (let level = 0; level < levels; level++) {
             const nodes = this.getNodesAtSpecificDepth(lodTree, level);
             const data = Geometry.mergeData(nodes);
