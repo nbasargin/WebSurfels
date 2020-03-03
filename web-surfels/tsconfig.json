@@ -1,12 +1,13 @@
 {
     "compilerOptions": {
         "strictNullChecks": true,
-        "module": "es6",
+        "module": "commonjs",
         "moduleResolution": "node",
         "target": "es2017",
         "noImplicitAny": false,
         "sourceMap": false,
         "outDir": "lib",
+        "declaration": true,
         "typeRoots": [
             "node_modules/@types"
         ],
