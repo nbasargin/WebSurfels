@@ -1,5 +1,11 @@
 {
   "name": "web-surfels-server",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "scripts": {
+    "start": "tsc && node dist/server.js"
+  },
+  "devDependencies": {
+    "typescript": "~3.5.3"
+  }
 }
