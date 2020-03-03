@@ -11,8 +11,7 @@
     "src/polyfills.ts"
   ],
   "include": [
-    "src/**/*.ts",
-    "../web-surfels/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "src/test.ts",
