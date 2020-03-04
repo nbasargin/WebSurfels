@@ -6,6 +6,7 @@
     "start": "tsc && node dist/server.js"
   },
   "devDependencies": {
+    "@types/node": "^13.7.7",
     "typescript": "~3.5.3"
   }
 }
