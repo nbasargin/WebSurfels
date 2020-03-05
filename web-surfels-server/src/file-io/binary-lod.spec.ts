@@ -25,8 +25,8 @@ describe('Binary Lod', () => {
     test('toBinary creates output of correct size and version', () => {
         const binary = BinaryLod.toBinary(node);
         expect(binary.byteLength).toBe(4 * (8 + 3) + 4 * points * (3 + 1 + 3 + 3));
-        const view = new Int32Array(binary);
-        expect(view[0]).toBe(1);
+        const view = new DataView(binary);
+        expect(view.getInt32(0, true)).toBe(1);
     });
 
     test('fromBinary decodes toBinary correctly', () => {

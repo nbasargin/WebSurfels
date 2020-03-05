@@ -7,6 +7,7 @@ export class BinaryLod {
     /**
      * Binary format version 1.
      * Each value is either a float32 or an uint32 and takes up exactly 4 bytes.
+     * Endianness: little-endian, since data is usually generated & viewed on little-endian processors
      *
      * Type          Values
      * ----          ------
