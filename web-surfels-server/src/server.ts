@@ -24,7 +24,7 @@ async function writeLodTreeToFiles(lod: LodNode, folderPath: string) {
 
 async function writeLodNode(node: LodNode, folderPath: string) {
     const binary = BinaryLod.toBinary(node);
-    await FileIO.writeFile(folderPath + node.id, binary);
+    await FileIO.writeFile(folderPath + node.id + '.lod', binary);
     for (const child of node.children) {
         await writeLodNode(child, folderPath);
     }
@@ -32,7 +32,7 @@ async function writeLodNode(node: LodNode, folderPath: string) {
 
 const folderPath = './lod/';
 writeLodTreeToFiles(lod, folderPath).then(() => {
-    console.log('done writing lod');
+    console.log(Timing.measure(), 'done writing lod');
 }).catch(err => {
     console.log('error writing lod', err);
 });
