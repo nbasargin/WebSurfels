@@ -1,4 +1,4 @@
-import pako from 'pako';
+import * as pako from 'pako';
 
 export interface DepthDataHeader {
     headerSize: number;

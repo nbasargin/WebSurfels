@@ -46,7 +46,7 @@ export class PointCloudFactory {
                 positions.push(px * t, py * t, pz * t);
                 sizes.push(0.03 * Math.abs(t)); // todo size based on distance (with some limit)
                 colors.push(1, 1, 1); // todo: extract from color data
-                normals.push(... plane.normal)
+                normals.push(-plane.normal[0], -plane.normal[1], -plane.normal[2]);
             }
         }
 

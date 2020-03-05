@@ -74,7 +74,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private renderer2: Renderer2;
 
     private readonly cameraPos: vec3;
-    private readonly view: ViewDirection;
+    private view: ViewDirection;
     private angleX: number = Math.PI / 180 * -27;
     private angleY: number = Math.PI / 180 * -22;
     movementSpeed = 1;
@@ -118,10 +118,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             // this.createDragonLod2(32, 12);
-            //this.testStreetView();
+            this.testStreetView();
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            this.createDynamicLod(64, 12, 0.20);
+            //this.createDynamicLod(64, 12, 0.20);
 
             this.renderLoop(0);
         }, 0);
@@ -246,7 +246,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     testStreetView() {
-
+        this.view = new ViewDirection(true);
+        this.view.update(this.angleX, this.angleY);
         // panorama loader
 
         const factory = new PointCloudFactory();
