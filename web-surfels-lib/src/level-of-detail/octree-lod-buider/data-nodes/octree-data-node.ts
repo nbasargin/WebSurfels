@@ -1,5 +1,5 @@
 import { PointCloudData } from '../../../data/point-cloud-data';
-import { LodTree } from '../../lod-tree';
+import { WeightedLodNode } from '../../lod-node';
 import { Subgrid } from '../subgrid/subgrid';
 
 /**
@@ -15,7 +15,7 @@ export interface OctreeDataNode {
      * Computing lod will remove all added data to free memory.
      * @param subgrid
      */
-    computeLOD(subgrid: Subgrid): LodTree;
+    computeLOD(subgrid: Subgrid): WeightedLodNode;
 
     getNumberOfNodes(): number;
 

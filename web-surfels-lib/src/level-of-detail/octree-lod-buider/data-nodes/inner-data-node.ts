@@ -1,5 +1,5 @@
 import { PointCloudData } from '../../../data/point-cloud-data';
-import { LodTree } from '../../lod-tree';
+import { WeightedLodNode } from '../../lod-node';
 import { LeafDataNode } from './leaf-data-node';
 import { Subgrid } from '../subgrid/subgrid';
 import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
@@ -55,8 +55,8 @@ export class InnerDataNode implements OctreeDataNode {
         return true;
     }
 
-    computeLOD(subgrid: Subgrid): LodTree {
-        const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.positions.length > 0);
+    computeLOD(subgrid: Subgrid): WeightedLodNode {
+        const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.data.positions.length > 0);
         this.children = []; // free space
         return subgrid.mergeLoD(childLODs, this.nodeInfo, InnerDataNode.LOD_RANDOMNESS);
     }

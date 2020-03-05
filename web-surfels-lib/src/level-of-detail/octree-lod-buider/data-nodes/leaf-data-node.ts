@@ -1,8 +1,9 @@
 import { PointCloudData } from '../../../data/point-cloud-data';
+import { UidGenerator } from '../../../utils/uid-generator';
+import { WeightedLodNode } from '../../lod-node';
 import { Subcell } from '../subgrid/subcell';
 import { Geometry } from '../../../utils/geometry';
 import { Bitfield } from '../../../utils/bitfield';
-import { LodTree } from '../../lod-tree';
 import { Subgrid } from '../subgrid/subgrid';
 import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
 
@@ -87,7 +88,7 @@ export class LeafDataNode implements OctreeDataNode {
         return true;
     }
 
-    computeLOD(subgrid: Subgrid): LodTree {
+    computeLOD(subgrid: Subgrid): WeightedLodNode {
         // no need to compute LOD (leaf nodes have all points in different subcells or there are not enough points)
         const positions = this.positions.slice(0, this.pointCount * 3);
         const sizes = this.sizes.slice(0, this.pointCount);
@@ -96,6 +97,8 @@ export class LeafDataNode implements OctreeDataNode {
         const weights = new Float32Array(this.pointCount);
         weights.fill(1);
         const boundingSphere = Geometry.getBoundingSphere(positions, sizes);
+        const id = UidGenerator.genUID();
+        const data: PointCloudData = {positions, sizes, colors, normals};
 
         // free memory
         this.capacity = 0;
@@ -104,7 +107,7 @@ export class LeafDataNode implements OctreeDataNode {
         this.colors = new Float32Array(0);
         this.normals = new Float32Array(0);
 
-        return {boundingSphere, positions, sizes, colors, normals, weights, children: []}
+        return {id, boundingSphere, data, childIDs: [], children: [], weights}
     }
 
     private doubleCapacity() {

@@ -1,7 +1,8 @@
 import { WeightedPointCloudData } from '../../../data/point-cloud-data';
+import { UidGenerator } from '../../../utils/uid-generator';
+import { WeightedLodNode } from '../../lod-node';
 import { OctreeNodeInfo } from '../data-nodes/octree-data-node';
 import { Geometry } from '../../../utils/geometry';
-import { LodTree } from '../../lod-tree';
 import { Subcell } from './subcell';
 
 export class Subgrid {
@@ -12,9 +13,9 @@ export class Subgrid {
         this.indexGrid = new Int32Array(resolution ** 3);
     }
 
-    mergeLoD(childLoDs: Array<LodTree>, nodeInfo: OctreeNodeInfo, indexRandomness: number = 0): LodTree {
+    mergeLoD(childLoDs: Array<WeightedLodNode>, nodeInfo: OctreeNodeInfo, indexRandomness: number = 0): WeightedLodNode {
         this.indexGrid.fill(-1);
-        const mergedLoD = Geometry.mergeData(childLoDs);
+        const mergedLoD = Geometry.mergeLodNodes(childLoDs);
         const pos = mergedLoD.positions;
 
         const minX = nodeInfo.centerX - nodeInfo.size / 2;
@@ -47,14 +48,18 @@ export class Subgrid {
         }
 
         // create output
-        const result: LodTree = {
+        const result: WeightedLodNode = {
+            id: UidGenerator.genUID(),
             boundingSphere: {centerX: 0, centerY: 0, centerZ: 0, radius: 0},
-            positions: new Float32Array(occupiedCells * 3),
-            sizes: new Float32Array(occupiedCells),
-            colors: new Float32Array(occupiedCells * 3),
-            normals: new Float32Array(occupiedCells * 3),
-            weights: new Float32Array(occupiedCells),
+            data: {
+                positions: new Float32Array(occupiedCells * 3),
+                sizes: new Float32Array(occupiedCells),
+                colors: new Float32Array(occupiedCells * 3),
+                normals: new Float32Array(occupiedCells * 3)
+            },
+            childIDs: childLoDs.map(child => child.id),
             children: childLoDs,
+            weights: new Float32Array(occupiedCells),
         };
         let writePos = 0;
         for (let i = 0; i < this.indexGrid.length; i++) {
@@ -69,7 +74,7 @@ export class Subgrid {
                 writePos++;
             }
         }
-        result.boundingSphere = Geometry.getBoundingSphere(result.positions, result.sizes);
+        result.boundingSphere = Geometry.getBoundingSphere(result.data.positions, result.data.sizes);
         // ensure that resulting bounding sphere contains children bounding spheres
         // advantage: if parent is outside of frustum, children are guaranteed to be outside frustum as well
         for (const child of childLoDs) {
@@ -88,7 +93,7 @@ export class Subgrid {
     }
 
     // merging points in a single cell
-    private static mergePoints(input: WeightedPointCloudData, inputIndices: Array<number>, nodeInfo: OctreeNodeInfo, output: WeightedPointCloudData, outputIndex: number): void {
+    private static mergePoints(input: WeightedPointCloudData, inputIndices: Array<number>, nodeInfo: OctreeNodeInfo, output: WeightedLodNode, outputIndex: number): void {
 
         let x = 0, y = 0, z = 0;
         let r = 0, g = 0, b = 0;
@@ -145,19 +150,19 @@ export class Subgrid {
         const size = Math.min(constAreaSize, maxRadius * Math.sqrt(2), cellSize);
 
         // write output
-        output.positions[outputIndex * 3] = x;
-        output.positions[outputIndex * 3 + 1] = y;
-        output.positions[outputIndex * 3 + 2] = z;
+        output.data.positions[outputIndex * 3] = x;
+        output.data.positions[outputIndex * 3 + 1] = y;
+        output.data.positions[outputIndex * 3 + 2] = z;
 
-        output.sizes[outputIndex] = size;
+        output.data.sizes[outputIndex] = size;
 
-        output.colors[outputIndex * 3] = r;
-        output.colors[outputIndex * 3 + 1] = g;
-        output.colors[outputIndex * 3 + 2] = b;
+        output.data.colors[outputIndex * 3] = r;
+        output.data.colors[outputIndex * 3 + 1] = g;
+        output.data.colors[outputIndex * 3 + 2] = b;
 
-        output.normals[outputIndex * 3] = nx;
-        output.normals[outputIndex * 3 + 1] = ny;
-        output.normals[outputIndex * 3 + 2] = nz;
+        output.data.normals[outputIndex * 3] = nx;
+        output.data.normals[outputIndex * 3 + 1] = ny;
+        output.data.normals[outputIndex * 3 + 2] = nz;
 
         output.weights[outputIndex] = weightSum;
     }

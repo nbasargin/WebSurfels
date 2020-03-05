@@ -1,4 +1,4 @@
-import { LodTree } from '../level-of-detail/lod-tree';
+import { LodNode } from '../level-of-detail/lod-node';
 import { RendererNode } from '../renderer2/renderer-node';
 import { Renderer2 } from '../renderer2/renderer2';
 import { CullingNode } from './culling-node';
@@ -15,12 +15,13 @@ export class CullingTree {
      * @param sizeThreshold  percentage of screen height, nodes below this are rendered and not expanded
      * @param lodNode
      */
-    constructor(public renderer: Renderer2, public sizeThreshold: number, lodNode: LodTree) {
+    constructor(public renderer: Renderer2, public sizeThreshold: number, lodNode: LodNode) {
         this.root = this.addLodNode(renderer, lodNode);
     }
 
-    addLodNode(renderer: Renderer2, lodNode: LodTree): CullingNode {
-        const rendererNode = renderer.addData(lodNode.positions, lodNode.sizes, lodNode.colors, lodNode.normals);
+    addLodNode(renderer: Renderer2, lodNode: LodNode): CullingNode {
+        const data = lodNode.data;
+        const rendererNode = renderer.addData(data.positions, data.sizes, data.colors, data.normals);
         const children: Array<CullingNode> = [];
         for (const child of lodNode.children) {
             children.push(this.addLodNode(renderer, child));

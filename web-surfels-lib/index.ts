@@ -15,7 +15,7 @@ export * from './src/utils/fps-counter';
 export * from './src/utils/timing';
 
 export * from './src/level-of-detail/lod-builder';
-export * from './src/level-of-detail/lod-tree';
+export * from './src/level-of-detail/lod-node';
 export * from './src/level-of-detail/octree-lod-buider/octree-lod-builder';
 
 export * from './src/data/point-cloud-data';
