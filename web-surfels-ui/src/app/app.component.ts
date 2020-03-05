@@ -8,7 +8,6 @@ import { Timing } from 'web-surfels';
 import { PointCloudData, WeightedPointCloudData } from 'web-surfels';
 import { PointCloudDataGenerator } from 'web-surfels';
 import { StanfordDragonLoader } from 'web-surfels';
-import { LodTree } from 'web-surfels';
 import { OctreeLodBuilder } from 'web-surfels';
 import { Renderer2 } from 'web-surfels';
 import { ViewDirection } from 'web-surfels';
@@ -16,6 +15,7 @@ import { BoundingSphere, Geometry } from 'web-surfels';
 import { DepthData } from 'web-surfels';
 import { PanoramaLoader } from 'web-surfels';
 import { PointCloudFactory } from 'web-surfels';
+import { WeightedLodNode } from 'web-surfels';
 
 @Component({
     selector: 'app-root',
@@ -34,7 +34,7 @@ import { PointCloudFactory } from 'web-surfels';
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
         </div>
-        <div class="lod-overlay" *ngIf="lodTree && optimizedLod">
+        <div class="lod-overlay" *ngIf="weightedLodNode && optimizedLod">
             <div class="flex-line">
                 LoD level:
                 <input #lodSlider2 (input)="showLodLevel(+lodSlider2.value)" type="range" min="0"
@@ -87,7 +87,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
-    lodTree: LodTree;
+    weightedLodNode: WeightedLodNode;
     treeDepth: number;
     optimizedLod: Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }>;
     boundingSphere: BoundingSphere;
@@ -281,9 +281,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
             console.log(Timing.measure(), 'octree created');
             this.treeDepth = octree.root.getDepth();
-            this.lodTree = octree.buildLod();
+            this.weightedLodNode = octree.buildLod();
             console.log(Timing.measure(), 'lod computed');
-            this.optimizedLod = this.optimizeLod(this.lodTree, octree.root.getDepth());
+            this.optimizedLod = this.optimizeLod(this.weightedLodNode, octree.root.getDepth());
             console.log(Timing.measure(), 'lod optimized');
 
             this.overlayMessage = '';
@@ -303,9 +303,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
             octree.addData(multipliedData);
             console.log(Timing.measure(), 'octree created');
-            this.lodTree = octree.buildLod();
+            this.weightedLodNode = octree.buildLod();
             console.log(Timing.measure(), 'lod computed');
-            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.lodTree);
+            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.weightedLodNode);
             console.log(Timing.measure(), 'culling ready');
             this.overlayMessage = '';
         });
@@ -321,11 +321,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
             octree.addData(data);
             console.log(Timing.measure(), 'octree created');
-            this.lodTree = octree.buildLod();
+            this.weightedLodNode = octree.buildLod();
             console.log(Timing.measure(), 'LOD created');
-            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.lodTree);
+            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.weightedLodNode);
             console.log(Timing.measure(), 'culling ready');
-            this.lodTree = null as any;
+            this.weightedLodNode = null as any;
             this.overlayMessage = '';
         });
     }
@@ -343,16 +343,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         octree.addData(data);
         this.treeDepth = octree.root.getDepth();
         console.log(Timing.measure(), 'octree created');
-        this.lodTree = octree.buildLod();
+        this.weightedLodNode = octree.buildLod();
         console.log(Timing.measure(), 'lod computed');
-        this.optimizedLod = this.optimizeLod(this.lodTree, this.treeDepth + 1);
+        this.optimizedLod = this.optimizeLod(this.weightedLodNode, this.treeDepth + 1);
         console.log(Timing.measure(), 'lod optimized');
         this.showLodLevel(0);
     }
 
     showLodLevel(lodLevel: number) {
         this.renderer2.removeAllNodes();
-        const nodes = this.getNodesAtSpecificDepth(this.lodTree, lodLevel);
+        const nodes = this.getNodesAtSpecificDepth(this.weightedLodNode, lodLevel);
         this.displayInfo.octreeNodes = nodes.length;
         for (const node of nodes) {
             // this.renderer2.addData(node.positions, node.sizes, node.colors, node.normals);
@@ -365,23 +365,23 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.sphereData = this.renderer2.addData(sphereData.positions, sphereData.sizes, sphereData.colors, sphereData.normals);
     }
 
-    getNodesAtSpecificDepth(root: LodTree, depth: number): Array<LodTree> {
+    getNodesAtSpecificDepth(root: WeightedLodNode, depth: number): Array<WeightedLodNode> {
         if (depth <= 0 || root.children.length == 0) {
             return [root];
         } else {
-            let nodes: Array<LodTree> = [];
+            let nodes: Array<WeightedLodNode> = [];
             for (const child of root.children) {
-                nodes = nodes.concat(this.getNodesAtSpecificDepth(child, depth - 1));
+                nodes = nodes.concat(this.getNodesAtSpecificDepth(child as WeightedLodNode, depth - 1));
             }
             return nodes;
         }
     }
 
-    optimizeLod(lodTree: LodTree, levels: number): Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }> {
+    optimizeLod(lodNode: WeightedLodNode, levels: number): Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }> {
         const optimizedLod: Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }> = [];
         for (let level = 0; level < levels; level++) {
-            const nodes = this.getNodesAtSpecificDepth(lodTree, level);
-            const data = Geometry.mergeData(nodes);
+            const nodes = this.getNodesAtSpecificDepth(lodNode, level);
+            const data = Geometry.mergeLodNodes(nodes);
             const boundingSphere = Geometry.getBoundingSphere(data.positions, data.sizes);
             const sphereData = PointCloudDataGenerator.generateBoundingSphere(boundingSphere);
             optimizedLod.push({data, boundingSphere, sphereData});
