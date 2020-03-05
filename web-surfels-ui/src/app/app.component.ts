@@ -117,11 +117,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.view.update(this.angleX, this.angleY);
         setTimeout(() => {
             //const instances = 64;
-            // this.createDragonLod2(32, 12);
-            this.testStreetView();
+            //this.createDragonLod2(32, 12);
+            //this.testStreetView();
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            //this.createDynamicLod(64, 12, 0.20);
+            this.createDynamicLod(64, 12, 0.20);
 
             this.renderLoop(0);
         }, 0);
@@ -129,6 +129,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     ngOnDestroy(): void {
         cancelAnimationFrame(this.animationRequest);
+        this.renderer2.removeAllNodes();
     }
 
     @HostListener('document:keydown', ['$event'])
