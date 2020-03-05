@@ -2,6 +2,9 @@
   "name": "web-surfels",
   "version": "0.0.0",
   "private": true,
+  "scripts": {
+    "start": "tsc"
+  },
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
