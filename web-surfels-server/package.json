@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "tsc && node dist/server.js"
+    "start": "tsc && node dist/server.js",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/jest": "^25.1.3",
