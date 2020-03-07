@@ -45,7 +45,7 @@ export class LodBinary {
         const floats = new Float32Array(buffer);
 
         // set header
-        ints[0] = 1; // version
+        ints[0] = LodBinary.BINARY_VERSION;
         ints[1] = nodeID;
         ints[2] = numChildNodes;
         ints[3] = numPoints;
@@ -86,7 +86,7 @@ export class LodBinary {
         const floats = new Float32Array(buffer);
 
         // process header
-        if (ints[0] !== 1) {
+        if (ints[0] !== LodBinary.BINARY_VERSION) {
             throw new Error('invalid version ' + ints[0]);
         }
         const id = ints[1];
