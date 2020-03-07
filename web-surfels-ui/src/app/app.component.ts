@@ -16,6 +16,7 @@ import { DepthData } from 'web-surfels';
 import { PanoramaLoader } from 'web-surfels';
 import { PointCloudFactory } from 'web-surfels';
 import { WeightedLodNode } from 'web-surfels';
+import { LodLoader } from '../lod-loader/lod-loader';
 
 @Component({
     selector: 'app-root',
@@ -121,7 +122,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.testStreetView();
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            this.createDynamicLod(64, 12, 0.20);
+            //this.createDynamicLod(64, 12, 0.20);
+            this.loadDynamicLod(0.20);
 
             this.renderLoop(0);
         }, 0);
@@ -297,7 +299,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.overlayMessage = 'Loading...';
         Timing.measure();
         const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.load().then(data => {
+        dragonLoader.loadDropbox().then(data => {
             console.log(Timing.measure(), 'data loaded');
             const multipliedData = Geometry.multiplyData(data, 16, 8);
             console.log(Timing.measure(), 'data multiplied');
@@ -311,6 +313,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log(Timing.measure(), 'culling ready');
             this.overlayMessage = '';
         });
+    }
+
+    loadDynamicLod(sizeThreshold: number) {
+        this.overlayMessage = 'Loading...';
+        LodLoader.loadAllNodes().then(lod => {
+            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, lod);
+            this.overlayMessage = '';
+        }).catch(console.error);
     }
 
     castleTest(resolution: number, maxDepth: number, sizeThreshold: number) {
