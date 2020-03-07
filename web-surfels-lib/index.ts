@@ -13,6 +13,7 @@ export * from './src/utils/geometry';
 export * from './src/utils/animated-camera';
 export * from './src/utils/fps-counter';
 export * from './src/utils/timing';
+export * from './src/utils/binary-xhr';
 
 export * from './src/level-of-detail/lod-builder';
 export * from './src/level-of-detail/lod-node';

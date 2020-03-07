@@ -1,5 +1,6 @@
 import { PLYLoader } from '@loaders.gl/ply';
 import { load, parse } from '@loaders.gl/core';
+import { BinaryXHR } from '../utils/binary-xhr';
 import { Timing } from '../utils/timing';
 import { PointCloudData } from './point-cloud-data';
 
@@ -15,22 +16,10 @@ export class StanfordDragonLoader {
 
     async loadDropbox(keepEveryNth: number = 1): Promise<PointCloudData> {
         const url = "https://www.dl.dropboxusercontent.com/s/9inx5f1n5sm2cp8/stanford_dragon.ply?dl=1";
-        return new Promise<PointCloudData>((resolve, reject) => {
-            const req = new XMLHttpRequest();
-            req.open("GET", url, true);
-            req.responseType = "arraybuffer";
-            req.onerror = e => reject(e);
-            req.onload = () => {
-                const buffer = req.response;
-                if (buffer) {
-                    parse(buffer, PLYLoader).then(rawData => {
-                        resolve(this.parseDragonData(rawData, keepEveryNth));
-                    });
-                } else {
-                    reject('no response');
-                }
-            };
-            req.send();
+        return BinaryXHR.get(url).then(buffer => {
+            return parse(buffer, PLYLoader);
+        }).then(rawData => {
+            return this.parseDragonData(rawData, keepEveryNth);
         });
     }
 
