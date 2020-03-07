@@ -3,11 +3,11 @@ import { FileIO } from './file-io/file-io';
 
 console.log(Timing.measure(), 'starting');
 
-const data = PointCloudDataGenerator.generateSphere(1000000, 1, true);
+const data = PointCloudDataGenerator.generateSphere(1000000, 0.01, true);
 console.log(Timing.measure(), 'generated sphere');
 
 const bb = Geometry.getBoundingBox(data.positions);
-const octree = new OctreeLodBuilder(bb, 32, 10);
+const octree = new OctreeLodBuilder(bb, 128, 10);
 octree.addData(data);
 console.log(Timing.measure(), 'octree created');
 
