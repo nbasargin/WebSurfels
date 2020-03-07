@@ -1,5 +1,7 @@
-import { PointCloudDataGenerator, PointCloudData, LodNode } from 'web-surfels';
-import { BinaryLod } from './binary-lod';
+import { PointCloudData } from '../data/point-cloud-data';
+import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
+import { LodBinary } from './lod-binary';
+import { LodNode } from './lod-node';
 
 describe('Binary Lod', () => {
     const points = 115;
@@ -23,15 +25,15 @@ describe('Binary Lod', () => {
     });
 
     test('toBinary creates output of correct size and version', () => {
-        const binary = BinaryLod.toBinary(node);
+        const binary = LodBinary.toBinary(node);
         expect(binary.byteLength).toBe(4 * (8 + 3) + 4 * points * (3 + 1 + 3 + 3));
         const view = new DataView(binary);
         expect(view.getInt32(0, true)).toBe(1);
     });
 
     test('fromBinary decodes toBinary correctly', () => {
-        const binary = BinaryLod.toBinary(node);
-        const decoded = BinaryLod.fromBinary(binary);
+        const binary = LodBinary.toBinary(node);
+        const decoded = LodBinary.fromBinary(binary);
 
         // header
         expect(decoded.id).toBe(node.id);

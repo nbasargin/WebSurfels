@@ -16,7 +16,8 @@
             "dom"
         ],
         "types": [
-            "webgl2"
+            "webgl2",
+            "jest"
         ]
     },
     "include": ["src/**/*", "./index.ts"],

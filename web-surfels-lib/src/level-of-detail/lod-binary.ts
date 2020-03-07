@@ -1,6 +1,8 @@
-import { LodNode, PointCloudData, BoundingSphere } from 'web-surfels';
+import { PointCloudData } from '../data/point-cloud-data';
+import { BoundingSphere } from '../utils/geometry';
+import { LodNode } from './lod-node';
 
-export class BinaryLod {
+export class LodBinary {
 
     /**
      * Binary format version 1.

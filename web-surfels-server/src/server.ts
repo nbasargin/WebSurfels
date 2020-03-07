@@ -1,5 +1,4 @@
-import { Geometry, OctreeLodBuilder, LodNode, PointCloudDataGenerator, Timing } from 'web-surfels';
-import { BinaryLod } from './file-io/binary-lod';
+import { Geometry, OctreeLodBuilder, LodNode, PointCloudDataGenerator, Timing, LodBinary } from 'web-surfels';
 import { FileIO } from './file-io/file-io';
 
 console.log(Timing.measure(), 'starting');
@@ -23,7 +22,7 @@ async function writeLodTreeToFiles(lod: LodNode, folderPath: string) {
 }
 
 async function writeLodNode(node: LodNode, folderPath: string) {
-    const binary = BinaryLod.toBinary(node);
+    const binary = LodBinary.toBinary(node);
     await FileIO.writeFile(folderPath + node.id + '.lod', binary);
     for (const child of node.children) {
         await writeLodNode(child, folderPath);
