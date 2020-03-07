@@ -3,7 +3,7 @@ import { FileIO } from './file-io/file-io';
 
 console.log(Timing.measure(), 'starting');
 
-const data = PointCloudDataGenerator.generateSphere(10, 1, true);
+const data = PointCloudDataGenerator.generateSphere(1000000, 1, true);
 console.log(Timing.measure(), 'generated sphere');
 
 const bb = Geometry.getBoundingBox(data.positions);
