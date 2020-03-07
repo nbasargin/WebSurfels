@@ -18,14 +18,14 @@ console.log(Timing.measure(), 'lod computed'); // bounding sphere is lod.boundin
 // write lod to files
 async function writeLodTreeToFiles(lod: LodNode, folderPath: string) {
     await FileIO.mkDir(folderPath);
-    await writeLodNode(lod, folderPath);
+    await writeLodNode(lod, folderPath, true);
 }
 
-async function writeLodNode(node: LodNode, folderPath: string) {
+async function writeLodNode(node: LodNode, folderPath: string, isRootNode: boolean) {
     const binary = LodBinary.toBinary(node);
-    await FileIO.writeFile(folderPath + node.id + '.lod', binary);
+    await FileIO.writeFile(folderPath + (isRootNode ? 'root' : node.id) + '.lod', binary);
     for (const child of node.children) {
-        await writeLodNode(child, folderPath);
+        await writeLodNode(child, folderPath, false);
     }
 }
 
