@@ -7,11 +7,10 @@ export class BinaryXHR {
             req.responseType = 'arraybuffer';
             req.onerror = e => reject(e);
             req.onload = () => {
-                const buffer = req.response;
-                if (buffer) {
-                    resolve(buffer);
+                if (req.response && req.status === 200) {
+                    resolve(req.response);
                 } else {
-                    reject('no response');
+                    reject( `Request to '${url}' failed with error code ${req.status}`);
                 }
             };
             req.send();
