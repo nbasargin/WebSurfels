@@ -5,7 +5,7 @@
   "scripts": {
     "start": "tsc && node dist/server.js",
     "test": "jest",
-    "serve-lod": "serve lod"
+    "serve-lod": "serve lod --cors"
   },
   "devDependencies": {
     "@types/jest": "^25.1.3",
