@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "tsc && node dist/server.js",
+    "start": "tsc && node --max-old-space-size=8192 dist/server.js",
     "test": "jest",
     "serve-lod": "serve lod --cors"
   },
