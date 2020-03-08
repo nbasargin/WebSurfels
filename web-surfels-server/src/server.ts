@@ -1,63 +1,59 @@
-import { Geometry, OctreeLodBuilder, LodNode, Timing, LodBinary, PointCloudData } from 'web-surfels';
+import { Geometry, OctreeLodBuilder, LodNode, Timing, LodBinary, StanfordDragonLoader } from 'web-surfels';
 import { FileIO } from './file-io/file-io';
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
 
-async function loadData(): Promise<PointCloudData> {
-    const castleFile = await FileIO.readFile('../point-clouds/stanford_dragon.ply');
-    const rawData = await parse(castleFile, PLYLoader);
-    const sizes = new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3));
-    sizes.fill(0.03);
-    const data: PointCloudData = {
-        positions: rawData.attributes.POSITION.value,
-        sizes: sizes,
-        normals: rawData.attributes.NORMAL.value,
-        colors: new Float32Array(rawData.attributes.COLOR_0.value),
-    };
-    for (let i = 0; i < data.positions.length; i++) {
-        data.positions[i] *= 20.0;
-    }
-    for (let i = 1; i < data.positions.length; i+=3) {
-        data.positions[i] -= 2.5;
-    }
-    for (let i = 0; i < data.colors.length; i++) {
-        data.colors[i] /= 255.0;
-    }
-    return data;
-}
+let filesWritten = 0;
 
 // write lod to files
-async function writeLodTreeToFiles(lod: LodNode, folderPath: string) {
+async function writeLodTreeToFiles(lod: LodNode, folderPath: string, logNth: number) {
     await FileIO.mkDir(folderPath);
-    await writeLodNode(lod, folderPath, true);
+    await writeLodNode(lod, folderPath, true, logNth);
 }
 
-async function writeLodNode(node: LodNode, folderPath: string, isRootNode: boolean) {
+async function writeLodNode(node: LodNode, folderPath: string, isRootNode: boolean, logNth: number) {
     const binary = LodBinary.toBinary(node);
     await FileIO.writeFile(folderPath + (isRootNode ? 'root' : node.id) + '.lod', binary);
+    filesWritten++;
+    if (filesWritten % logNth === 0) {
+        console.log('written ' + filesWritten + ' files')
+    }
     for (const child of node.children) {
-        await writeLodNode(child, folderPath, false);
+        await writeLodNode(child, folderPath, false, logNth);
     }
 }
 
-console.log(Timing.measure(), 'starting');
+async function generateLod() {
+    console.log(Timing.measure(), 'starting');
 
-loadData().then(data => {
-    console.log(Timing.measure(), 'raw data loaded');
+    const castleFile = await FileIO.readFile('../point-clouds/3drm_neuschwanstein.ply');
+    console.log(Timing.measure(), 'file was loaded');
+
+    const rawData = await parse(castleFile, PLYLoader);
+    console.log(Timing.measure(), 'ply format parsed');
+
+    const data = StanfordDragonLoader.processCastleData(rawData);
+    console.log(Timing.measure(), 'data pre-processing done');
 
     const bb = Geometry.getBoundingBox(data.positions);
-    const octree = new OctreeLodBuilder(bb, 32, 10);
+    console.log(Timing.measure(), 'bounding box computed');
+
+    const octree = new OctreeLodBuilder(bb, 128, 10);
     octree.addData(data);
+    const numNodes = octree.root.getNumberOfNodes();
     console.log(Timing.measure(), 'octree created');
 
     const lod = octree.buildLod();
-    console.log(Timing.measure(), 'lod computed'); // bounding sphere is lod.boundingSphere
+    console.log(Timing.measure(), 'lod computed, start writing to disk');
 
     const folderPath = './lod/';
-    writeLodTreeToFiles(lod, folderPath).then(() => {
+    writeLodTreeToFiles(lod, folderPath, Math.floor(numNodes / 20) ).then(() => {
         console.log(Timing.measure(), 'done writing lod');
     }).catch(err => {
         console.log('error writing lod', err);
     });
+}
 
+generateLod().catch(err => {
+    console.error(err);
 });
