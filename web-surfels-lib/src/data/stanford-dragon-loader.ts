@@ -46,8 +46,12 @@ export class StanfordDragonLoader {
 
     async loadCastle(): Promise<PointCloudData> {
         console.log(Timing.measure(), 'START loading');
-        const rawData = await load('assets/point-clouds/3drm_neuschwanstein.ply', PLYLoader);
+        const rawData = await load('http://localhost:5000/3drm_neuschwanstein.ply', PLYLoader);
         console.log(Timing.measure(), 'START parsing data');
+        return StanfordDragonLoader.processCastleData(rawData);
+    }
+
+    static processCastleData(rawData: any): PointCloudData {
         const sizes = new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3));
         sizes.fill(StanfordDragonLoader.CASTLE_POINT_SIZE);
         const data: PointCloudData = {
