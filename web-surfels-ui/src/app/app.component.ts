@@ -123,7 +123,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
-            this.loadDynamicLod(0.20);
+            this.loadDynamicLod(0.40);
 
             this.renderLoop(0);
         }, 0);
