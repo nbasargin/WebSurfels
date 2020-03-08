@@ -16,6 +16,8 @@ import { DepthData } from 'web-surfels';
 import { PanoramaLoader } from 'web-surfels';
 import { PointCloudFactory } from 'web-surfels';
 import { WeightedLodNode } from 'web-surfels';
+import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
+import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
 import { LodLoader } from '../lod-loader/lod-loader';
 
 @Component({
@@ -58,6 +60,12 @@ import { LodLoader } from '../lod-loader/lod-loader';
             Nodes rendered: {{rendererDetails.nodesDrawn}}<br>
             Points rendered: {{rendererDetails.pointsDrawn}}<br>
         </div>
+        <div class="lod-overlay" *ngIf="dynamicLod">
+            Nodes loaded: {{dynamicLod.stats.loadedNodes}}<br>
+            Points loaded: {{dynamicLod.stats.loadedPoints}}<br><br>
+            Nodes rendered: {{dynamicLod.stats.renderedNodes}}<br>
+            Points rendered: {{dynamicLod.stats.renderedPoints}}<br>
+        </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
         </div>
@@ -96,6 +104,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     lodData: RendererNode;
 
     private cullingTree: CullingTree;
+    private dynamicLod: DynamicLodTree;
     rendererDetails: { nodesDrawn: number, pointsDrawn: number };
 
     displayInfo = {
@@ -123,7 +132,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
-            this.loadDynamicLod(0.40);
+            //this.loadDynamicLod(0.40);
+            this.loadDynamicLod2(0.40);
 
             this.renderLoop(0);
         }, 0);
@@ -194,6 +204,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer2.frustum.updateFrustumPlanes();
         if (this.cullingTree) {
             this.rendererDetails = this.cullingTree.render(!this.splattingEnabled);
+
+        } else if (this.dynamicLod) {
+            this.dynamicLod.render(!this.splattingEnabled);
         } else {
             this.renderer2.render(this.renderer2.nodes, !this.splattingEnabled);
         }
@@ -321,6 +334,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, lod);
             this.overlayMessage = '';
         }).catch(console.error);
+    }
+
+    loadDynamicLod2(sizeThreshold: number) {
+        const loader = new XhrLodLoader('http://localhost:5000/');
+        this.dynamicLod = new DynamicLodTree(this.renderer2, loader, sizeThreshold);
     }
 
     castleTest(resolution: number, maxDepth: number, sizeThreshold: number) {

@@ -5,7 +5,7 @@ import { LodLoader } from './lod-loader';
 
 export class DynamicLodTree {
 
-    private stats = {
+    readonly stats = {
         loadedNodes: 0,
         loadedPoints: 0,
         renderedNodes: 0,
