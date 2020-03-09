@@ -12,7 +12,7 @@ export class AnimatedCamera {
     nextFrame(renderer: Renderer2) {
         this.frame++;
         const twoPi = Math.PI * 2;
-        const dist = 5 * (1.2 + Math.cos(this.frame / 1200 * twoPi));
+        const dist = 120 * (1.2 + Math.cos(this.frame / 1200 * twoPi));
         const y = 2; // 4;
 
         const angle = this.frame / 700 * twoPi;
