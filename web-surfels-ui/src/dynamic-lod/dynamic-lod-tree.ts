@@ -82,12 +82,25 @@ export class DynamicLodTree {
         }
         try {
             parent.state = DynamicLodNodeState.CHILDREN_LOADING;
-            const promises = parent.childIDs.map(id => this.loader.loadNode(id));
-            const childLods = await Promise.all(promises);
-            if (parent.state !== DynamicLodNodeState.CHILDREN_LOADING) {
-                return; // discard children if loading was cancelled (e.g. node was unloaded)
+            const promises2: Array<Promise<DynamicLodNode>> = [];
+            for (const childID of parent.childIDs) {
+                const lodNodePromise = this.loader.loadNode(childID);
+                const dynamicNodePromise = lodNodePromise.then(lodNode => {
+                    return this.addLodNode(lodNode);
+                });
+                promises2.push(dynamicNodePromise);
             }
-            parent.children = childLods.map(childLod => this.addLodNode(childLod));
+
+            const dynamicChildLods = await Promise.all(promises2);
+            if (parent.state !== DynamicLodNodeState.CHILDREN_LOADING) {
+                // discard children if loading was cancelled (e.g. node was unloaded)
+                // if we do not allow to unload parent while children are loading this could be simplified
+                for (const childLod of dynamicChildLods) {
+                    this.renderer.removeNode(childLod.rendererNode);
+                }
+                return;
+            }
+            parent.children = dynamicChildLods;
             parent.state = DynamicLodNodeState.FULLY_LOADED;
         } catch (error) {
             parent.state = DynamicLodNodeState.CHILDREN_LOAD_ERROR;
