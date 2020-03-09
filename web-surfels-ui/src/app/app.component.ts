@@ -344,6 +344,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     loadDynamicLod2(sizeThreshold: number) {
+        // castle cam config
+        vec3.set(this.cameraPos, -90, 23, 92);
+        this.angleX = -0.69;
+        this.angleY = -0.29;
+        this.view.update(this.angleX, this.angleY);
+
         const loader = new XhrLodLoader('http://localhost:5000/');
         this.dynamicLod = new DynamicLodTree(this.renderer2, loader, sizeThreshold);
     }
