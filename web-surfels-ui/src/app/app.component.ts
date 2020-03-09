@@ -64,7 +64,14 @@ import { LodLoader } from '../lod-loader/lod-loader';
             Nodes loaded: {{dynamicLod.stats.loadedNodes}}<br>
             Points loaded: {{dynamicLod.stats.loadedPoints}}<br><br>
             Nodes rendered: {{dynamicLod.stats.renderedNodes}}<br>
-            Points rendered: {{dynamicLod.stats.renderedPoints}}<br>
+            Points rendered: {{dynamicLod.stats.renderedPoints}}<br><br>
+            <div class="flex-line">
+                Size threshold:
+                <input #sizeThresholdSlider (input)="dynamicLod.sizeThreshold = +sizeThresholdSlider.value"
+                       type="range" min="0.4" max="2.4" step="0.1" value="1.4">
+                {{dynamicLod.sizeThreshold}}
+            </div>
+            (higher threshold = lower quality)
         </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
@@ -133,7 +140,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
             //this.loadDynamicLod(0.40);
-            this.loadDynamicLod2(0.40);
+            this.loadDynamicLod2(1.4);
 
             this.renderLoop(0);
         }, 0);
