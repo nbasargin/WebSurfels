@@ -72,6 +72,13 @@ import { LodLoader } from '../lod-loader/lod-loader';
                 {{dynamicLod.sizeThreshold}}
             </div>
             (higher threshold = lower quality)
+
+            <div class="flex-line">
+                Size scale:
+                <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
+                       type="range" min="0.2" max="2" step="0.1" value="1">
+                {{sizeScaleSlider.value}}
+            </div>
         </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
