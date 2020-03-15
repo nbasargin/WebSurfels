@@ -18,7 +18,6 @@ import { PointCloudFactory } from 'web-surfels';
 import { WeightedLodNode } from 'web-surfels';
 import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
 import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
-import { LodLoader } from '../lod-loader/lod-loader';
 
 @Component({
     selector: 'app-root',
@@ -146,7 +145,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
-            //this.loadDynamicLod(0.40);
             this.loadDynamicLod2(1.4);
 
             this.renderLoop(0);
@@ -340,14 +338,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log(Timing.measure(), 'culling ready');
             this.overlayMessage = '';
         });
-    }
-
-    loadDynamicLod(sizeThreshold: number) {
-        this.overlayMessage = 'Loading...';
-        LodLoader.loadAllNodes().then(lod => {
-            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, lod);
-            this.overlayMessage = '';
-        }).catch(console.error);
     }
 
     loadDynamicLod2(sizeThreshold: number) {
