@@ -2,6 +2,7 @@ import { WebGLUtils } from './web-gl-utils';
 
 const SHAPE_PRESERVING_DEPTH_PASS: 0 | 1 = 1;
 const SPLAT_DEPTH: 'auto' | number = 'auto';
+const SPLAT_DEPTH_EPSILON = 0.0001; // added to depth value during depth pass to reduce z-fighting
 
 export const quadVS = `
     #version 300 es
@@ -68,8 +69,8 @@ export const quadVS = `
             if (uDepthPass) {
                 vec3 view_direction = normalize(vertex_pos - uEyePos);
                 vertex_pos += view_direction * ${SPLAT_DEPTH === 'auto' ? 'world_point_size * 0.5' : SPLAT_DEPTH};	
-                vec4 new = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0); 	
-                gl_Position.z = new.z / new.w * gl_Position.w;
+                vec4 new = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0);
+                gl_Position.z = new.z * (gl_Position.w / new.w) + ${SPLAT_DEPTH_EPSILON};
             }
         #endif
 		
