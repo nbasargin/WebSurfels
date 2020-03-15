@@ -34,6 +34,7 @@ export const quadVS = `
     uniform mat4 uModelViewMatrixIT;
     uniform mat4 uProjectionMatrix;
     uniform bool uDepthPass;
+    uniform float uSizeScale;
     
     out highp vec2 uv;
     flat out vec3 v_color;
@@ -45,7 +46,7 @@ export const quadVS = `
         
 		vec3 rot_axis = normalize(cross(quad_normal, point_normal));
 		float rot_angle = acos(dot(quad_normal, point_normal));
-		float world_point_size = size;
+		float world_point_size = size * uSizeScale;
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
 		
@@ -154,6 +155,7 @@ export class SplatShader {
         modelViewMatrix: WebGLUniformLocation,
         modelViewMatrixIT: WebGLUniformLocation,
         depthPass: WebGLUniformLocation,
+        sizeScale: WebGLUniformLocation,
     };
 
     constructor(private gl: WebGL2RenderingContext) {
@@ -181,6 +183,7 @@ export class SplatShader {
             modelViewMatrix: gl.getUniformLocation(this.program, 'uModelViewMatrix') as WebGLUniformLocation,
             modelViewMatrixIT: gl.getUniformLocation(this.program, 'uModelViewMatrixIT') as WebGLUniformLocation,
             depthPass: gl.getUniformLocation(this.program, 'uDepthPass') as WebGLUniformLocation,
+            sizeScale: gl.getUniformLocation(this.program, 'uSizeScale') as WebGLUniformLocation,
         };
     }
 

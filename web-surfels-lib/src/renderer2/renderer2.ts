@@ -30,6 +30,8 @@ export class Renderer2 {
         far: number,
     };
 
+    private sizeScale: number = 1;
+
     constructor(public readonly canvas: HTMLCanvasElement, initialWidth: number, initialHeight: number) {
         const context = canvas.getContext('webgl2');
         if (!context || !(context instanceof WebGL2RenderingContext)) {
@@ -128,6 +130,10 @@ export class Renderer2 {
         this.updatePerspectiveMatrix();
     }
 
+    setSplatSizeScale(sizeScale: number) {
+        this.sizeScale = sizeScale;
+    }
+
     render(nodes: Iterable<RendererNode> = this.nodes, disableSplatting: boolean = false): {nodesDrawn: number, pointsDrawn: number} {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
@@ -149,6 +155,7 @@ export class Renderer2 {
         this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.projectionMatrix, false, this.uniforms.projectionMatrix);
         this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.modelViewMatrix, false, this.uniforms.modelViewMatrix);
         this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.modelViewMatrixIT, false, this.uniforms.modelViewMatrixIT);
+        this.gl.uniform1f(this.splatShader.uniformLocations.sizeScale, this.sizeScale);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.splatShader.quadVertexBuffer);
         this.gl.vertexAttribPointer(this.splatShader.attributeLocations.quadVertex, 3, this.gl.FLOAT, false, 0, 0);
