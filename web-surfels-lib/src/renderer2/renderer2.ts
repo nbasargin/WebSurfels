@@ -61,7 +61,7 @@ export class Renderer2 {
 
         this.perspectiveParams = {
             fovRadians: Math.PI / 3,
-            near: 0.01,
+            near: 0.1,
             far: 1000,
         };
 
