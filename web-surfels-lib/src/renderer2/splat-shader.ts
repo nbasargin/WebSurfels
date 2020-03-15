@@ -1,14 +1,11 @@
 import { WebGLUtils } from './web-gl-utils';
 
-const SHAPE_PRESERVING_DEPTH_PASS: 0 | 1 = 1;
-const SPLAT_DEPTH: 'auto' | number = 'auto';
+const SPLAT_DEPTH_TO_SIZE_RATIO = 0.5; // multiplied with point size to determine splatting depth
 const SPLAT_DEPTH_EPSILON = 0.0001; // added to depth value during depth pass to reduce z-fighting
 
 export const quadVS = `
     #version 300 es
     
-    // only modify z but not x & y during depth pass: more expensive but prevents mismatching shapes
-    #define SHAPE_PRESERVING_DEPTH_PASS ${SHAPE_PRESERVING_DEPTH_PASS}
     #define USE_LIGHTING 1
     #define MIN_LIGHTNESS 0.3
     
@@ -39,7 +36,6 @@ export const quadVS = `
     
     out highp vec2 uv;
     flat out vec3 v_color;
-    // flat out vec3 v_normal;
     
     void main() {
         vec3 point_normal = normal;
@@ -51,34 +47,22 @@ export const quadVS = `
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
 		
-		vec3 vertex_pos = pos + rot_mat * quadVertex * world_point_size;
-		
-		
-        #if defined(SHAPE_PRESERVING_DEPTH_PASS) && SHAPE_PRESERVING_DEPTH_PASS == 0
-            // for non shape-preserving depth pass, move points away from the camera to create a depth margin 
-            if (uDepthPass) {
-                vec3 view_direction = normalize(vertex_pos - uEyePos);
-                vertex_pos += view_direction * ${SPLAT_DEPTH === 'auto' ? 'world_point_size * 0.5' : SPLAT_DEPTH};		
-            }
-        #endif
-		  
+		vec3 vertex_pos = pos + rot_mat * quadVertex * world_point_size;		
         gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0); 
         
-        #if defined(SHAPE_PRESERVING_DEPTH_PASS) && SHAPE_PRESERVING_DEPTH_PASS == 1
-            // for shape-preserving depth pass, modify z as if point would be more far away 
-            if (uDepthPass) {
-                vec3 view_direction = normalize(vertex_pos - uEyePos);
-                vertex_pos += view_direction * ${SPLAT_DEPTH === 'auto' ? 'world_point_size * 0.5' : SPLAT_DEPTH};	
-                vec4 new = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0);
-                gl_Position.z = new.z * (gl_Position.w / new.w) + ${SPLAT_DEPTH_EPSILON};
-            }
-        #endif
-		
         uv = quadVertex.xy * 2.0;
         
-        // Gouraud shading
-        
-        if (!uDepthPass) {        
+        if (uDepthPass) {            
+            // simplified version of depth pass would be "vertex_pos += normalize(vertex_pos - uEyePos) * dist"
+            // it can lead to projected shape distortion when camera is very close
+            // therefore, a version that preserves shape is used below
+            vec3 view_direction = normalize(vertex_pos - uEyePos);
+            vertex_pos += view_direction * world_point_size * ${SPLAT_DEPTH_TO_SIZE_RATIO};
+            vec4 new = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0);
+            gl_Position.z = new.z * (gl_Position.w / new.w) + ${SPLAT_DEPTH_EPSILON};
+                      
+        } else {        
+            // Gouraud shading
             #if defined(USE_LIGHTING) && USE_LIGHTING == 1
                 // MIN_LIGHTNESS is the minimal received light (ambient)
                 // The remaining contribution is scaled by (1.0 - MIN_LIGHTNESS) and depends on surface normal and light direction
@@ -92,11 +76,7 @@ export const quadVS = `
                 v_color = color * diffuse + vec3(1.0, 1.0, 1.0) * specular;
             #else
                 v_color = color;
-            #endif
-            
-            // v_normal = normal;
-        } else {
-            // v_color = vec3(1.0, 1.0, 1.0);
+            #endif        
         }
     }
 `.trim();
@@ -108,26 +88,23 @@ export const quadFS = `
     
     in highp vec2 uv;    
     flat in vec3 v_color;
-    // flat in vec3 v_normal;
     
     uniform bool uDepthPass;
     
     layout(location=0) out highp vec4 color;
-    // layout(location=1) out highp vec3 normal_out;
     
     void main() {
     
-        highp float len = length(uv);
+        float len = length(uv);
         if (len > 1.0) {
             discard;
         }
         
         if (!uDepthPass) {        
             float hardness = 4.0;
-            float weight = pow(1.0 - len * len, hardness); 
-            
+            float weight = pow(1.0 - len * len, hardness);
             color = vec4(v_color * weight, weight);
-            // normal_out = v_normal * weight;
+        
         } else {        
             color = vec4(1.0, 1.0, 1.0, 1.0);
         }
