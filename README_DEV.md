@@ -17,6 +17,11 @@ Development setup:
   
 - in `web-surfels-server` run
   - `npm install`
+  - `npm link web-surfels` to link to local lib
   - `npm test` to run unit tests
   - `npm start` to run the server code (compute LoD)
   - `npm run serve-lod` to serve static LoD locally 
+
+Every time code in `web-surfels-lib` is changed, run `npm start` to recompile.
+
+Every time `npm install` is executed in ui or server, run `npm link web-surfels` to re-link lib.
