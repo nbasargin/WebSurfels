@@ -72,6 +72,8 @@ export class Renderer2 {
         this.gl.enable(this.gl.CULL_FACE);
         this.gl.cullFace(this.gl.BACK);
 
+        this.gl.depthFunc(this.gl.LEQUAL);
+
         this.setCanvasSize(initialWidth, initialHeight);
         this.setCameraOrientation( vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, -1), vec3.fromValues(0, 1, 0));
     }
