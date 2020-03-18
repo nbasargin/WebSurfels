@@ -14,7 +14,17 @@ export class PointCloudFactory {
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     }
 
-    constructPointCloud(colorData: ImageBitmap, depthData: DepthData, skyDistance: number = -1):PointCloudData {
+    /**
+     * Constructs point cloud from given color and depth data.
+     *
+     * @param colorData
+     * @param depthData
+     * @param skyDistance - distance for sky splats (= splats not assigned to a plane), if below 0 sky splats are dropped
+     * @param nonSkySplatSizeLimit - size limit for non-sky splats, non-sky splats larger than this are dropped
+     */
+    constructPointCloud(colorData: ImageBitmap, depthData: DepthData, skyDistance: number = -1, nonSkySplatSizeLimit = 5):PointCloudData {
+        const splatScale = 0.02;
+
         this.ctx.drawImage(colorData, 0, 0);
         const pixels = this.ctx.getImageData(0, 0, 512, 512).data;  // optionally, shrink height to 256
 
@@ -29,7 +39,8 @@ export class PointCloudFactory {
         for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
                 const planeID = depthData.indices[y * w + x];
-                if (planeID === 0 && skyDistance <= 0) {
+                const splatBelongsToSky = planeID === 0;
+                if (splatBelongsToSky && skyDistance <= 0) {
                     continue; // point does not belong to a plane & sky should be discarded
                 }
 
@@ -50,13 +61,22 @@ export class PointCloudFactory {
                     plane = {normal: [-px, -py, -pz], distance: 0}
                 }
 
+                // size correction based on orientation:
+                // 1 / cos (angle between normal and ray to point) = 1 / dot product (normal, ray to point)
+                const orientationCorrection = 1 / Math.abs(px * plane.normal[0] + py * plane.normal[1] + pz * plane.normal[2]);
+                const distanceCorrection = Math.abs(t) + 0.001;
+                const size = splatScale * distanceCorrection * orientationCorrection;
+                if (size > nonSkySplatSizeLimit && !splatBelongsToSky) {
+                    continue; // discard non-sky points that are too large
+                }
+
                 // color
                 const r = pixels[4 * (y * w + x)] / 255;
                 const g = pixels[4 * (y * w + x) + 1] / 255;
                 const b = pixels[4 * (y * w + x) + 2] / 255;
 
                 positions.push(px * t, py * t, pz * t);
-                sizes.push(0.02 * Math.abs(t)); // todo size based on distance AND orientation (with some limit)
+                sizes.push(size);
                 colors.push(r, g, b);
                 normals.push(-plane.normal[0], -plane.normal[1], -plane.normal[2]);
             }
