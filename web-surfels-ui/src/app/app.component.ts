@@ -26,12 +26,16 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
             <div>FPS: {{fps}}</div>
             <div></div>
             <div>
-                <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
-                Animate
+                <label>
+                    <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
+                    Animate
+                </label>
             </div>
             <div>
-                <input #splatCheck type="checkbox" [checked]="true" (change)="splattingEnabled = splatCheck.checked">
-                HQ splats
+                <label>
+                    <input #splatCheck type="checkbox" [checked]="true" (change)="splattingEnabled = splatCheck.checked">
+                    HQ splats
+                </label>
             </div>
             <div>
                 Size scale: {{sizeScaleSlider.value}}
