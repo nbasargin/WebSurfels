@@ -22,15 +22,23 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
 @Component({
     selector: 'app-root',
     template: `
-        <div class="fps-overlay">FPS: {{fps}}</div>
-        <div class="animation-overlay">
-            <div class="flex-line">
+        <div class="main-overlay">
+            <div>FPS: {{fps}}</div>
+            <div></div>
+            <div>
                 <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
                 Animate
             </div>
-            <div class="flex-line">
+            <div>
                 <input #splatCheck type="checkbox" [checked]="true" (change)="splattingEnabled = splatCheck.checked">
                 HQ splats
+            </div>
+            <div>
+                Size scale: {{sizeScaleSlider.value}}
+            </div>
+            <div>
+                <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
+                       type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
         </div>
         <div class="info-overlay">
@@ -71,13 +79,6 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 {{dynamicLod.sizeThreshold}}
             </div>
             (higher threshold = lower quality)
-
-            <div class="flex-line">
-                Size scale:
-                <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
-                       type="range" min="0.2" max="2" step="0.1" value="1">
-                {{sizeScaleSlider.value}}
-            </div>
         </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
@@ -141,11 +142,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            //this.testStreetView();
+            this.testStreetView();
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
-            this.loadDynamicLod2(1.4);
+            //this.loadDynamicLod2(1.4);
 
             this.renderLoop(0);
         }, 0);
