@@ -27,7 +27,7 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
             <div></div>
             <div>
                 <label>
-                    <input #animCheck type="checkbox" [checked]="true" (change)="benchmarkRunning = animCheck.checked">
+                    <input #animCheck type="checkbox" [checked]="benchmarkRunning" (change)="benchmarkRunning = animCheck.checked">
                     Animate
                 </label>
             </div>
@@ -108,7 +108,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private pressedKeys: Set<string>;
 
-    benchmarkRunning = true;
+    benchmarkRunning = false;
     splattingEnabled = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera();
     private fpsCounter: FpsCounter = new FpsCounter(20);
