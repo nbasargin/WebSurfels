@@ -14,7 +14,7 @@ export class PointCloudFactory {
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     }
 
-    constructPointCloud(colorData: ImageBitmap, depthData: DepthData):PointCloudData {
+    constructPointCloud(colorData: ImageBitmap, depthData: DepthData, skyDistance: number = -1):PointCloudData {
         this.ctx.drawImage(colorData, 0, 0);
         const pixels = this.ctx.getImageData(0, 0, 512, 512).data;  // optionally, shrink height to 256
 
@@ -29,8 +29,8 @@ export class PointCloudFactory {
         for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
                 const planeID = depthData.indices[y * w + x];
-                if (planeID === 0) {
-                    continue; // point does not belong to a plane
+                if (planeID === 0 && skyDistance <= 0) {
+                    continue; // point does not belong to a plane & sky should be discarded
                 }
 
                 const phi = (w - x - 1) / (w - 1) * 2 * Math.PI + Math.PI / 2;
@@ -40,12 +40,24 @@ export class PointCloudFactory {
                 const py = Math.sin(theta) * Math.sin(phi);
                 const pz = Math.cos(theta);
 
-                const plane = depthData.planes[planeID];
-                const t = plane.distance / (px * plane.normal[0] + py * plane.normal[1] + pz * plane.normal[2]);
+                let t: number;
+                let plane: { normal: [number, number, number], distance: number };
+                if (planeID !== 0) {
+                    plane = depthData.planes[planeID];
+                    t = plane.distance / (px * plane.normal[0] + py * plane.normal[1] + pz * plane.normal[2]);
+                } else {
+                    t = -skyDistance;
+                    plane = {normal: [-px, -py, -pz], distance: 0}
+                }
+
+                // color
+                const r = pixels[4 * (y * w + x)] / 255;
+                const g = pixels[4 * (y * w + x) + 1] / 255;
+                const b = pixels[4 * (y * w + x) + 2] / 255;
 
                 positions.push(px * t, py * t, pz * t);
-                sizes.push(0.03 * Math.abs(t)); // todo size based on distance (with some limit)
-                colors.push(1, 1, 1); // todo: extract from color data
+                sizes.push(0.02 * Math.abs(t)); // todo size based on distance AND orientation (with some limit)
+                colors.push(r, g, b);
                 normals.push(-plane.normal[0], -plane.normal[1], -plane.normal[2]);
             }
         }
