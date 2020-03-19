@@ -69,8 +69,8 @@ export class Renderer2 {
         this.gl.clearDepth(1.0);
 
         // enable backface culling, could be an optional setting
-        this.gl.enable(this.gl.CULL_FACE);
-        this.gl.cullFace(this.gl.BACK);
+        //this.gl.enable(this.gl.CULL_FACE);
+        //this.gl.cullFace(this.gl.BACK);
 
         this.gl.depthFunc(this.gl.LEQUAL);
 
