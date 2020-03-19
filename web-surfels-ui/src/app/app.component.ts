@@ -46,13 +46,22 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
+
             <div>
-                pano scale: {{panoramaStitching.scale}}
+                pano scale X: {{panoramaStitching.scaleX}}
             </div>
             <div>
-                <input #panoSliderScale (input)="panoramaStitching.scale = +panoSliderScale.value"
+                <input #panoSliderScaleX (input)="panoramaStitching.scaleX = +panoSliderScaleX.value"
                        type="range" min="0.0" max="2" step="0.001" value="1">
             </div>
+            <div>
+                pano scale Y: {{panoramaStitching.scaleY}}
+            </div>
+            <div>
+                <input #panoSliderScaleY (input)="panoramaStitching.scaleY = +panoSliderScaleY.value"
+                       type="range" min="-2" max="3" step="0.01" value="1">
+            </div>
+
             <div>
                 pano angleY: {{panoramaStitching.angleY}}
             </div>
@@ -162,9 +171,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     frustumInfo = '';
 
     panoramaStitching = {
-        scale: 1,
+        scaleX: 1,
+        scaleY: 1,
         angleY: 1,
-        angleZ: 1,
+        angleZ: 1
     };
 
     constructor() {
@@ -333,14 +343,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         ];
 
         const panoIDsMuc = [
-            /*'yoDO0JAidwhxwcrHkiiO2A',
+            /**/'yoDO0JAidwhxwcrHkiiO2A',
             'rUJScz5qeFNziiQQ2hMqjA',
             'HfTV_yDHhuJAxB_yMxcvhg',
             'kqvWX70FEJ9QJDVSr9FYUA',
             'uqTmsw4aCg1TZvCNQMrASg',
             'x_lmhPUhXWzj18awTDu8sg',
             'rGdyHoqO5yFBThYm8kiwpA',
-            'giDo-scRn5kbweSI5xmtIg',*/
+            'giDo-scRn5kbweSI5xmtIg',
             '-bgCziklvIHyyrav6R4aug',
             '9ZPVekRqspFF5M0-ka2zTw',
             '6ZfcCQRcyZNdvEq0CGHKcQ',
@@ -369,15 +379,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const imageHeight = +pano.Data.image_height / (2 ** +pano.Location.zoomLevels);
 
             const depth = new DepthData(pano.model.depth_map);
-            const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth, -1, 10);
+            const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth, -1, 2);
 
             const angleZ = +pano.Projection.pano_yaw_deg * Math.PI / 180;
-            this.rotateDataZ(pointCloud, angleZ * this.panoramaStitching.angleZ);
+            this.rotateDataZ(pointCloud, -angleZ * this.panoramaStitching.angleZ);
 
             const angleX = +pano.Projection.tilt_pitch_deg * Math.PI / 180;
-            this.rotateDataY(pointCloud, angleX * this.panoramaStitching.angleY);
-
-
+            //this.rotateDataY(pointCloud, angleX * this.panoramaStitching.angleY);
 
             //this.colorizeData(pointCloud);
 
@@ -385,10 +393,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const xDiff = baseXOffset - offsets.xOffset;
             const zDiff = baseZOffset - offsets.zOffset;
 
-            const scale = 0.745 * this.panoramaStitching.scale;
+            const scale = 0.745;
             for (let i = 0; i < pointCloud.positions.length; i+=3) {
-                pointCloud.positions[i] += xDiff * scale;
-                pointCloud.positions[i + 1] -= zDiff * scale;
+                pointCloud.positions[i] -= xDiff * scale * this.panoramaStitching.scaleX;
+                pointCloud.positions[i + 1] += zDiff * scale * this.panoramaStitching.scaleY;
             }
 
             this.renderer2.addData(pointCloud.positions, pointCloud.sizes, pointCloud.colors, pointCloud.normals);
@@ -429,9 +437,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             data.colors[i+1] = g;
             data.colors[i+2] = b;
         }
-        
     }
-
 
     coordsToOffset(latitude: number, longitude: number) {
         const halfEarthCircumference = 20037508.34;
