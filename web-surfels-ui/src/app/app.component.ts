@@ -315,49 +315,51 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         // ziNa0wg33om0UUk_zGb16g
         // FaTLGxzNsC77nmrZMKdBbQ
 
-        const first = 'GTKQkr3G-rRZQisDUMzUtg';
-        const other = 'FaTLGxzNsC77nmrZMKdBbQ';
+        const panoIDs = [
+            'GTKQkr3G-rRZQisDUMzUtg',
+            'tDHgZF2towFDY0XScMdogA',
+            'TX7hSqtNzoUQ3FHmd_B7jg',
+            'DUC-bzTYi-qzKU43ZMy0Rw',
+            '0ugKJC8FPlIqvIu7gUjXoA',
+            'ziNa0wg33om0UUk_zGb16g',
+            'FaTLGxzNsC77nmrZMKdBbQ',
+        ];
 
-        Promise.all([
-            PanoramaLoader.loadById(first),
-            PanoramaLoader.loadImage(first, 0, 0, 0),
-            PanoramaLoader.loadById(other),
-            PanoramaLoader.loadImage(other, 0, 0, 0),
-        ]).then(([pano1, bitmap1, pano2, bitmap2]) => {
-            const depth1 = new DepthData(pano1.model.depth_map);
-            const depth2 = new DepthData(pano2.model.depth_map);
+        PanoramaLoader.loadById(panoIDs[0]).then(pano => {
+            const offsets = this.coordsToOffset(+pano.Location.lat, +pano.Location.lng); // or use original lat / lng?
+            const baseXOffset = offsets.xOffset;
+            const baseZOffset = offsets.zOffset;
 
-            console.log('projection1', pano1.Projection);
-            console.log('projection2', pano2.Projection);
-
-            const pointCloud1 = factory.constructPointCloud(bitmap1, depth1, -1, 3);
-            const pointCloud2 = factory.constructPointCloud(bitmap2, depth2, -1, 3 );
-
-            const angle1 = + pano1.Projection.pano_yaw_deg * Math.PI / 180;
-            this.rotateDataZ(pointCloud1, angle1);
-
-            const angle2 = + pano2.Projection.pano_yaw_deg * Math.PI / 180;
-            this.rotateDataZ(pointCloud2, angle2);
-
-
-            const offsets1 = this.coordsToOffset(+pano1.Location.lat, +pano1.Location.lng); // or use original lat / lng?
-            const offsets2 = this.coordsToOffset(+pano2.Location.lat, +pano2.Location.lng); // or use original lat / lng?
-            const xDiff = offsets1.xOffset - offsets2.xOffset;
-            const zDiff = offsets1.zOffset - offsets2.zOffset;
-            // console.log(offsets1, offsets2);
-            console.log('x diff', xDiff, 'z diff', zDiff);
-
-            const scale = 0.745;
-
-            for (let i = 0; i < pointCloud2.positions.length; i+=3) {
-                pointCloud2.positions[i] += xDiff * scale;
-                pointCloud2.positions[i + 1] -= zDiff * scale;
+            for (const id of panoIDs) {
+                this.loadPano(id, factory, baseXOffset, baseZOffset);
             }
 
-            this.renderer2.addData(pointCloud1.positions, pointCloud1.sizes, pointCloud1.colors, pointCloud1.normals);
-            this.renderer2.addData(pointCloud2.positions, pointCloud2.sizes, pointCloud2.colors, pointCloud2.normals);
-        })
+        });
+    }
 
+    private loadPano(id: string, factory: PointCloudFactory, baseXOffset: number, baseZOffset: number) {
+        Promise.all([
+            PanoramaLoader.loadById(id),
+            PanoramaLoader.loadImage(id, 0, 0, 0),
+        ]).then(([pano, bitmap]) => {
+            const depth = new DepthData(pano.model.depth_map);
+            const pointCloud = factory.constructPointCloud(bitmap, depth, -1, 2);
+
+            const angle = +pano.Projection.pano_yaw_deg * Math.PI / 180;
+            this.rotateDataZ(pointCloud, angle);
+
+            const offsets = this.coordsToOffset(+pano.Location.lat, +pano.Location.lng); // or use original lat / lng?
+            const xDiff = baseXOffset - offsets.xOffset;
+            const zDiff = baseZOffset - offsets.zOffset;
+
+            const scale = 0.745;
+            for (let i = 0; i < pointCloud.positions.length; i+=3) {
+                pointCloud.positions[i] += xDiff * scale;
+                pointCloud.positions[i + 1] -= zDiff * scale;
+            }
+
+            this.renderer2.addData(pointCloud.positions, pointCloud.sizes, pointCloud.colors, pointCloud.normals);
+        })
     }
 
 
