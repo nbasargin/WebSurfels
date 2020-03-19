@@ -18,11 +18,13 @@ export class PointCloudFactory {
      * Constructs point cloud from given color and depth data.
      *
      * @param colorData
+     * @param imageWidth - effective image width (typically 416 or 512), can be computed with image_width / (2 ^ num_zoom_levels)
+     * @param imageHeight - effective image height (typically 208 or 416), can be computed with image_height / (2 ^ num_zoom_levels)
      * @param depthData
      * @param skyDistance - distance for sky splats (= splats not assigned to a plane), if below 0 sky splats are dropped
      * @param nonSkySplatSizeLimit - size limit for non-sky splats, non-sky splats larger than this are dropped
      */
-    constructPointCloud(colorData: ImageBitmap, depthData: DepthData, skyDistance: number = -1, nonSkySplatSizeLimit = 5):PointCloudData {
+    constructPointCloud(colorData: ImageBitmap, imageWidth: number, imageHeight: number, depthData: DepthData, skyDistance: number = -1, nonSkySplatSizeLimit = 5):PointCloudData {
         const splatScale = 0.02;
 
         this.ctx.drawImage(colorData, 0, 0);
@@ -70,10 +72,13 @@ export class PointCloudFactory {
                     continue; // discard non-sky points that are too large
                 }
 
-                // color
-                const r = pixels[4 * (y * w + x)] / 255;
-                const g = pixels[4 * (y * w + x) + 1] / 255;
-                const b = pixels[4 * (y * w + x) + 2] / 255;
+                // color: map x and y to pixel position (depends on effective image size)
+                const pixelX = Math.floor(x * (imageHeight - 1) / (h - 1));
+                const pixelY = Math.floor(y * (imageWidth - 1) / (w - 1));
+
+                const r = pixels[4 * (pixelY * w + pixelX)] / 255;
+                const g = pixels[4 * (pixelY * w + pixelX) + 1] / 255;
+                const b = pixels[4 * (pixelY * w + pixelX) + 2] / 255;
 
                 positions.push(px * t, py * t, pz * t);
                 sizes.push(size);
