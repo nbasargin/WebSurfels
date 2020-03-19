@@ -330,8 +330,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log('projection1', pano1.Projection);
             console.log('projection2', pano2.Projection);
 
-            const pointCloud1 = factory.constructPointCloud(bitmap1, depth1);
-            const pointCloud2 = factory.constructPointCloud(bitmap2, depth2);
+            const pointCloud1 = factory.constructPointCloud(bitmap1, depth1, -1, 3);
+            const pointCloud2 = factory.constructPointCloud(bitmap2, depth2, -1, 3 );
 
             const angle1 = + pano1.Projection.pano_yaw_deg * Math.PI / 180;
             this.rotateDataZ(pointCloud1, angle1);
@@ -347,9 +347,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             // console.log(offsets1, offsets2);
             console.log('x diff', xDiff, 'z diff', zDiff);
 
+            const scale = 0.745;
+
             for (let i = 0; i < pointCloud2.positions.length; i+=3) {
-                pointCloud2.positions[i] += xDiff;
-                pointCloud2.positions[i + 1] -= zDiff;
+                pointCloud2.positions[i] += xDiff * scale;
+                pointCloud2.positions[i + 1] -= zDiff * scale;
             }
 
             this.renderer2.addData(pointCloud1.positions, pointCloud1.sizes, pointCloud1.colors, pointCloud1.normals);
@@ -357,6 +359,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         })
 
     }
+
+
 
     rotateDataZ(data: PointCloudData, angle: number) {
         const zero = vec3.fromValues(0,0,0);
