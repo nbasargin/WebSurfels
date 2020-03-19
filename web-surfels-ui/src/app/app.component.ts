@@ -27,13 +27,15 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
             <div></div>
             <div>
                 <label>
-                    <input #animCheck type="checkbox" [checked]="benchmarkRunning" (change)="benchmarkRunning = animCheck.checked">
+                    <input #animCheck type="checkbox" [checked]="benchmarkRunning"
+                           (change)="benchmarkRunning = animCheck.checked">
                     Animate
                 </label>
             </div>
             <div>
                 <label>
-                    <input #splatCheck type="checkbox" [checked]="true" (change)="splattingEnabled = splatCheck.checked">
+                    <input #splatCheck type="checkbox" [checked]="true"
+                           (change)="splattingEnabled = splatCheck.checked">
                     HQ splats
                 </label>
             </div>
@@ -44,6 +46,31 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
+            <div>
+                pano scale: {{panoramaStitching.scale}}
+            </div>
+            <div>
+                <input #panoSliderScale (input)="panoramaStitching.scale = +panoSliderScale.value"
+                       type="range" min="0.0" max="2" step="0.001" value="1">
+            </div>
+            <div>
+                pano angleY: {{panoramaStitching.angleY}}
+            </div>
+            <div>
+                <input #panoSliderAngleY (input)="panoramaStitching.angleY = +panoSliderAngleY.value"
+                       type="range" min="-5" max="5" step="0.1" value="1">
+            </div>
+            <div>
+                pano angleZ: {{panoramaStitching.angleZ}}
+            </div>
+            <div>
+                <input #panoSliderAngleZ (input)="panoramaStitching.angleZ = +panoSliderAngleZ.value"
+                       type="range" min="0.5" max="1.5" step="0.001" value="1">
+            </div>
+            <div>
+                <button (click)="reloadPano()">RELOAD</button>
+            </div>
+
         </div>
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
@@ -134,6 +161,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     overlayMessage = '';
     frustumInfo = '';
 
+    panoramaStitching = {
+        scale: 1,
+        angleY: 1,
+        angleZ: 1,
+    };
+
     constructor() {
         this.cameraPos = vec3.fromValues(-2, 1.2, 2.5);
         this.view = new ViewDirection(false);
@@ -146,7 +179,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            //this.testStreetView();
             this.testStreetViewStitching();
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
@@ -279,27 +311,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    testStreetView() {
-        this.view = new ViewDirection(true);
-        this.view.update(this.angleX, this.angleY);
-        // panorama loader
-
-        const factory = new PointCloudFactory();
-
-        Promise.all([
-            PanoramaLoader.loadById('GTKQkr3G-rRZQisDUMzUtg'),
-            PanoramaLoader.loadImage('GTKQkr3G-rRZQisDUMzUtg', 0, 0, 0)
-        ]).then(([pano, bitmap]) => {
-            const depthData = new DepthData(pano.model.depth_map);
-
-            console.log('depth data', depthData);
-            console.log('color data bitmap', bitmap);
-
-            const pointCloud = factory.constructPointCloud(bitmap, depthData);
-
-            this.renderer2.addData(pointCloud.positions, pointCloud.sizes, pointCloud.colors, pointCloud.normals);
-
-        });
+    reloadPano() {
+        this.renderer2.removeAllNodes();
+        this.testStreetViewStitching();
+        this.colorCounter = 0;
     }
 
     testStreetViewStitching() {
@@ -317,12 +332,26 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             'FaTLGxzNsC77nmrZMKdBbQ',
         ];
 
-        PanoramaLoader.loadById(panoIDs[0]).then(pano => {
+        const panoIDsMuc = [
+            /*'yoDO0JAidwhxwcrHkiiO2A',
+            'rUJScz5qeFNziiQQ2hMqjA',
+            'HfTV_yDHhuJAxB_yMxcvhg',
+            'kqvWX70FEJ9QJDVSr9FYUA',
+            'uqTmsw4aCg1TZvCNQMrASg',
+            'x_lmhPUhXWzj18awTDu8sg',
+            'rGdyHoqO5yFBThYm8kiwpA',
+            'giDo-scRn5kbweSI5xmtIg',*/
+            '-bgCziklvIHyyrav6R4aug',
+            '9ZPVekRqspFF5M0-ka2zTw',
+            '6ZfcCQRcyZNdvEq0CGHKcQ',
+        ];
+
+        PanoramaLoader.loadById(panoIDsMuc[0]).then(pano => {
             const offsets = this.coordsToOffset(+pano.Location.lat, +pano.Location.lng); // or use original lat / lng?
             const baseXOffset = offsets.xOffset;
             const baseZOffset = offsets.zOffset;
 
-            for (const id of panoIDs) {
+            for (const id of panoIDsMuc) {
                 this.loadPano(id, factory, baseXOffset, baseZOffset);
             }
 
@@ -336,22 +365,27 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         ]).then(([pano, bitmap]) => {
             console.log('loaded pano with id ', id, 'projection', pano.Projection);
 
+            const imageWidth = +pano.Data.image_width / (2 ** +pano.Location.zoomLevels);
+            const imageHeight = +pano.Data.image_height / (2 ** +pano.Location.zoomLevels);
+
             const depth = new DepthData(pano.model.depth_map);
-            const pointCloud = factory.constructPointCloud(bitmap, depth, -1, 2);
+            const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth, -1, 10);
 
             const angleZ = +pano.Projection.pano_yaw_deg * Math.PI / 180;
-            this.rotateDataZ(pointCloud, angleZ);
+            this.rotateDataZ(pointCloud, angleZ * this.panoramaStitching.angleZ);
 
             const angleX = +pano.Projection.tilt_pitch_deg * Math.PI / 180;
-            this.rotateDataX(pointCloud, -angleX);
+            this.rotateDataY(pointCloud, angleX * this.panoramaStitching.angleY);
 
-            this.colorizeData(pointCloud);
+
+
+            //this.colorizeData(pointCloud);
 
             const offsets = this.coordsToOffset(+pano.Location.lat, +pano.Location.lng); // or use original lat / lng?
             const xDiff = baseXOffset - offsets.xOffset;
             const zDiff = baseZOffset - offsets.zOffset;
 
-            const scale = 0.745;
+            const scale = 0.745 * this.panoramaStitching.scale;
             for (let i = 0; i < pointCloud.positions.length; i+=3) {
                 pointCloud.positions[i] += xDiff * scale;
                 pointCloud.positions[i + 1] -= zDiff * scale;
@@ -373,20 +407,22 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    rotateDataX(data: PointCloudData, angle: number) {
+    rotateDataY(data: PointCloudData, angle: number) {
         const zero = vec3.fromValues(0,0,0);
         for (let i = 0; i < data.positions.length; i+=3) {
             const point = new Float32Array(data.positions.buffer, i*4, 3);
-            vec3.rotateX(point, point, zero, angle);
+            vec3.rotateY(point, point, zero, angle);
             const point2 = new Float32Array(data.normals.buffer, i*4, 3);
-            vec3.rotateX(point2, point2, zero, angle);
+            vec3.rotateY(point2, point2, zero, angle);
         }
     }
+
+    colorCounter = 0;
     
     colorizeData(data: PointCloudData) {
-        const r = Math.random() * 0.8 + 0.2;
-        const g = Math.random() * 0.8 + 0.2;
-        const b = Math.random() * 0.8 + 0.2;
+        const r = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
+        const g = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
+        const b = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
 
         for (let i = 0; i < data.colors.length; i+=3) {
             data.colors[i] = r;
