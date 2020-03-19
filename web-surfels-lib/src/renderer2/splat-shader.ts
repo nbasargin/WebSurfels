@@ -7,7 +7,7 @@ export const quadVS = `
     #version 300 es
     
     #define USE_LIGHTING 1
-    #define MIN_LIGHTNESS 0.3
+    #define MIN_LIGHTNESS 0.99
     
     // adapted from http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
     // expecting normalized axis (length of 1)
