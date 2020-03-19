@@ -307,21 +307,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.view.update(this.angleX, this.angleY);
         const factory = new PointCloudFactory();
 
-        // GTKQkr3G-rRZQisDUMzUtg
-        // tDHgZF2towFDY0XScMdogA
-        // TX7hSqtNzoUQ3FHmd_B7jg
-        // DUC-bzTYi-qzKU43ZMy0Rw
-        // 0ugKJC8FPlIqvIu7gUjXoA
-        // ziNa0wg33om0UUk_zGb16g
-        // FaTLGxzNsC77nmrZMKdBbQ
-
         const panoIDs = [
             'GTKQkr3G-rRZQisDUMzUtg',
-            'tDHgZF2towFDY0XScMdogA',
-            'TX7hSqtNzoUQ3FHmd_B7jg',
+            //'tDHgZF2towFDY0XScMdogA',
+            //'TX7hSqtNzoUQ3FHmd_B7jg',
             'DUC-bzTYi-qzKU43ZMy0Rw',
-            '0ugKJC8FPlIqvIu7gUjXoA',
-            'ziNa0wg33om0UUk_zGb16g',
+            //'0ugKJC8FPlIqvIu7gUjXoA',
+            //'ziNa0wg33om0UUk_zGb16g',
             'FaTLGxzNsC77nmrZMKdBbQ',
         ];
 
@@ -342,11 +334,18 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             PanoramaLoader.loadById(id),
             PanoramaLoader.loadImage(id, 0, 0, 0),
         ]).then(([pano, bitmap]) => {
+            console.log('loaded pano with id ', id, 'projection', pano.Projection);
+
             const depth = new DepthData(pano.model.depth_map);
             const pointCloud = factory.constructPointCloud(bitmap, depth, -1, 2);
 
-            const angle = +pano.Projection.pano_yaw_deg * Math.PI / 180;
-            this.rotateDataZ(pointCloud, angle);
+            const angleZ = +pano.Projection.pano_yaw_deg * Math.PI / 180;
+            this.rotateDataZ(pointCloud, angleZ);
+
+            const angleX = +pano.Projection.tilt_pitch_deg * Math.PI / 180;
+            this.rotateDataX(pointCloud, -angleX);
+
+            this.colorizeData(pointCloud);
 
             const offsets = this.coordsToOffset(+pano.Location.lat, +pano.Location.lng); // or use original lat / lng?
             const xDiff = baseXOffset - offsets.xOffset;
@@ -373,6 +372,30 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.rotateZ(point2, point2, zero, angle);
         }
     }
+
+    rotateDataX(data: PointCloudData, angle: number) {
+        const zero = vec3.fromValues(0,0,0);
+        for (let i = 0; i < data.positions.length; i+=3) {
+            const point = new Float32Array(data.positions.buffer, i*4, 3);
+            vec3.rotateX(point, point, zero, angle);
+            const point2 = new Float32Array(data.normals.buffer, i*4, 3);
+            vec3.rotateX(point2, point2, zero, angle);
+        }
+    }
+    
+    colorizeData(data: PointCloudData) {
+        const r = Math.random() * 0.8 + 0.2;
+        const g = Math.random() * 0.8 + 0.2;
+        const b = Math.random() * 0.8 + 0.2;
+
+        for (let i = 0; i < data.colors.length; i+=3) {
+            data.colors[i] = r;
+            data.colors[i+1] = g;
+            data.colors[i+2] = b;
+        }
+        
+    }
+
 
     coordsToOffset(latitude: number, longitude: number) {
         const halfEarthCircumference = 20037508.34;
