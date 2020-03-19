@@ -146,7 +146,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            this.testStreetView();
+            //this.testStreetView();
+            this.testStreetViewStitching();
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
@@ -299,6 +300,80 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.renderer2.addData(pointCloud.positions, pointCloud.sizes, pointCloud.colors, pointCloud.normals);
 
         });
+    }
+
+    testStreetViewStitching() {
+        this.view = new ViewDirection(true);
+        this.view.update(this.angleX, this.angleY);
+        const factory = new PointCloudFactory();
+
+        // GTKQkr3G-rRZQisDUMzUtg
+        // tDHgZF2towFDY0XScMdogA
+        // TX7hSqtNzoUQ3FHmd_B7jg
+        // DUC-bzTYi-qzKU43ZMy0Rw
+        // 0ugKJC8FPlIqvIu7gUjXoA
+        // ziNa0wg33om0UUk_zGb16g
+        // FaTLGxzNsC77nmrZMKdBbQ
+
+        const first = 'GTKQkr3G-rRZQisDUMzUtg';
+        const other = 'FaTLGxzNsC77nmrZMKdBbQ';
+
+        Promise.all([
+            PanoramaLoader.loadById(first),
+            PanoramaLoader.loadImage(first, 0, 0, 0),
+            PanoramaLoader.loadById(other),
+            PanoramaLoader.loadImage(other, 0, 0, 0),
+        ]).then(([pano1, bitmap1, pano2, bitmap2]) => {
+            const depth1 = new DepthData(pano1.model.depth_map);
+            const depth2 = new DepthData(pano2.model.depth_map);
+
+            console.log('projection1', pano1.Projection);
+            console.log('projection2', pano2.Projection);
+
+            const pointCloud1 = factory.constructPointCloud(bitmap1, depth1);
+            const pointCloud2 = factory.constructPointCloud(bitmap2, depth2);
+
+            const angle1 = + pano1.Projection.pano_yaw_deg * Math.PI / 180;
+            this.rotateDataZ(pointCloud1, angle1);
+
+            const angle2 = + pano2.Projection.pano_yaw_deg * Math.PI / 180;
+            this.rotateDataZ(pointCloud2, angle2);
+
+
+            const offsets1 = this.coordsToOffset(+pano1.Location.lat, +pano1.Location.lng); // or use original lat / lng?
+            const offsets2 = this.coordsToOffset(+pano2.Location.lat, +pano2.Location.lng); // or use original lat / lng?
+            const xDiff = offsets1.xOffset - offsets2.xOffset;
+            const zDiff = offsets1.zOffset - offsets2.zOffset;
+            // console.log(offsets1, offsets2);
+            console.log('x diff', xDiff, 'z diff', zDiff);
+
+            for (let i = 0; i < pointCloud2.positions.length; i+=3) {
+                pointCloud2.positions[i] += xDiff;
+                pointCloud2.positions[i + 1] -= zDiff;
+            }
+
+            this.renderer2.addData(pointCloud1.positions, pointCloud1.sizes, pointCloud1.colors, pointCloud1.normals);
+            this.renderer2.addData(pointCloud2.positions, pointCloud2.sizes, pointCloud2.colors, pointCloud2.normals);
+        })
+
+    }
+
+    rotateDataZ(data: PointCloudData, angle: number) {
+        const zero = vec3.fromValues(0,0,0);
+        for (let i = 0; i < data.positions.length; i+=3) {
+            const point = new Float32Array(data.positions.buffer, i*4, 3);
+            vec3.rotateZ(point, point, zero, angle);
+            const point2 = new Float32Array(data.normals.buffer, i*4, 3);
+            vec3.rotateZ(point2, point2, zero, angle);
+        }
+    }
+
+    coordsToOffset(latitude: number, longitude: number) {
+        const halfEarthCircumference = 20037508.34;
+        // todo optimize numerics
+        const xOffset = longitude * halfEarthCircumference / 180;
+        const zOffset = Math.log(Math.tan((90 + latitude) * Math.PI / 360)) / (Math.PI / 180) * halfEarthCircumference / 180;
+        return {xOffset, zOffset};
     }
 
     createDragonLod2(resolution: number, maxDepth: number) {
