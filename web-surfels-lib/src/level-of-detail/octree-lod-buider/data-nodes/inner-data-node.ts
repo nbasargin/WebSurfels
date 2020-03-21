@@ -58,7 +58,7 @@ export class InnerDataNode implements OctreeDataNode {
     computeLOD(subgrid: Subgrid): WeightedLodNode {
         const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.data.positions.length > 0);
         this.children = []; // free space
-        return subgrid.mergeLoD(childLODs, this.nodeInfo, InnerDataNode.LOD_RANDOMNESS);
+        return subgrid.mergeLoD2(childLODs, this.nodeInfo, InnerDataNode.LOD_RANDOMNESS);
     }
 
     private getChildIndex(x: number, y: number, z: number) {

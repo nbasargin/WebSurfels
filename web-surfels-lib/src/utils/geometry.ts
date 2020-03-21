@@ -3,6 +3,8 @@ import { WeightedLodNode } from '../level-of-detail/lod-node';
 
 export type BoundingBox = { minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number };
 
+export type BoundingCube = { minX: number, minY: number, minZ: number, size: number };
+
 export type BoundingSphere = { centerX: number, centerY: number, centerZ: number, radius: number };
 
 export class Geometry {

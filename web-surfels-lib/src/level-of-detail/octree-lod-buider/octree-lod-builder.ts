@@ -28,7 +28,7 @@ export class OctreeLodBuilder implements LodBuilder {
     }
 
     buildLod(): WeightedLodNode {
-        const lod = this.root.computeLOD(new Subgrid(this.resolution));
+        const lod = this.root.computeLOD(new Subgrid(this.resolution, InnerDataNode.LOD_RANDOMNESS));
         this.root = this.constructInitialRoot();
         return lod;
     }
