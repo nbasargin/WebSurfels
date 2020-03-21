@@ -1,4 +1,6 @@
-import { PointCloudData } from '../../../data/point-cloud-data';
+import { PointCloudData, WeightedPointCloudData } from '../../../data/point-cloud-data';
+import { Geometry } from '../../../utils/geometry';
+import { UidGenerator } from '../../../utils/uid-generator';
 import { WeightedLodNode } from '../../lod-node';
 import { LeafDataNode } from './leaf-data-node';
 import { Subgrid } from '../subgrid/subgrid';
@@ -56,9 +58,39 @@ export class InnerDataNode implements OctreeDataNode {
     }
 
     computeLOD(subgrid: Subgrid): WeightedLodNode {
-        const childLODs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.data.positions.length > 0);
+        const childLoDs = this.children.map(child => child.computeLOD(subgrid)).filter(lod => lod.data.positions.length > 0);
         this.children = []; // free space
-        return subgrid.mergeLoD2(childLODs, this.nodeInfo, InnerDataNode.LOD_RANDOMNESS);
+
+        const mergedLoD: WeightedPointCloudData = Geometry.mergeLodNodes(childLoDs);
+        const minX = this.nodeInfo.centerX - this.nodeInfo.size / 2;
+        const minY = this.nodeInfo.centerY - this.nodeInfo.size / 2;
+        const minZ = this.nodeInfo.centerZ - this.nodeInfo.size / 2;
+        const reduced = subgrid.reduce(mergedLoD, {minX, minY, minZ, size: this.nodeInfo.size});
+
+        const boundingSphere = Geometry.getBoundingSphere(reduced.positions, reduced.sizes);
+        // ensure that resulting bounding sphere contains children's bounding spheres
+        // advantage: if parent is outside of frustum, children are guaranteed to be outside frustum as well
+        for (const child of childLoDs) {
+            const dist = Geometry.sphereDist(boundingSphere, child.boundingSphere);
+            const minRadius = dist + child.boundingSphere.radius;
+            if (boundingSphere.radius < minRadius) {
+                boundingSphere.radius = minRadius;
+            }
+        }
+
+        return {
+            id: UidGenerator.genUID(),
+            boundingSphere: boundingSphere,
+            data: {
+                positions: reduced.positions,
+                sizes: reduced.sizes,
+                colors: reduced.colors,
+                normals: reduced.normals
+            },
+            childIDs: childLoDs.map(child => child.id),
+            children: childLoDs,
+            weights: reduced.weights,
+        };
     }
 
     private getChildIndex(x: number, y: number, z: number) {
