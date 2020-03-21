@@ -28,15 +28,9 @@ export class Subgrid {
         let occupiedCells = 0;
         for (let i = 0; i < pointCount; i++) {
             let px: number, py: number, pz: number;
-            if (indexRandomness === 0) {
-                px = Subcell.getCellIndex(pos[i * 3], minX, nodeInfo.size, nodeInfo.resolution);
-                py = Subcell.getCellIndex(pos[i * 3 + 1], minY, nodeInfo.size, nodeInfo.resolution);
-                pz = Subcell.getCellIndex(pos[i * 3 + 2], minZ, nodeInfo.size, nodeInfo.resolution);
-            } else {
-                px = Subcell.getRandomizedCellIndex(pos[i * 3], minX, nodeInfo.size, nodeInfo.resolution, indexRandomness);
-                py = Subcell.getRandomizedCellIndex(pos[i * 3 + 1], minY, nodeInfo.size, nodeInfo.resolution, indexRandomness);
-                pz = Subcell.getRandomizedCellIndex(pos[i * 3 + 2], minZ, nodeInfo.size, nodeInfo.resolution, indexRandomness);
-            }
+            px = Subcell.getCellIndex(pos[i * 3], minX, nodeInfo.size, nodeInfo.resolution, indexRandomness);
+            py = Subcell.getCellIndex(pos[i * 3 + 1], minY, nodeInfo.size, nodeInfo.resolution, indexRandomness);
+            pz = Subcell.getCellIndex(pos[i * 3 + 2], minZ, nodeInfo.size, nodeInfo.resolution, indexRandomness);
             const subcellIndex = px + py * nodeInfo.resolution + (pz * nodeInfo.resolution ** 2);
 
             const prevPoint = this.indexGrid[subcellIndex];
