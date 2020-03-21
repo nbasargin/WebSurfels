@@ -1,6 +1,5 @@
-import { WeightedPointCloudData } from '../../../data/point-cloud-data';
-import { BoundingCube } from '../../../utils/geometry';
-import { Subcell } from './subcell';
+import { WeightedPointCloudData } from '../../data/point-cloud-data';
+import { BoundingCube } from '../../utils/geometry';
 
 type SubgridOutputBuffer = {
     positions: Array<number>;
@@ -10,13 +9,21 @@ type SubgridOutputBuffer = {
     weights: Array<number>;
 };
 
+/**
+ * Represents a grid of sub-cells that can be fitted into an arbitrary cube volume like an octree node.
+ * Subgrid allows to merge close points and generate LoD representations. 
+ */
 export class Subgrid {
 
     private readonly indexGrid: Int32Array;
 
+    /**
+     * @param resolution  number of sub-cells along one axis
+     * @param jitter  affects randomness during point reduction (points could move to adjacent cells)
+     */
     constructor(
         public readonly resolution: number = 64,
-        public readonly indexRandomness: number = 0,
+        public readonly jitter: number = 0,
     ) {
         this.indexGrid = new Int32Array(resolution ** 3);
     }
@@ -41,9 +48,9 @@ export class Subgrid {
         // the indexGrid stores id of the first point, every point stores id of the next point
         const indexChains = new Int32Array(pointCount);
         for (let i = 0; i < pointCount; i++) {
-            const px = Subcell.getCellIndex(pos[i * 3], minX, size, this.resolution, this.indexRandomness);
-            const py = Subcell.getCellIndex(pos[i * 3 + 1], minY, size, this.resolution, this.indexRandomness);
-            const pz = Subcell.getCellIndex(pos[i * 3 + 2], minZ, size, this.resolution, this.indexRandomness);
+            const px = Subgrid.getCellIndex(pos[i * 3], minX, size, this.resolution, this.jitter);
+            const py = Subgrid.getCellIndex(pos[i * 3 + 1], minY, size, this.resolution, this.jitter);
+            const pz = Subgrid.getCellIndex(pos[i * 3 + 2], minZ, size, this.resolution, this.jitter);
             const subcellIndex = px + py * this.resolution + (pz * this.resolution ** 2);
             indexChains[i] = this.indexGrid[subcellIndex];
             this.indexGrid[subcellIndex] = i;
@@ -123,39 +130,18 @@ export class Subgrid {
         outputBuffer.weights.push(weightSum);
     }
 
-    // temporary
-/*
-    mergeLoD2(childLoDs: Array<WeightedLodNode>, nodeInfo: OctreeNodeInfo, indexRandomness: number = 0): WeightedLodNode {
-        const mergedLoD: WeightedPointCloudData = Geometry.mergeLodNodes(childLoDs);
-        const minX = nodeInfo.centerX - nodeInfo.size / 2;
-        const minY = nodeInfo.centerY - nodeInfo.size / 2;
-        const minZ = nodeInfo.centerZ - nodeInfo.size / 2;
-        const reduced = this.reduce(mergedLoD, {minX, minY, minZ, size: nodeInfo.size});
-
-        const boundingSphere = Geometry.getBoundingSphere(reduced.positions, reduced.sizes);
-        // ensure that resulting bounding sphere contains children bounding spheres
-        // advantage: if parent is outside of frustum, children are guaranteed to be outside frustum as well
-        for (const child of childLoDs) {
-            const dist = Geometry.sphereDist(boundingSphere, child.boundingSphere);
-            const minRadius = dist + child.boundingSphere.radius;
-            if (boundingSphere.radius < minRadius) {
-                boundingSphere.radius = minRadius;
-            }
-        }
-
-        return {
-            id: UidGenerator.genUID(),
-            boundingSphere: boundingSphere,
-            data: {
-                positions: reduced.positions,
-                sizes: reduced.sizes,
-                colors: reduced.colors,
-                normals: reduced.normals
-            },
-            childIDs: childLoDs.map(child => child.id),
-            children: childLoDs,
-            weights: reduced.weights,
-        };
-    }*/
+    /**
+     * Compute cell index along one dimension.
+     * @param pos  position of the point
+     * @param bbMin   minimal position of the bounding box
+     * @param bbSize  bounding box size
+     * @param resolution  number of cells in the bounding box (along one side)
+     * @param randomness  adds some randomness to indices (points could move to adjacent cells)
+     */
+    public static getCellIndex(pos: number, bbMin: number, bbSize: number, resolution: number, randomness: number = 0) {
+        const rndOffset = randomness > 0 ? (Math.random() - 0.5) * randomness : 0;
+        const index = Math.floor((pos - bbMin) / bbSize * resolution + rndOffset);
+        return Math.max(0, Math.min(resolution - 1, index));
+    }
 
 }
