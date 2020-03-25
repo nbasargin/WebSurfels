@@ -47,6 +47,7 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
 
+            <!--
             <div>
                 pano scale X: {{panoramaStitching.scaleX}}
             </div>
@@ -79,6 +80,7 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
             <div>
                 <button (click)="reloadPano()">RELOAD</button>
             </div>
+            -->
 
         </div>
         <div class="info-overlay">
@@ -146,7 +148,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     benchmarkRunning = false;
     splattingEnabled = true;
-    private animatedCamera: AnimatedCamera = new AnimatedCamera();
+    private animatedCamera: AnimatedCamera = new AnimatedCamera(false);
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
@@ -189,11 +191,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            //this.testStreetViewStitching();
+            this.testStreetViewStitching();
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
-            this.loadDynamicLod2(1.4);
+            //this.loadDynamicLod2(1.4);
 
             this.renderLoop(0);
         }, 0);
@@ -329,6 +331,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     testStreetViewStitching() {
         this.view = new ViewDirection(true);
+        this.animatedCamera = new AnimatedCamera(true);
         this.view.update(this.angleX, this.angleY);
         const factory = new PointCloudFactory();
 
@@ -343,17 +346,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         ];
 
         const panoIDsMuc = [
-            /**/'yoDO0JAidwhxwcrHkiiO2A',
+            /*'yoDO0JAidwhxwcrHkiiO2A',
             'rUJScz5qeFNziiQQ2hMqjA',
-            'HfTV_yDHhuJAxB_yMxcvhg',
+            'HfTV_yDHhuJAxB_yMxcvhg',*/
             'kqvWX70FEJ9QJDVSr9FYUA',
-            'uqTmsw4aCg1TZvCNQMrASg',
+            /*'uqTmsw4aCg1TZvCNQMrASg',
             'x_lmhPUhXWzj18awTDu8sg',
             'rGdyHoqO5yFBThYm8kiwpA',
             'giDo-scRn5kbweSI5xmtIg',
             '-bgCziklvIHyyrav6R4aug',
             '9ZPVekRqspFF5M0-ka2zTw',
-            '6ZfcCQRcyZNdvEq0CGHKcQ',
+            '6ZfcCQRcyZNdvEq0CGHKcQ',*/
         ];
 
         PanoramaLoader.loadById(panoIDsMuc[0]).then(pano => {
@@ -379,7 +382,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const imageHeight = +pano.Data.image_height / (2 ** +pano.Location.zoomLevels);
 
             const depth = new DepthData(pano.model.depth_map);
-            const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth, -1, 2);
+            const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth, -1, 5);
 
             const angleZ = +pano.Projection.pano_yaw_deg * Math.PI / 180;
             this.rotateDataZ(pointCloud, -angleZ * this.panoramaStitching.angleZ);
