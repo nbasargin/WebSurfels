@@ -1,4 +1,6 @@
-import { BoundingSphere, RendererNode } from 'web-surfels';
+import { BoundingSphere } from "../lib/utils/geometry";
+import { RendererNode } from "../lib/renderer2/renderer-node";
+
 
 export enum DynamicLodNodeState {
     CHILDREN_NEED_TO_BE_LOADED,

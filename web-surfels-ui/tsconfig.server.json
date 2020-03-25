@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "strictNullChecks": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "target": "es2017",
+        "noImplicitAny": false,
+        "sourceMap": false,
+        "outDir": "server-dist",
+        "experimentalDecorators": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
+}

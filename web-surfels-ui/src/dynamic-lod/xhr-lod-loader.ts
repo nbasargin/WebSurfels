@@ -1,5 +1,7 @@
-import { BinaryXHR, LodBinary, LodNode } from 'web-surfels';
 import { LodLoader } from './lod-loader';
+import { LodNode } from "../lib/level-of-detail/lod-node";
+import { BinaryXHR } from "../lib/utils/binary-xhr";
+import { LodBinary } from "../lib/level-of-detail/lod-binary";
 
 export class XhrLodLoader implements LodLoader {
 

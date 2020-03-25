@@ -1,3 +1,11 @@
+Currently, all code is in one single package for simplicity.
+Later, three packages might be created: library, ui and server.
+
+
+### Experimental setup with three npm packages
+
+This structure is currently not available
+
 There are three npm packages in this repository:
 - `web-surfels-lib` contains the main codebase
 - `web-surfels-ui` is an angular project demonstrating how to use the lib in the browser

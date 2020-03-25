@@ -1,4 +1,4 @@
-import { LodNode } from 'web-surfels';
+import { LodNode } from "../lib/level-of-detail/lod-node";
 
 export interface LodLoader {
 

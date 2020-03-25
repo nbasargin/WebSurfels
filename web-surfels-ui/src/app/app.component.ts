@@ -1,21 +1,21 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { vec3 } from 'web-surfels';
-import { CullingTree } from 'web-surfels';
-import { RendererNode } from 'web-surfels';
-import { AnimatedCamera } from 'web-surfels';
-import { FpsCounter } from 'web-surfels';
-import { Timing } from 'web-surfels';
-import { PointCloudData, WeightedPointCloudData } from 'web-surfels';
-import { PointCloudDataGenerator } from 'web-surfels';
-import { StanfordDragonLoader } from 'web-surfels';
-import { OctreeLodBuilder } from 'web-surfels';
-import { Renderer2 } from 'web-surfels';
-import { ViewDirection } from 'web-surfels';
-import { BoundingSphere, Geometry } from 'web-surfels';
-import { DepthData } from 'web-surfels';
-import { PanoramaLoader } from 'web-surfels';
-import { PointCloudFactory } from 'web-surfels';
-import { WeightedLodNode } from 'web-surfels';
+import { Renderer2 } from '../lib/renderer2/renderer2';
+import { vec3 } from 'gl-matrix';
+import { ViewDirection } from '../lib/renderer2/view-direction';
+import { AnimatedCamera } from '../lib/utils/animated-camera';
+import { FpsCounter } from '../lib/utils/fps-counter';
+import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
+import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-data';
+import { BoundingSphere, Geometry } from '../lib/utils/geometry';
+import { RendererNode } from '../lib/renderer2/renderer-node';
+import { CullingTree } from '../lib/culling-tree/culling-tree';
+import { PointCloudFactory } from '../lib/street-view/point-cloud-factory';
+import { PanoramaLoader } from '../lib/street-view/panorama-loader';
+import { DepthData } from '../lib/street-view/depth-data';
+import { StanfordDragonLoader } from '../lib/data/stanford-dragon-loader';
+import { Timing } from '../lib/utils/timing';
+import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
+import { PointCloudDataGenerator } from '../lib/data/point-cloud-data-generator';
 import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
 import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
 
@@ -394,7 +394,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const zDiff = baseZOffset - offsets.zOffset;
 
             const scale = 0.745;
-            for (let i = 0; i < pointCloud.positions.length; i+=3) {
+            for (let i = 0; i < pointCloud.positions.length; i += 3) {
                 pointCloud.positions[i] -= xDiff * scale * this.panoramaStitching.scaleX;
                 pointCloud.positions[i + 1] += zDiff * scale * this.panoramaStitching.scaleY;
             }
@@ -404,38 +404,37 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
 
-
     rotateDataZ(data: PointCloudData, angle: number) {
-        const zero = vec3.fromValues(0,0,0);
-        for (let i = 0; i < data.positions.length; i+=3) {
-            const point = new Float32Array(data.positions.buffer, i*4, 3);
+        const zero = vec3.fromValues(0, 0, 0);
+        for (let i = 0; i < data.positions.length; i += 3) {
+            const point = new Float32Array(data.positions.buffer, i * 4, 3);
             vec3.rotateZ(point, point, zero, angle);
-            const point2 = new Float32Array(data.normals.buffer, i*4, 3);
+            const point2 = new Float32Array(data.normals.buffer, i * 4, 3);
             vec3.rotateZ(point2, point2, zero, angle);
         }
     }
 
     rotateDataY(data: PointCloudData, angle: number) {
-        const zero = vec3.fromValues(0,0,0);
-        for (let i = 0; i < data.positions.length; i+=3) {
-            const point = new Float32Array(data.positions.buffer, i*4, 3);
+        const zero = vec3.fromValues(0, 0, 0);
+        for (let i = 0; i < data.positions.length; i += 3) {
+            const point = new Float32Array(data.positions.buffer, i * 4, 3);
             vec3.rotateY(point, point, zero, angle);
-            const point2 = new Float32Array(data.normals.buffer, i*4, 3);
+            const point2 = new Float32Array(data.normals.buffer, i * 4, 3);
             vec3.rotateY(point2, point2, zero, angle);
         }
     }
 
     colorCounter = 0;
-    
+
     colorizeData(data: PointCloudData) {
         const r = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
         const g = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
         const b = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
 
-        for (let i = 0; i < data.colors.length; i+=3) {
+        for (let i = 0; i < data.colors.length; i += 3) {
             data.colors[i] = r;
-            data.colors[i+1] = g;
-            data.colors[i+2] = b;
+            data.colors[i + 1] = g;
+            data.colors[i + 2] = b;
         }
     }
 

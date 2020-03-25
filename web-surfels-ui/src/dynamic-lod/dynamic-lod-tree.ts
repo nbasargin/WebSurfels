@@ -1,6 +1,9 @@
-import { LodNode, Renderer2, RendererNode } from 'web-surfels';
+
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
 import { LodLoader } from './lod-loader';
+import { Renderer2 } from "../lib/renderer2/renderer2";
+import { RendererNode } from "../lib/renderer2/renderer-node";
+import { LodNode } from "../lib/level-of-detail/lod-node";
 
 type UnloadConfig = {
     strategy: 'never'

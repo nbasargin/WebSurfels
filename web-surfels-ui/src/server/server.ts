@@ -1,7 +1,12 @@
-import { Geometry, OctreeLodBuilder, LodNode, Timing, LodBinary, StanfordDragonLoader } from 'web-surfels';
 import { FileIO } from './file-io/file-io';
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
+import { LodNode } from "../lib/level-of-detail/lod-node";
+import { LodBinary } from "../lib/level-of-detail/lod-binary";
+import { Timing } from "../lib/utils/timing";
+import { StanfordDragonLoader } from "../lib/data/stanford-dragon-loader";
+import { Geometry } from "../lib/utils/geometry";
+import { OctreeLodBuilder } from "../lib/level-of-detail/octree-lod-buider/octree-lod-builder";
 
 let filesWritten = 0;
 
@@ -46,7 +51,7 @@ async function generateLod() {
     const lod = octree.buildLod();
     console.log(Timing.measure(), 'lod computed, start writing to disk');
 
-    const folderPath = './lod/';
+    const folderPath = '../lod/';
     writeLodTreeToFiles(lod, folderPath, Math.floor(numNodes / 20) ).then(() => {
         console.log(Timing.measure(), 'done writing lod');
     }).catch(err => {
