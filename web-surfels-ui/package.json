@@ -4,7 +4,8 @@
   "scripts": {
     "gen-lod": "tsc -p tsconfig.server.json  &&  node --max-old-space-size=8192 ./server-dist/server/server.js",
     "serve-lod": "serve ../lod --cors",
-    "build": "ng build --prod"
+    "build": "ng build --prod",
+    "test": "jest"
   },
   "private": true,
   "dependencies": {
