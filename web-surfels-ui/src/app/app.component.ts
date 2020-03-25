@@ -134,7 +134,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     fps = '0';
 
     private animationRequest;
-    private renderer2: Renderer2;
+    renderer2: Renderer2;
 
     private readonly cameraPos: vec3;
     private view: ViewDirection;
@@ -158,7 +158,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     lodData: RendererNode;
 
     private cullingTree: CullingTree;
-    private dynamicLod: DynamicLodTree;
+    dynamicLod: DynamicLodTree;
     rendererDetails: { nodesDrawn: number, pointsDrawn: number };
 
     displayInfo = {

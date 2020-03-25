@@ -8,10 +8,11 @@ pipelines:
           caches:
             - node
           script:
-            - npm install
-            - npm run build:prod
             - apt-get update
             - apt-get install --yes zip
+            - cd web-surfels-ui
+            - npm install
+            - npm run build
             - cd ./dist/point-cloud-rendering/
             - zip -r app.zip .
             - curl -X POST -u "$DEPLOYMENT_USER:$DEPLOYMENT_PW" -T "app.zip" $DEPLOYMENT_URL
