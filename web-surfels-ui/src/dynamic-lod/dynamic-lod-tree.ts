@@ -1,5 +1,5 @@
 import { LodNode, Renderer2 } from 'web-surfels';
-import { RendererNode } from '../../../web-surfels-lib/src/renderer2/renderer-node';
+import { RendererNode } from 'web-surfels';
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
 import { LodLoader } from './lod-loader';
 
