@@ -15,5 +15,5 @@ export interface DynamicLodNode {
     rendererNode: RendererNode;
     childIDs: Array<number>;
     children: Array<DynamicLodNode>;
-    unloadCounter: number; // incremented every time this node is not rendered, so it can be removed later
+    unloadChildrenCounter: number; // incremented every time all children are not rendered, so they can be removed later
 }

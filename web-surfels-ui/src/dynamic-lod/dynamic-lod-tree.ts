@@ -1,5 +1,4 @@
-import { LodNode, Renderer2 } from 'web-surfels';
-import { RendererNode } from 'web-surfels';
+import { LodNode, Renderer2, RendererNode } from 'web-surfels';
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
 import { LodLoader } from './lod-loader';
 
@@ -13,6 +12,7 @@ export class DynamicLodTree {
     };
 
     private root: DynamicLodNode;
+    private frameCounter: number = 0;
 
     constructor(
         public renderer: Renderer2,
@@ -41,7 +41,7 @@ export class DynamicLodTree {
             const s = nextNode.boundingSphere;
 
             if (!this.renderer.frustum.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius)) {
-                nextNode.unloadCounter++;
+                nextNode.unloadChildrenCounter++;
                 continue;
             }
 
@@ -50,14 +50,12 @@ export class DynamicLodTree {
                 // node is small enough
                 // render this LoD
                 renderList.push(nextNode.rendererNode);
-                // mark children to be unloaded (if there are any)
-                for (const child of nextNode.children) {
-                    child.unloadCounter++;
-                }
+                nextNode.unloadChildrenCounter++;
                 continue;
             }
 
             // node is too large, need better details
+            nextNode.unloadChildrenCounter = 0;
             if (nextNode.children.length > 0) {
                 // node has children, proceed with them
                 frontier.push(...nextNode.children);
@@ -74,6 +72,11 @@ export class DynamicLodTree {
         const {nodesDrawn, pointsDrawn} = this.renderer.render(renderList, disableSplatting);
         this.stats.renderedNodes = nodesDrawn;
         this.stats.renderedPoints = pointsDrawn;
+
+        this.frameCounter++;
+        if (this.frameCounter % 100 === 99) {
+            this.checkForUnload(this.root, 200);
+        }
     }
 
     private async loadChildrenOf(parent: DynamicLodNode) {
@@ -94,9 +97,8 @@ export class DynamicLodTree {
             const dynamicChildLods = await Promise.all(promises2);
             if (parent.state !== DynamicLodNodeState.CHILDREN_LOADING) {
                 // discard children if loading was cancelled (e.g. node was unloaded)
-                // if we do not allow to unload parent while children are loading this could be simplified
                 for (const childLod of dynamicChildLods) {
-                    this.renderer.removeNode(childLod.rendererNode);
+                    this.removeLodNode(childLod);
                 }
                 return;
             }
@@ -108,6 +110,21 @@ export class DynamicLodTree {
         }
     }
 
+    private unloadChildrenOf(parent: DynamicLodNode) {
+        if (parent.state === DynamicLodNodeState.CHILDREN_LOADING) {
+            return; // no children to unload yet
+        }
+
+        for (const child of parent.children) {
+            this.unloadChildrenOf(child);
+            this.removeLodNode(child);
+            child.state = DynamicLodNodeState.UNLOADED;
+        }
+        parent.state = parent.childIDs.length > 0 ? DynamicLodNodeState.CHILDREN_NEED_TO_BE_LOADED : DynamicLodNodeState.FULLY_LOADED;
+        parent.children = [];
+    }
+
+    // does not care about children
     private addLodNode(node: LodNode): DynamicLodNode {
         const rendererNode = this.renderer.addData(node.data.positions, node.data.sizes, node.data.colors, node.data.normals);
         this.stats.loadedNodes++;
@@ -118,15 +135,28 @@ export class DynamicLodTree {
             rendererNode: rendererNode,
             childIDs: node.childIDs,
             children: [],
-            unloadCounter: 0,
+            unloadChildrenCounter: 0,
             state: node.childIDs.length > 0 ? DynamicLodNodeState.CHILDREN_NEED_TO_BE_LOADED : DynamicLodNodeState.FULLY_LOADED,
         }
     }
 
-    private unloadHiddenNodes() {
-        // todo: unload nodes that were scheduled to be unloaded a few times
-        // never unload the root;
+    // does not care about children
+    private removeLodNode(node: DynamicLodNode) {
+        this.stats.loadedNodes--;
+        this.stats.loadedPoints -= node.rendererNode.numPoints;
+        this.renderer.removeNode(node.rendererNode);
     }
 
+    private checkForUnload(node: DynamicLodNode, unloadThreshold: number) {
+        if (node.unloadChildrenCounter > unloadThreshold) {
+            // unload children of this node recursively
+            this.unloadChildrenOf(node);
+            node.unloadChildrenCounter = 0;
+            return;
+        }
+        for (const child of node.children) {
+            this.checkForUnload(child, unloadThreshold - node.unloadChildrenCounter);
+        }
+    }
 
 }
