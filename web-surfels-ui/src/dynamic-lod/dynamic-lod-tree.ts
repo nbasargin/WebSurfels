@@ -2,6 +2,14 @@ import { LodNode, Renderer2, RendererNode } from 'web-surfels';
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
 import { LodLoader } from './lod-loader';
 
+type UnloadConfig = {
+    strategy: 'never'
+} | {
+    strategy: 'nthFrame',
+    nthFrame: number,
+    unloadThreshold: number
+}
+
 export class DynamicLodTree {
 
     readonly stats = {
@@ -18,6 +26,7 @@ export class DynamicLodTree {
         public renderer: Renderer2,
         public loader: LodLoader,
         public sizeThreshold: number,
+        public unloadConfig: UnloadConfig = { strategy: 'nthFrame', unloadThreshold: 200, nthFrame: 100 }
     ) {
         this.loader.loadNode('root').then(rootLod => {
             this.root = this.addLodNode(rootLod);
@@ -73,9 +82,13 @@ export class DynamicLodTree {
         this.stats.renderedNodes = nodesDrawn;
         this.stats.renderedPoints = pointsDrawn;
 
+        // unloading of frames
         this.frameCounter++;
-        if (this.frameCounter % 100 === 99) {
-            this.checkForUnload(this.root, 200);
+        if (this.unloadConfig.strategy === 'nthFrame') {
+            const n = this.unloadConfig.nthFrame;
+            if (this.frameCounter % n === n - 1) {
+                this.checkForUnload(this.root, this.unloadConfig.unloadThreshold);
+            }
         }
     }
 
