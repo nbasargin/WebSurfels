@@ -146,7 +146,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private pressedKeys: Set<string>;
 
-    benchmarkRunning = false;
+    benchmarkRunning = true;
     splattingEnabled = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera(false);
     private fpsCounter: FpsCounter = new FpsCounter(20);
