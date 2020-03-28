@@ -49,14 +49,14 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
 
             
             <div>
-                latitude rotation: {{panoramaStitching.latRot}}
+                latitude: {{panoramaStitching.latRot}}
             </div>
             <div>
                 <input #panoSliderLatRot (input)="panoramaStitching.latRot = +panoSliderLatRot.value; testAxis()"
                        type="range" min="-90" max="90" step="0" value="0">
             </div>
             <div>
-                longitude rotation: {{panoramaStitching.lngRot}}
+                longitude: {{panoramaStitching.lngRot}}
             </div>
             <div>
                 <input #panoSliderLngRot (input)="panoramaStitching.lngRot = +panoSliderLngRot.value; testAxis()" 
@@ -77,10 +77,10 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 <input #panoSliderAngleZ (input)="panoramaStitching.angleZ = +panoSliderAngleZ.value"
                        type="range" min="0.5" max="1.5" step="0.001" value="1">
             </div>
-            -->
             <div>
                 <button (click)="reloadPano()">RELOAD</button>
             </div>
+            -->
 
         </div>
         <div class="info-overlay">
@@ -200,7 +200,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
             //this.loadDynamicLod2(1.4);
-            this.testAxis();
+            this.testAxis(true);
 
             this.renderLoop(0);
         }, 0);
@@ -377,26 +377,35 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    private testAxis() {
+    private testAxis(initialRun = false) {
+        if (initialRun) {
+            this.view = new ViewDirection(true);
+            this.angleY = 0;
+            this.angleX = 0;
+            this.view.update(this.angleX, this.angleY);
+            vec3.set(this.cameraPos, 0, 5, 0);
+
+        }
+
         this.renderer2.removeAllNodes();
 
         const center: PointCloudData = {
             positions: new Float32Array([0,0,0, 0,0,0, 0,0,0, 0,0,0.5, 0,0.5,0, 0.5,0,0]),
-            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1, 0,0,1, 0,1,0, 1,0,0]),
-            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1, 0,0,1, 0,1,0, 1,0,0]),
+            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
+            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
             sizes: new Float32Array(    [1,1,1, 0.5, 0.5, 0.5]),
         };
         this.renderer2.addData(center.positions, center.sizes, center.colors, center.normals);
 
         const data: PointCloudData = {
-            positions: new Float32Array([0,0,0, 0,0,0, 0,0,0]),
-            normals: new Float32Array([1,0,0, 0,1,0, 0,0,1]),
-            colors: new Float32Array([1,0,0, 0,1,0, 0,0,1]),
-            sizes: new Float32Array([0.5,0.5,0.5]),
+            positions: new Float32Array([0,0,0, 0,0,0, 0,0,0,  0,0,0.5, 0,0.5,0, 0.5,0,0]),
+            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1,  0,0,1,   0,1,0,   1,0,0]),
+            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1,  0,0,1,   0,1,0,   1,0,0]),
+            sizes: new Float32Array([0.5,0.5,0.5, 0.2, 0.2, 0.2]),
         };
 
         const normal2 = this.lngLatToNormal(this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
-        this.rotateDataToMatchTop(data, vec3.fromValues(normal2.x, normal2.y, normal2.z));
+        this.rotateByLatLng(data, this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
 
         for (let i = 0; i < data.positions.length; i += 3) {
             data.positions[i] += normal2.x * 2;
@@ -478,7 +487,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const angle = vec3.angle(dataTop, newTop);
         const axis = vec3.cross(vec3.create(), dataTop, newTop);
         vec3.normalize(axis, axis);
-        const rotMatrix = mat4.fromRotation(mat4.identity(mat4.create()), angle, axis);
+
+
+        const inital = mat4.create();
+        mat4.rotateZ(inital, inital, -angle);
+
+        const rotMatrix = mat4.fromRotation(inital, angle, axis);
+
+
 
         for (let i = 0; i < data.positions.length; i += 3) {
             const position = new Float32Array(data.positions.buffer, i * 4, 3);
@@ -488,12 +504,33 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
+    rotateByLatLng(data: PointCloudData, latitude: number, longitude: number) {
+        // data up vector: (0, 0, 1)
+        // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
+
+        latitude = (latitude - 90) * Math.PI / 180;
+        longitude = (longitude - 180) * Math.PI / 180;
+
+        const rotMatrix = mat4.create();
+        mat4.rotateZ(rotMatrix, rotMatrix, longitude);
+        mat4.rotateY(rotMatrix, rotMatrix, latitude);
+
+        for (let i = 0; i < data.positions.length; i += 3) {
+            const position = new Float32Array(data.positions.buffer, i * 4, 3);
+            vec3.transformMat4(position, position, rotMatrix);
+            const normal = new Float32Array(data.normals.buffer, i * 4, 3);
+            vec3.transformMat4(normal, normal, rotMatrix);
+        }
+
+
+    }
+
     lngLatToNormal(latitude: number, longitude: number) {
         latitude = latitude * Math.PI / 180;
         longitude = longitude * Math.PI / 180;
         const x = Math.cos(latitude) * Math.cos(longitude);
         const y = Math.cos(latitude) * Math.sin(longitude);
-        const z = Math.sin(longitude);
+        const z = Math.sin(latitude);
 
         return {x, y, z};
     }
