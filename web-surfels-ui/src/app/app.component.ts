@@ -47,7 +47,8 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
 
-            
+
+            <!--
             <div>
                 latitude: {{panoramaStitching.latRot}}
             </div>
@@ -62,7 +63,6 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 <input #panoSliderLngRot (input)="panoramaStitching.lngRot = +panoSliderLngRot.value; testAxis()" 
                        type="range" min="-180" max="180" step="1" value="0">
             </div>
-            <!--
             <div>
                 pano angleY: {{panoramaStitching.angleY}}
             </div>
@@ -142,7 +142,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private view: ViewDirection;
     private angleX: number = Math.PI / 180 * -27;
     private angleY: number = Math.PI / 180 * -22;
-    movementSpeed = 1;
+    movementSpeed = 10;
 
     private pressedKeys: Set<string>;
 
@@ -195,12 +195,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            //this.testStreetViewStitching();
+            this.testStreetViewStitching(true);
             //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.createDynamicLod(64, 12, 0.20);
             //this.loadDynamicLod2(1.4);
-            this.testAxis(true);
+            //this.testAxis(true);
 
             this.renderLoop(0);
         }, 0);
@@ -334,20 +334,26 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.colorCounter = 0;
     }
 
-    testStreetViewStitching() {
-        this.view = new ViewDirection(true);
-        this.animatedCamera = new AnimatedCamera(true);
-        this.angleY = 0;
-        this.angleX = 0;
-        this.view.update(this.angleX, this.angleY);
+    testStreetViewStitching(setView = false) {
+
+        if (setView) {
+            this.view = new ViewDirection(true);
+            this.animatedCamera = new AnimatedCamera(true);
+            this.angleY = 0;
+            this.angleX = 0;
+            this.view.update(this.angleX, this.angleY);
+        }
+
+        this.renderer2.removeAllNodes();
+
         const factory = new PointCloudFactory();
 
         const panoIDs = [
             'GTKQkr3G-rRZQisDUMzUtg',
             //'tDHgZF2towFDY0XScMdogA',
-            //'TX7hSqtNzoUQ3FHmd_B7jg',
-            'DUC-bzTYi-qzKU43ZMy0Rw',
-            //'0ugKJC8FPlIqvIu7gUjXoA',
+            'TX7hSqtNzoUQ3FHmd_B7jg',
+            //'DUC-bzTYi-qzKU43ZMy0Rw',
+            '0ugKJC8FPlIqvIu7gUjXoA',
             //'ziNa0wg33om0UUk_zGb16g',
             'FaTLGxzNsC77nmrZMKdBbQ',
         ];
@@ -355,65 +361,26 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const panoIDsMuc = [
             'yoDO0JAidwhxwcrHkiiO2A',
             //'rUJScz5qeFNziiQQ2hMqjA',
-            //'HfTV_yDHhuJAxB_yMxcvhg',
+            'HfTV_yDHhuJAxB_yMxcvhg',
             //'kqvWX70FEJ9QJDVSr9FYUA',
-            //'uqTmsw4aCg1TZvCNQMrASg',
+            'uqTmsw4aCg1TZvCNQMrASg',
             //'x_lmhPUhXWzj18awTDu8sg',
-            //'rGdyHoqO5yFBThYm8kiwpA',
+            'rGdyHoqO5yFBThYm8kiwpA',
             //'giDo-scRn5kbweSI5xmtIg',
-            //'-bgCziklvIHyyrav6R4aug',
+            '-bgCziklvIHyyrav6R4aug',
             //'9ZPVekRqspFF5M0-ka2zTw',
-            //'6ZfcCQRcyZNdvEq0CGHKcQ',
+            '6ZfcCQRcyZNdvEq0CGHKcQ',
         ];
 
-        PanoramaLoader.loadById(panoIDsMuc[0]).then(pano => {
+        PanoramaLoader.loadById(panoIDs[0]).then(pano => {
 
             const top = this.lngLatToNormal(+pano.Location.lat, +pano.Location.lng); // or use original lat / lng?
 
-            for (const id of panoIDsMuc) {
+            for (const id of panoIDs) {
                 this.loadPano(id, factory, top);
             }
 
         });
-    }
-
-    private testAxis(initialRun = false) {
-        if (initialRun) {
-            this.view = new ViewDirection(true);
-            this.angleY = 0;
-            this.angleX = 0;
-            this.view.update(this.angleX, this.angleY);
-            vec3.set(this.cameraPos, 0, 5, 0);
-
-        }
-
-        this.renderer2.removeAllNodes();
-
-        const center: PointCloudData = {
-            positions: new Float32Array([0,0,0, 0,0,0, 0,0,0, 0,0,0.5, 0,0.5,0, 0.5,0,0]),
-            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
-            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
-            sizes: new Float32Array(    [1,1,1, 0.5, 0.5, 0.5]),
-        };
-        this.renderer2.addData(center.positions, center.sizes, center.colors, center.normals);
-
-        const data: PointCloudData = {
-            positions: new Float32Array([0,0,0, 0,0,0, 0,0,0,  0,0,0.5, 0,0.5,0, 0.5,0,0]),
-            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1,  0,0,1,   0,1,0,   1,0,0]),
-            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1,  0,0,1,   0,1,0,   1,0,0]),
-            sizes: new Float32Array([0.5,0.5,0.5, 0.2, 0.2, 0.2]),
-        };
-
-        const normal2 = this.lngLatToNormal(this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
-        this.rotateByLatLng(data, this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
-
-        for (let i = 0; i < data.positions.length; i += 3) {
-            data.positions[i] += normal2.x * 2;
-            data.positions[i+1] += normal2.y * 2;
-            data.positions[i+2] += normal2.z * 2;
-        }
-
-        this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
     }
 
     private loadPano(id: string, factory: PointCloudFactory, top: {x: number, y: number, z: number}) {
@@ -430,19 +397,18 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth, -1, 2);
 
             // TEMP: use a few points to indicate orientation
-            pointCloud.positions.set([0,0,0,  0,0,0,  0,0,0]);
-            pointCloud.normals.set([1,0,0,  0,1,0,  0,0,1]);
-            pointCloud.colors.set([1,0,0,  0,1,0,  0,0,1]);
-            pointCloud.sizes.set([20,20,20]);
+            pointCloud.positions.set([0,0,0, 0,0,0, 0,0,0,    0,0,10,  0,10,0,  10,0,0]);
+            pointCloud.normals.set([  1,0,0, 0,1,0, 0,0,1,    0,0,1,  0,1,0,  1,0,0]);
+            pointCloud.colors.set([   1,0,0, 0,1,0, 0,0,1,    0,0,1,  0,1,0,  1,0,0]);
+            pointCloud.sizes.set([20,20,20, 10,10,10]);
 
             // rotate data along Z axis
-            const angleZ = +pano.Projection.pano_yaw_deg * Math.PI / 180;
-            //this.rotateDataZ(pointCloud, angleZ * this.panoramaStitching.angleZ);
+            const angleZ = (+pano.Projection.pano_yaw_deg - 90) * Math.PI / 180;
+            this.rotateDataZ(pointCloud, angleZ * this.panoramaStitching.angleZ);
 
             // rotate data to match earth orientation
             const normal = this.lngLatToNormal(+pano.Location.lat, +pano.Location.lng);
-            const normal2 = this.lngLatToNormal(this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
-            this.rotateDataToMatchTop(pointCloud, vec3.fromValues(normal2.x, normal2.y, normal2.z));
+            this.rotateByLatLng(pointCloud, +pano.Location.lat, +pano.Location.lng);
 
             const earthRadius = 6371000; // meters
             const offset = {
@@ -482,28 +448,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    rotateDataToMatchTop(data: PointCloudData, newTop: vec3) {
-        const dataTop = vec3.fromValues(0, 0, 1);
-        const angle = vec3.angle(dataTop, newTop);
-        const axis = vec3.cross(vec3.create(), dataTop, newTop);
-        vec3.normalize(axis, axis);
-
-
-        const inital = mat4.create();
-        mat4.rotateZ(inital, inital, -angle);
-
-        const rotMatrix = mat4.fromRotation(inital, angle, axis);
-
-
-
-        for (let i = 0; i < data.positions.length; i += 3) {
-            const position = new Float32Array(data.positions.buffer, i * 4, 3);
-            vec3.transformMat4(position, position, rotMatrix);
-            const normal = new Float32Array(data.normals.buffer, i * 4, 3);
-            vec3.transformMat4(normal, normal, rotMatrix);
-        }
-    }
-
     rotateByLatLng(data: PointCloudData, latitude: number, longitude: number) {
         // data up vector: (0, 0, 1)
         // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
@@ -521,7 +465,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const normal = new Float32Array(data.normals.buffer, i * 4, 3);
             vec3.transformMat4(normal, normal, rotMatrix);
         }
-
 
     }
 
@@ -688,6 +631,45 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             optimizedLod.push({data, boundingSphere, sphereData});
         }
         return optimizedLod;
+    }
+
+    private testAxis(initialRun = false) {
+        if (initialRun) {
+            this.view = new ViewDirection(true);
+            this.angleY = 0;
+            this.angleX = 0;
+            this.view.update(this.angleX, this.angleY);
+            vec3.set(this.cameraPos, 0, 5, 0);
+
+        }
+
+        this.renderer2.removeAllNodes();
+
+        const center: PointCloudData = {
+            positions: new Float32Array([0,0,0, 0,0,0, 0,0,0, 0,0,0.5, 0,0.5,0, 0.5,0,0]),
+            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
+            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
+            sizes: new Float32Array(    [1,1,1, 0.5, 0.5, 0.5]),
+        };
+        this.renderer2.addData(center.positions, center.sizes, center.colors, center.normals);
+
+        const data: PointCloudData = {
+            positions: new Float32Array([0,0,0, 0,0,0, 0,0,0,  0,0,0.5, 0,0.5,0, 0.5,0,0]),
+            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1,  0,0,1,   0,1,0,   1,0,0]),
+            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1,  0,0,1,   0,1,0,   1,0,0]),
+            sizes: new Float32Array([0.5,0.5,0.5, 0.2, 0.2, 0.2]),
+        };
+
+        const normal2 = this.lngLatToNormal(this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
+        this.rotateByLatLng(data, this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
+
+        for (let i = 0; i < data.positions.length; i += 3) {
+            data.positions[i] += normal2.x * 2;
+            data.positions[i+1] += normal2.y * 2;
+            data.positions[i+2] += normal2.z * 2;
+        }
+
+        this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
     }
 
 }
