@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { Renderer2 } from '../lib/renderer2/renderer2';
-import { vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { ViewDirection } from '../lib/renderer2/view-direction';
 import { AnimatedCamera } from '../lib/utils/animated-camera';
 import { FpsCounter } from '../lib/utils/fps-counter';
@@ -424,6 +424,20 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.rotateY(point, point, zero, angle);
             const point2 = new Float32Array(data.normals.buffer, i * 4, 3);
             vec3.rotateY(point2, point2, zero, angle);
+        }
+    }
+
+    rotateDataToMatchTop(data: PointCloudData, newTop: vec3) {
+        const dataTop = vec3.fromValues(0, 0, 1);
+        const angle = vec3.angle(dataTop, newTop);
+        const axis = vec3.cross(vec3.create(), dataTop, newTop);
+        const rotMatrix = mat4.fromRotation(mat4.create(), angle, axis);
+
+        for (let i = 0; i < data.positions.length; i += 3) {
+            const position = new Float32Array(data.positions.buffer, i * 4, 3);
+            vec3.transformMat4(position, position, rotMatrix);
+            const normal = new Float32Array(data.normals.buffer, i * 4, 3);
+            vec3.transformMat4(normal, normal, rotMatrix);
         }
     }
 
