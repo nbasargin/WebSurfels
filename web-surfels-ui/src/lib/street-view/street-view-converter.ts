@@ -1,17 +1,37 @@
-
 import { PointCloudData } from '../data/point-cloud-data';
 import { DepthData } from './depth-data';
 
-export class PointCloudFactory {
+export interface StreetViewConverterOptions {
+    skyDistance: number;
+    minNonSkySplatSize: number;
+    maxNonSkySplatSize: number;
+}
+
+export class StreetViewConverter {
 
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
+    private options: StreetViewConverterOptions;
 
-    constructor() {
+    /**
+     * Converts street view panoramas to point clouds.
+     *
+     * @param options .skyDistance distance for sky splats (= splats not assigned to a plane), if below 0 sky splats are dropped
+     *        options .minNonSkySplatSize  minimal size for non-sky splats, non-sky splats smaller than this are dropped
+     *        options .maxNonSkySplatSize  maximal size for non-sky splats, non-sky splats larger than this are dropped
+     */
+    constructor(options: StreetViewConverterOptions | object = {}) {
         this.canvas = document.createElement('canvas');
         this.canvas.width = 512;
-        this.canvas.height = 512;  // optionally, shrink height to 256
+        this.canvas.height = 256;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+
+        this.options = {
+            skyDistance: -1,
+            minNonSkySplatSize: 0,
+            maxNonSkySplatSize: 5,
+            ... options
+        };
     }
 
     /**
@@ -19,16 +39,14 @@ export class PointCloudFactory {
      *
      * @param colorData
      * @param imageWidth - effective image width (typically 416 or 512), can be computed with image_width / (2 ^ num_zoom_levels)
-     * @param imageHeight - effective image height (typically 208 or 416), can be computed with image_height / (2 ^ num_zoom_levels)
+     * @param imageHeight - effective image height (typically 208 or 256), can be computed with image_height / (2 ^ num_zoom_levels)
      * @param depthData
-     * @param skyDistance - distance for sky splats (= splats not assigned to a plane), if below 0 sky splats are dropped
-     * @param nonSkySplatSizeLimit - size limit for non-sky splats, non-sky splats larger than this are dropped
      */
-    constructPointCloud(colorData: ImageBitmap, imageWidth: number, imageHeight: number, depthData: DepthData, skyDistance: number = -1, nonSkySplatSizeLimit = 5):PointCloudData {
+    constructPointCloud(colorData: ImageBitmap, imageWidth: number, imageHeight: number, depthData: DepthData): PointCloudData {
         const splatScale = 0.02;
 
         this.ctx.drawImage(colorData, 0, 0);
-        const pixels = this.ctx.getImageData(0, 0, 512, 512).data;  // optionally, shrink height to 256
+        const pixels = this.ctx.getImageData(0, 0, 512, 256).data;
 
         const positions: Array<number> = [];
         const sizes: Array<number> = [];
@@ -42,7 +60,7 @@ export class PointCloudFactory {
             for (let x = 0; x < w; x++) {
                 const planeID = depthData.indices[y * w + x];
                 const splatBelongsToSky = planeID === 0;
-                if (splatBelongsToSky && skyDistance <= 0) {
+                if (splatBelongsToSky && this.options.skyDistance <= 0) {
                     continue; // point does not belong to a plane & sky should be discarded
                 }
 
@@ -59,7 +77,7 @@ export class PointCloudFactory {
                     plane = depthData.planes[planeID];
                     t = plane.distance / (px * plane.normal[0] + py * plane.normal[1] + pz * plane.normal[2]);
                 } else {
-                    t = -skyDistance;
+                    t = -this.options.skyDistance;
                     plane = {normal: [-px, -py, -pz], distance: 0}
                 }
 
@@ -68,7 +86,7 @@ export class PointCloudFactory {
                 const orientationCorrection = 1 / Math.abs(px * plane.normal[0] + py * plane.normal[1] + pz * plane.normal[2]);
                 const distanceCorrection = Math.abs(t) + 0.001;
                 const size = splatScale * distanceCorrection * orientationCorrection;
-                if (size > nonSkySplatSizeLimit && !splatBelongsToSky) {
+                if (!splatBelongsToSky && (size > this.options.maxNonSkySplatSize || size < this.options.minNonSkySplatSize)) {
                     continue; // discard non-sky points that are too large
                 }
 

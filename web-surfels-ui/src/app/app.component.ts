@@ -9,7 +9,7 @@ import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-
 import { BoundingSphere, Geometry } from '../lib/utils/geometry';
 import { RendererNode } from '../lib/renderer2/renderer-node';
 import { CullingTree } from '../lib/culling-tree/culling-tree';
-import { PointCloudFactory } from '../lib/street-view/point-cloud-factory';
+import { StreetViewConverter } from '../lib/street-view/street-view-converter';
 import { PanoramaLoader } from '../lib/street-view/panorama-loader';
 import { DepthData } from '../lib/street-view/depth-data';
 import { StanfordDragonLoader } from '../lib/data/stanford-dragon-loader';
@@ -324,7 +324,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         this.renderer2.removeAllNodes();
 
-        const factory = new PointCloudFactory();
+        const factory = new StreetViewConverter({
+            skyDistance: -1,
+            maxNonSkySplatSize: 2,
+            minNonSkySplatSize: 0.1,
+        });
 
         const panoIDs = [
             'GTKQkr3G-rRZQisDUMzUtg',
@@ -361,7 +365,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    private loadPano(id: string, factory: PointCloudFactory, top: {x: number, y: number, z: number}) {
+    private loadPano(id: string, factory: StreetViewConverter, top: {x: number, y: number, z: number}) {
         Promise.all([
             PanoramaLoader.loadById(id),
             PanoramaLoader.loadImage(id, 0, 0, 0),
@@ -372,13 +376,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const imageHeight = +pano.Data.image_height / (2 ** +pano.Location.zoomLevels);
 
             const depth = new DepthData(pano.model.depth_map);
-            const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth, -1, 2);
+            const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth);
 
-            // TEMP: use a few points to indicate orientation
-            pointCloud.positions.set([0,0,0, 0,0,0, 0,0,0,    0,0,10,  0,10,0,  10,0,0]);
-            pointCloud.normals.set([  1,0,0, 0,1,0, 0,0,1,    0,0,1,  0,1,0,  1,0,0]);
-            pointCloud.colors.set([   1,0,0, 0,1,0, 0,0,1,    0,0,1,  0,1,0,  1,0,0]);
-            pointCloud.sizes.set([20,20,20, 10,10,10]);
+            // debug: use a few points to indicate orientation
+            //pointCloud.positions.set([0,0,0, 0,0,0, 0,0,0,    0,0,10,  0,10,0,  10,0,0]);
+            //pointCloud.normals.set([  1,0,0, 0,1,0, 0,0,1,    0,0,1,  0,1,0,  1,0,0]);
+            //pointCloud.colors.set([   1,0,0, 0,1,0, 0,0,1,    0,0,1,  0,1,0,  1,0,0]);
+            //pointCloud.sizes.set([20,20,20, 10,10,10]);
 
             // rotate data along Z axis
             const angleZ = (-pano.Projection.pano_yaw_deg + 90) * Math.PI / 180;
