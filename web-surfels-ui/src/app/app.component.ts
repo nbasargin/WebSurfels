@@ -47,7 +47,6 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
 
-
             <!--
             <div>
                 latitude: {{panoramaStitching.latRot}}
@@ -64,24 +63,9 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                        type="range" min="-180" max="180" step="1" value="0">
             </div>
             <div>
-                pano angleY: {{panoramaStitching.angleY}}
-            </div>
-            <div>
-                <input #panoSliderAngleY (input)="panoramaStitching.angleY = +panoSliderAngleY.value"
-                       type="range" min="-5" max="5" step="0.1" value="1">
-            </div>
-            <div>
-                pano angleZ: {{panoramaStitching.angleZ}}
-            </div>
-            <div>
-                <input #panoSliderAngleZ (input)="panoramaStitching.angleZ = +panoSliderAngleZ.value"
-                       type="range" min="0.5" max="1.5" step="0.001" value="1">
-            </div>
-            <div>
                 <button (click)="reloadPano()">RELOAD</button>
             </div>
             -->
-
         </div>
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
@@ -173,14 +157,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     frustumInfo = '';
 
     panoramaStitching = {
-        scaleX: 1,
-        scaleY: 1,
-        angleY: 1,
-        angleZ: 1,
-
         latRot: 0,
         lngRot: 0,
-
     };
 
     constructor() {
@@ -372,11 +350,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             '6ZfcCQRcyZNdvEq0CGHKcQ',
         ];
 
-        PanoramaLoader.loadById(panoIDs[0]).then(pano => {
+        PanoramaLoader.loadById(panoIDsMuc[0]).then(pano => {
 
             const top = this.lngLatToNormal(+pano.Location.lat, +pano.Location.lng); // or use original lat / lng?
 
-            for (const id of panoIDs) {
+            for (const id of panoIDsMuc) {
                 this.loadPano(id, factory, top);
             }
 
@@ -403,8 +381,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             pointCloud.sizes.set([20,20,20, 10,10,10]);
 
             // rotate data along Z axis
-            const angleZ = (+pano.Projection.pano_yaw_deg - 90) * Math.PI / 180;
-            this.rotateDataZ(pointCloud, angleZ * this.panoramaStitching.angleZ);
+            const angleZ = (-pano.Projection.pano_yaw_deg + 90) * Math.PI / 180;
+            this.rotateDataZ(pointCloud, angleZ);
 
             // rotate data to match earth orientation
             const normal = this.lngLatToNormal(+pano.Location.lat, +pano.Location.lng);
