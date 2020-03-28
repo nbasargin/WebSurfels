@@ -6,7 +6,7 @@ const SPLAT_DEPTH_EPSILON = 0.0001; // added to depth value during depth pass to
 export const quadVS = `
     #version 300 es
     
-    #define USE_LIGHTING 1
+    #define USE_LIGHTING 0
     #define MIN_LIGHTNESS 0.99
     
     // adapted from http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
