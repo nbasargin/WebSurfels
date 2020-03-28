@@ -41,7 +41,12 @@ export const quadVS = `
         vec3 point_normal = normal;
         vec3 quad_normal = vec3(0.0, 0.0, 1.0);
         
-		vec3 rot_axis = normalize(cross(quad_normal, point_normal));
+		vec3 rot_axis = cross(quad_normal, point_normal);
+		if (length(rot_axis) == 0.0) {
+		    rot_axis = vec3(1.0, 0.0, 0.0);
+		} else {
+		    rot_axis = normalize(rot_axis);
+		}
 		float rot_angle = acos(dot(quad_normal, point_normal));
 		float world_point_size = size * uSizeScale;
 		
