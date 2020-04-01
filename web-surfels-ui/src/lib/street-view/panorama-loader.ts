@@ -1,45 +1,16 @@
-export interface StreetViewResponse {
-    Data: {
-        image_width: string,
-        image_height: string,
-        [k: string]: string,
-    };
-    Links: Array<{
-        yawDeg: string,
-        panoId: string,
-        description?: string,
-    }>;
-    Location: {
-        panoId: string,
-        zoomLevels: string,
-        lat: string,
-        lng: string,
-        original_lat: string,
-        original_lng: string,
-    };
-    Projection: {
-        projection_type: 'spherical' | string,
-        pano_yaw_deg: string,
-        tilt_yaw_deg: string,
-        tilt_pitch_deg: string,
-    };
-    model: {
-        depth_map: string
-    }
-}
-
+import { GSVApiResponse } from './gsv-api-response';
 
 export class PanoramaLoader {
 
     // ID like 'GTKQkr3G-rRZQisDUMzUtg'
-    public static async loadById(panoID: string): Promise<StreetViewResponse> {
+    public static async loadById(panoID: string): Promise<GSVApiResponse> {
         const url = `http://maps.google.com/cbk?output=json&panoid=${panoID}&dm=1`;
         const response = await fetch(url);
         return response.json();
     }
 
     // Location like 40.762475, -73.974363
-    public static async loadByLocation(lat: number, lng: number): Promise<StreetViewResponse> {
+    public static async loadByLocation(lat: number, lng: number): Promise<GSVApiResponse> {
         const url = `http://maps.google.com/cbk?output=json&ll=${lat},${lng}&dm=1`;
         const response = await fetch(url);
         return response.json();
