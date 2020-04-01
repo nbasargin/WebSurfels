@@ -52,12 +52,12 @@ export class DynamicLodTree {
             frontierPosition++;
             const s = nextNode.boundingSphere;
 
-            if (!this.renderer.frustum.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius)) {
+            if (!this.renderer.camera.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius)) {
                 nextNode.unloadChildrenCounter++;
                 continue;
             }
 
-            const projectedSize = this.renderer.frustum.getProjectedSphereSize(s.centerX, s.centerY, s.centerZ, s.radius);
+            const projectedSize = this.renderer.camera.getProjectedSphereSize(s.centerX, s.centerY, s.centerZ, s.radius);
             if (projectedSize < this.sizeThreshold) {
                 // node is small enough
                 // render this LoD

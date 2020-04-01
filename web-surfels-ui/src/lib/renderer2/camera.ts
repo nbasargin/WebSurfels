@@ -1,46 +1,103 @@
-import { vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { Plane2 } from '../utils/plane2';
 
-export class Frustum {
+export class Camera {
 
-    private fovRadians: number;
-    private aspectRatio: number;
-    private nearDist: number;
-    private farDist: number;
+    projectionMatrix: mat4 = mat4.create();
+    modelViewMatrix: mat4 = mat4.create();
+    modelViewMatrixIT: mat4 = mat4.create();
 
-    private eye: vec3;
-    private target: vec3;
-    private up: vec3;
+    eye: vec3 = vec3.fromValues(0, 0, 0);
+    target: vec3 = vec3.fromValues(0, 0, -1);
+    up: vec3 =  vec3.fromValues(0, 1, 0);
 
-    public readonly planes: { near: Plane2, far: Plane2, top: Plane2, bottom: Plane2, left: Plane2, right: Plane2 };
-    private readonly planesArray: Array<Plane2>;
+    private fovRadians: number = Math.PI / 3;
+    private aspectRatio: number = 1;
+    private nearDist: number = 0.1;
+    private farDist: number = 1000;
+
+    private frustumPlanes = {
+        near: new Plane2(),
+        far: new Plane2(),
+        top: new Plane2(),
+        bottom: new Plane2(),
+        left: new Plane2(),
+        right: new Plane2()
+    };
 
     constructor() {
-        this.planes = {
-            near: new Plane2(),
-            far: new Plane2(),
-            top: new Plane2(),
-            bottom: new Plane2(),
-            left: new Plane2(),
-            right: new Plane2()
-        };
-        this.planesArray = Object.values(this.planes);
+        this.updateProjection();
+        this.updateModelView();
+        this.updateFrustum();
     }
 
-    setPerspectiveParams(fovRadians: number, aspectRatio: number, near: number, far: number) {
-        this.fovRadians = fovRadians;
-        this.aspectRatio = aspectRatio;
-        this.nearDist = near;
-        this.farDist = far;
-    }
-
-    setCameraOrientation(eye: vec3, target: vec3, up: vec3) {
+    setOrientation(eye: vec3, target: vec3, up: vec3) {
         this.eye = eye;
         this.target = target;
         this.up = up;
+        this.updateModelView();
+        this.updateFrustum();
     }
 
-    updateFrustumPlanes() {
+    setFieldOfView(fovRadians: number) {
+        this.fovRadians = fovRadians;
+        this.updateProjection();
+        this.updateFrustum();
+    }
+
+    setClippingDist(near: number, far: number) {
+        this.nearDist = near;
+        this.farDist = far;
+        this.updateProjection();
+        this.updateFrustum();
+    }
+
+    setAspectRatio(aspect: number) {
+        this.aspectRatio = aspect;
+        this.updateProjection();
+        this.updateFrustum();
+    }
+
+    isSphereInFrustum(cx: number, cy: number, cz: number, r: number): boolean {
+        for (const plane of Object.values(this.frustumPlanes)) {
+            const dist = plane.pointDistance(cx, cy, cz);
+            if (dist < -r) {
+                return false;
+            }
+            // if dist < radius -> intersection with plane
+        }
+        return true;
+    }
+
+    getDistanceToEye(x: number, y: number, z: number) {
+        const dx = this.eye[0] - x;
+        const dy = this.eye[1] - y;
+        const dz = this.eye[2] - z;
+        return  Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    getProjectedSphereSize(cx: number, cy: number, cz: number, r: number) {
+        // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
+        const dist = this.getDistanceToEye(cx, cy, cz);
+        const horizon = dist ** 2 - r ** 2;
+        if (horizon < 0) {
+            return Number.MAX_VALUE; // inside the sphere -> size is larger than the screen
+        }
+        return (1 / Math.tan(this.fovRadians / 2)) * r / Math.sqrt(horizon);
+    }
+
+
+    private updateProjection() {
+        mat4.perspective(this.projectionMatrix, this.fovRadians, this.aspectRatio, this.nearDist, this.farDist);
+    }
+
+    private updateModelView() {
+        mat4.lookAt(this.modelViewMatrix, this.eye, this.target, this.up);
+        mat4.invert(this.modelViewMatrixIT, this.modelViewMatrix);
+        mat4.transpose(this.modelViewMatrixIT, this.modelViewMatrixIT);
+    }
+
+    private updateFrustum() {
         const fovTan = Math.tan(this.fovRadians / 2);
         const hNear = fovTan * this.nearDist;
         const wNear = hNear * this.aspectRatio;
@@ -70,8 +127,8 @@ export class Frustum {
         const negZ = vec3.create();
         vec3.scale(negZ, zAxis, -1);
 
-        this.planes.near.setNormalAndPoint(negZ, centerNear);
-        this.planes.far.setNormalAndPoint(zAxis, centerFar);
+        this.frustumPlanes.near.setNormalAndPoint(negZ, centerNear);
+        this.frustumPlanes.far.setNormalAndPoint(zAxis, centerFar);
 
         // top plane
         // point = centerNear + yAxis * hNear
@@ -83,7 +140,7 @@ export class Frustum {
         vec3.normalize(eyeToNearTop, eyeToNearTop);
         const normalTop = vec3.create();
         vec3.cross(normalTop, eyeToNearTop, xAxis);
-        this.planes.top.setNormalAndPoint(normalTop, nearTop);
+        this.frustumPlanes.top.setNormalAndPoint(normalTop, nearTop);
 
         // bottom plane
         // point = centerNear - yAxis * hNear
@@ -95,7 +152,7 @@ export class Frustum {
         vec3.normalize(eyeToNearBottom, eyeToNearBottom);
         const normalBottom = vec3.create();
         vec3.cross(normalBottom, xAxis, eyeToNearBottom);
-        this.planes.bottom.setNormalAndPoint(normalBottom, nearBottom);
+        this.frustumPlanes.bottom.setNormalAndPoint(normalBottom, nearBottom);
 
         // left plane
         // point = centerNear - xAxis * wNear
@@ -107,7 +164,7 @@ export class Frustum {
         vec3.normalize(eyeToNearLeft, eyeToNearLeft);
         const normalLeft = vec3.create();
         vec3.cross(normalLeft, eyeToNearLeft, yAxis);
-        this.planes.left.setNormalAndPoint(normalLeft, nearLeft);
+        this.frustumPlanes.left.setNormalAndPoint(normalLeft, nearLeft);
 
         // right plane
         // point = centerNear + xAxis * wNear
@@ -119,35 +176,7 @@ export class Frustum {
         vec3.normalize(eyeToNearRight, eyeToNearRight);
         const normalRight = vec3.create();
         vec3.cross(normalRight, yAxis, eyeToNearRight);
-        this.planes.right.setNormalAndPoint(normalRight, nearRight);
-    }
-
-    isSphereInFrustum(cx: number, cy: number, cz: number, r: number): boolean {
-        for (const plane of this.planesArray) {
-            const dist = plane.pointDistance(cx, cy, cz);
-            if (dist < -r) {
-                return false;
-            }
-            // if dist < radius -> intersection with plane
-        }
-        return true;
-    }
-
-    getDistanceToEye(x: number, y: number, z: number) {
-        const dx = this.eye[0] - x;
-        const dy = this.eye[1] - y;
-        const dz = this.eye[2] - z;
-        return  Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
-
-    getProjectedSphereSize(cx: number, cy: number, cz: number, r: number) {
-        // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
-        const dist = this.getDistanceToEye(cx, cy, cz);
-        const horizon = dist ** 2 - r ** 2;
-        if (horizon < 0) {
-            return Number.MAX_VALUE; // inside the sphere -> size is larger than the screen
-        }
-        return (1 / Math.tan(this.fovRadians / 2)) * r / Math.sqrt(horizon);
+        this.frustumPlanes.right.setNormalAndPoint(normalRight, nearRight);
     }
 
 }

@@ -219,8 +219,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.checkCamera();
         }
 
-        // TEMP: assuming one node with bounding sphere defined
-        this.renderer2.frustum.updateFrustumPlanes();
         if (this.dynamicLod) {
             this.dynamicLod.render(!this.splattingEnabled);
         } else {
@@ -259,7 +257,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
 
         const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.view.direction);
-        this.renderer2.setCameraOrientation(this.cameraPos, viewTarget, this.view.up);
+        this.renderer2.camera.setOrientation(this.cameraPos, viewTarget, this.view.up);
     }
 
     checkCanvasSize() {

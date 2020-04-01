@@ -37,7 +37,7 @@ export class AnimatedCamera {
             this.pos[1] = elevation;
             this.pos[2] = y;
         }
-        renderer.setCameraOrientation(this.pos, this.target, this.up);
+        renderer.camera.setOrientation(this.pos, this.target, this.up);
     }
 
 }

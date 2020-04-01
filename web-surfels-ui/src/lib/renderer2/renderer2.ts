@@ -1,6 +1,5 @@
-import { mat4, vec3 } from 'gl-matrix';
 import { PointCloudData } from '../data/point-cloud-data';
-import { Frustum } from './frustum';
+import { Camera } from './camera';
 
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
 import { NormShader } from './norm-shader';
@@ -11,7 +10,7 @@ import { WebGLUtils } from './web-gl-utils';
 export class Renderer2 {
 
     public readonly nodes: Set<RendererNode> = new Set();
-    public readonly frustum: Frustum;
+    public readonly camera: Camera;
 
     private readonly gl: WebGL2RenderingContext;
     private readonly offscreenFramebuffer: OffscreenFramebuffer;
@@ -19,19 +18,8 @@ export class Renderer2 {
     private readonly normShader: NormShader;
 
     private readonly uniforms: {
-        eyePosition: vec3,
-        projectionMatrix: mat4,
-        modelViewMatrix: mat4,
-        modelViewMatrixIT: mat4,
         sizeScale: number,
     };
-
-    private readonly perspectiveParams: {
-        fovRadians: number,
-        near: number,
-        far: number,
-    };
-
     constructor(public readonly canvas: HTMLCanvasElement, initialWidth: number, initialHeight: number) {
         const context = canvas.getContext('webgl2');
         if (!context || !(context instanceof WebGL2RenderingContext)) {
@@ -39,7 +27,7 @@ export class Renderer2 {
         }
         this.gl = context;
         this.offscreenFramebuffer = new OffscreenFramebuffer(this.gl);
-        this.frustum = new Frustum();
+        this.camera = new Camera();
 
         // ext check
         const extensions = ['EXT_color_buffer_float', 'EXT_float_blend'];
@@ -53,17 +41,7 @@ export class Renderer2 {
         this.normShader = new NormShader(this.gl);
 
         this.uniforms = {
-            eyePosition: vec3.create(),
-            projectionMatrix: mat4.create(),
-            modelViewMatrix: mat4.create(),
-            modelViewMatrixIT: mat4.create(),
             sizeScale: 1,
-        };
-
-        this.perspectiveParams = {
-            fovRadians: Math.PI / 3,
-            near: 0.1,
-            far: 1000,
         };
 
         this.gl.clearColor(0, 0, 0, 0);
@@ -76,15 +54,6 @@ export class Renderer2 {
         this.gl.depthFunc(this.gl.LEQUAL);
 
         this.setCanvasSize(initialWidth, initialHeight);
-        this.setCameraOrientation( vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, -1), vec3.fromValues(0, 1, 0));
-    }
-
-    setCameraOrientation(eye: vec3, target: vec3, up: vec3) {
-        vec3.copy(this.uniforms.eyePosition, eye);
-        mat4.lookAt(this.uniforms.modelViewMatrix, eye, target, up);
-        mat4.invert(this.uniforms.modelViewMatrixIT, this.uniforms.modelViewMatrix);
-        mat4.transpose(this.uniforms.modelViewMatrixIT, this.uniforms.modelViewMatrixIT);
-        this.frustum.setCameraOrientation(eye, target, up);
     }
 
     addData({positions, sizes, colors, normals}: PointCloudData): RendererNode {
@@ -123,14 +92,9 @@ export class Renderer2 {
         this.canvas.width = width;
         this.canvas.height = height;
         this.offscreenFramebuffer.resize(width, height);
-        this.updatePerspectiveMatrix();
-    }
 
-    setPerspectiveParams(fovRadians: number, near: number, far: number) {
-        this.perspectiveParams.fovRadians = fovRadians;
-        this.perspectiveParams.near = near;
-        this.perspectiveParams.far = far;
-        this.updatePerspectiveMatrix();
+        const aspect = this.canvas.clientWidth / Math.max(this.canvas.clientHeight, 1);
+        this.camera.setAspectRatio(aspect);
     }
 
     setSplatSizeScale(sizeScale: number) {
@@ -154,10 +118,10 @@ export class Renderer2 {
         this.gl.vertexAttribDivisor(this.splatShader.attributeLocations.normal, 1);
 
         this.gl.useProgram(this.splatShader.program);
-        this.gl.uniform3fv(this.splatShader.uniformLocations.eyePos, this.uniforms.eyePosition);
-        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.projectionMatrix, false, this.uniforms.projectionMatrix);
-        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.modelViewMatrix, false, this.uniforms.modelViewMatrix);
-        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.modelViewMatrixIT, false, this.uniforms.modelViewMatrixIT);
+        this.gl.uniform3fv(this.splatShader.uniformLocations.eyePos, this.camera.eye);
+        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.projectionMatrix, false, this.camera.projectionMatrix);
+        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.modelViewMatrix, false, this.camera.modelViewMatrix);
+        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.modelViewMatrixIT, false, this.camera.modelViewMatrixIT);
         this.gl.uniform1f(this.splatShader.uniformLocations.sizeScale, this.uniforms.sizeScale);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.splatShader.quadVertexBuffer);
@@ -233,13 +197,6 @@ export class Renderer2 {
         }
 
         return {nodesDrawn, pointsDrawn};
-    }
-
-    private updatePerspectiveMatrix() {
-        const aspectRatio = this.canvas.clientWidth / Math.max(this.canvas.clientHeight, 1);
-        const p = this.perspectiveParams;
-        mat4.perspective(this.uniforms.projectionMatrix, p.fovRadians, aspectRatio, p.near, p.far);
-        this.frustum.setPerspectiveParams(p.fovRadians, aspectRatio, p.near, p.far);
     }
 
 }
