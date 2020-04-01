@@ -324,21 +324,19 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const basePanorama = panoramas[middleID];
 
             for (const p of panoramas) {
-                if (p === basePanorama) {
-                    continue;
-                }
-                // compute offset
-                const x = basePanorama.worldPosition.x - p.worldPosition.x;
-                const y = basePanorama.worldPosition.y - p.worldPosition.y;
-                const z = basePanorama.worldPosition.z - p.worldPosition.z;
+                if (p !== basePanorama) {
+                    // compute offset
+                    const x = basePanorama.worldPosition.x - p.worldPosition.x;
+                    const y = basePanorama.worldPosition.y - p.worldPosition.y;
+                    const z = basePanorama.worldPosition.z - p.worldPosition.z;
 
-                const positions = p.data.positions;
-                for (let i = 0; i < positions.length; i+=3) {
-                    positions[i] += x;
-                    positions[i + 1] += y;
-                    positions[i + 2] += z;
+                    const positions = p.data.positions;
+                    for (let i = 0; i < positions.length; i+=3) {
+                        positions[i] += x;
+                        positions[i + 1] += y;
+                        positions[i + 2] += z;
+                    }
                 }
-
                 this.renderer2.addData(p.data);
             }
 
