@@ -10,8 +10,8 @@ export interface GSVPanorama {
     boundingSphere: BoundingSphere;
     data: PointCloudData;
     links: Array<string>; // ids of neighboring panoramas
-    worldPosition: {x: number, y: number, z: number};
-    worldCoordinates: {latitude: number, longitude: number};
+    worldPosition: { x: number, y: number, z: number };
+    worldCoordinates: { latitude: number, longitude: number };
 }
 
 
@@ -45,12 +45,18 @@ export class GSVPanoramaLoader {
         const worldPosition = GSVPanoramaLoader.lngLatToPosition(+pano.Location.lat, +pano.Location.lng);
         const worldCoordinates = {latitude: +pano.Location.lat, longitude: +pano.Location.lng};
 
-        // bounding sphere
-        // todo
+        // bounding sphere with center at origin
+        let radius = 0;
+        const pos = pointCloud.positions;
+        for (let i = 0; i < pos.length; i += 3) {
+            const dist = Math.sqrt(pos[i] ** 2 + pos[i + 1] ** 2 + pos[i + 2] ** 2);
+            const size = pointCloud.sizes[i / 3];
+            radius = Math.max(radius, dist + size / 2)
+        }
 
         return {
             id: pano.Location.panoId,
-            boundingSphere: null as any,
+            boundingSphere: {centerX: 0, centerY: 0, centerZ: 0, radius},
             data: pointCloud,
             links: pano.Links.map(link => link.panoId),
             worldPosition,
