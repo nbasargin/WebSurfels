@@ -9,7 +9,9 @@ export class Camera {
 
     eye: vec3 = vec3.fromValues(0, 0, 0);
     target: vec3 = vec3.fromValues(0, 0, -1);
-    up: vec3 =  vec3.fromValues(0, 1, 0);
+    up: vec3 =  vec3.fromValues(0, 1, 0); // should be normalized
+
+    viewDirection: vec3 = vec3.fromValues(0, 0, -1); // should be normalized
 
     private fovRadians: number = Math.PI / 3;
     private aspectRatio: number = 1;
@@ -32,9 +34,26 @@ export class Camera {
     }
 
     setOrientation(eye: vec3, target: vec3, up: vec3) {
-        this.eye = eye;
-        this.target = target;
-        this.up = up;
+        vec3.copy(this.eye, eye);
+        vec3.copy(this.target, target);
+        vec3.copy(this.up, up);
+        vec3.subtract(this.viewDirection, this.target, this.eye);
+        vec3.normalize(this.viewDirection, this.viewDirection);
+        this.updateModelView();
+        this.updateFrustum();
+    }
+
+    setUpVector(up: vec3) {
+        vec3.copy(this.up, up);
+        vec3.normalize(this.up, this.up);
+        this.updateModelView();
+        this.updateFrustum();
+    }
+
+    setViewDirection(direction: vec3) {
+        vec3.copy(this.viewDirection, direction);
+        vec3.normalize(this.viewDirection, this.viewDirection);
+        vec3.add(this.target, this.eye, this.viewDirection);
         this.updateModelView();
         this.updateFrustum();
     }
