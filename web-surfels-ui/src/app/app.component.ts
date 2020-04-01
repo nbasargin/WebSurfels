@@ -9,7 +9,6 @@ import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
 import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-data';
 import { BoundingSphere, Geometry } from '../lib/utils/geometry';
 import { RendererNode } from '../lib/renderer2/renderer-node';
-import { CullingTree } from '../lib/culling-tree/culling-tree';
 import { StanfordDragonLoader } from '../lib/data/stanford-dragon-loader';
 import { Timing } from '../lib/utils/timing';
 import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
@@ -121,7 +120,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     sphereData: RendererNode;
     lodData: RendererNode;
 
-    private cullingTree: CullingTree;
     dynamicLod: DynamicLodTree;
     rendererDetails: { nodesDrawn: number, pointsDrawn: number };
 
@@ -152,9 +150,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
             this.testStreetViewStitching(true);
-            //this.castleTest(64, 12, 0.25);
             //this.sphereTest(300000, 0.02, 4, 12);
-            //this.createDynamicLod(64, 12, 0.20);
             //this.loadDynamicLod2(1.4);
             //this.testAxis(true);
 
@@ -225,10 +221,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         // TEMP: assuming one node with bounding sphere defined
         this.renderer2.frustum.updateFrustumPlanes();
-        if (this.cullingTree) {
-            this.rendererDetails = this.cullingTree.render(!this.splattingEnabled);
-
-        } else if (this.dynamicLod) {
+        if (this.dynamicLod) {
             this.dynamicLod.render(!this.splattingEnabled);
         } else {
             this.renderer2.render(this.renderer2.nodes, !this.splattingEnabled);
@@ -379,26 +372,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    createDynamicLod(resolution: number, maxDepth: number, sizeThreshold: number) {
-        this.overlayMessage = 'Loading...';
-        Timing.measure();
-        const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.loadDropbox().then(data => {
-            console.log(Timing.measure(), 'data loaded');
-            const multipliedData = Geometry.multiplyData(data, 16, 8);
-            console.log(Timing.measure(), 'data multiplied');
-            const bb = Geometry.getBoundingBox(multipliedData.positions);
-            const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
-            octree.addData(multipliedData);
-            console.log(Timing.measure(), 'octree created');
-            this.weightedLodNode = octree.buildLod();
-            console.log(Timing.measure(), 'lod computed');
-            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.weightedLodNode);
-            console.log(Timing.measure(), 'culling ready');
-            this.overlayMessage = '';
-        });
-    }
-
     loadDynamicLod2(sizeThreshold: number) {
         // castle cam config
         vec3.set(this.cameraPos, -90, 23, 92);
@@ -408,25 +381,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         const loader = new XhrLodLoader('http://localhost:5000/');
         this.dynamicLod = new DynamicLodTree(this.renderer2, loader, sizeThreshold);
-    }
-
-    castleTest(resolution: number, maxDepth: number, sizeThreshold: number) {
-        this.overlayMessage = 'Loading...';
-        const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.loadCastle().then(data => {
-            console.log(Timing.measure(), 'LOADED data');
-            this.displayInfo.totalPoints = data.positions.length / 3;
-            const bb = Geometry.getBoundingBox(data.positions);
-            const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
-            octree.addData(data);
-            console.log(Timing.measure(), 'octree created');
-            this.weightedLodNode = octree.buildLod();
-            console.log(Timing.measure(), 'LOD created');
-            this.cullingTree = new CullingTree(this.renderer2, sizeThreshold, this.weightedLodNode);
-            console.log(Timing.measure(), 'culling ready');
-            this.weightedLodNode = null as any;
-            this.overlayMessage = '';
-        });
     }
 
     sphereTest(pointNumber: number, pointSize: number, resolution: number, maxDepth: number) {
