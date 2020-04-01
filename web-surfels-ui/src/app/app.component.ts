@@ -341,7 +341,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                     positions[i + 2] += z;
                 }
 
-                this.renderer2.addData(p.data.positions, p.data.sizes, p.data.colors, p.data.normals);
+                this.renderer2.addData(p.data);
             }
 
         });
@@ -414,8 +414,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const {data, boundingSphere, sphereData} = this.optimizedLod[lodLevel];
         this.displayInfo.renderedPoints = data.positions.length / 3;
         this.boundingSphere = boundingSphere;
-        this.lodData = this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
-        this.sphereData = this.renderer2.addData(sphereData.positions, sphereData.sizes, sphereData.colors, sphereData.normals);
+        this.lodData = this.renderer2.addData(data);
+        this.sphereData = this.renderer2.addData(sphereData);
     }
 
     getNodesAtSpecificDepth(root: WeightedLodNode, depth: number): Array<WeightedLodNode> {
@@ -460,7 +460,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
             sizes: new Float32Array(    [1,1,1, 0.5, 0.5, 0.5]),
         };
-        this.renderer2.addData(center.positions, center.sizes, center.colors, center.normals);
+        this.renderer2.addData(center);
 
         const data: PointCloudData = {
             positions: new Float32Array([0,0,0, 0,0,0, 0,0,0,  0,0,0.5, 0,0.5,0, 0.5,0,0]),
@@ -478,7 +478,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             data.positions[i+2] += normal2.z * 2;
         }
 
-        this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
+        this.renderer2.addData(data);
     }
 
     rotateByLatLng(data: PointCloudData, latitude: number, longitude: number) {

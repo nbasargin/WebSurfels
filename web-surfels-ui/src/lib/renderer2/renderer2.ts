@@ -1,4 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
+import { PointCloudData } from '../data/point-cloud-data';
 import { Frustum } from './frustum';
 
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
@@ -86,7 +87,7 @@ export class Renderer2 {
         this.frustum.setCameraOrientation(eye, target, up);
     }
 
-    addData(positions: Float32Array, sizes: Float32Array, colors: Float32Array, normals: Float32Array): RendererNode {
+    addData({positions, sizes, colors, normals}: PointCloudData): RendererNode {
         const node: RendererNode = {
             visible: true,
             numPoints: positions.length / 3,

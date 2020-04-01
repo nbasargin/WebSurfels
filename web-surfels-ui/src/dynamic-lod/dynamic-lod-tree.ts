@@ -142,7 +142,7 @@ export class DynamicLodTree {
 
     // does not care about children
     private addLodNode(node: LodNode): DynamicLodNode {
-        const rendererNode = this.renderer.addData(node.data.positions, node.data.sizes, node.data.colors, node.data.normals);
+        const rendererNode = this.renderer.addData(node.data);
         this.stats.loadedNodes++;
         this.stats.loadedPoints += node.data.positions.length / 3;
         return  {
