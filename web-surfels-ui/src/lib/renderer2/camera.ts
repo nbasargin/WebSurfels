@@ -1,6 +1,9 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { Plane2 } from '../utils/plane2';
 
+/**
+ * Default coordinate system: Z up, looking along y axis, x goes to the right.
+ */
 export class Camera {
 
     projectionMatrix: mat4 = mat4.create();
@@ -8,10 +11,10 @@ export class Camera {
     modelViewMatrixIT: mat4 = mat4.create();
 
     eye: vec3 = vec3.fromValues(0, 0, 0);
-    target: vec3 = vec3.fromValues(0, 0, -1);
-    up: vec3 =  vec3.fromValues(0, 1, 0); // should be normalized
+    target: vec3 = vec3.fromValues(0, 1, 0);
+    up: vec3 =  vec3.fromValues(0, 0, 1); // should be normalized
 
-    viewDirection: vec3 = vec3.fromValues(0, 0, -1); // should be normalized
+    viewDirection: vec3 = vec3.create(); // should be normalized (see constructor)
 
     private fovRadians: number = Math.PI / 3;
     private aspectRatio: number = 1;
@@ -28,6 +31,9 @@ export class Camera {
     };
 
     constructor() {
+        vec3.subtract(this.viewDirection, this.target, this.eye);
+        vec3.normalize(this.viewDirection, this.viewDirection);
+
         this.updateProjection();
         this.updateModelView();
         this.updateFrustum();

@@ -37,7 +37,7 @@ export class FirstPersonController {
 
         const up = this.camera.up;
         let frontReference = vec3.fromValues(0, 0, 1);
-        if (Math.abs(up[0]) === 1 && up[1] === 0 && up[2] === 0) {
+        if (up[0] === 0 && up[1] === 0 && Math.abs(up[2]) === 1) {
             frontReference = vec3.fromValues(0, 1, 0);
         }
         const right = vec3.create();
