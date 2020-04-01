@@ -39,9 +39,7 @@ export class GSVPanoramaLoader {
         const pointCloud =  this.streetViewConverter.constructPointCloud(bitmap, imageWidth, imageHeight, depth);
 
         // rotate point cloud in order to match world orientation
-        const angleZ = (-pano.Projection.pano_yaw_deg + 90) * Math.PI / 180;
-        this.rotateDataZ(pointCloud, angleZ);
-        this.rotateByLatLng(pointCloud, +pano.Location.lat, +pano.Location.lng);
+        this.orientData(pointCloud, +pano.Location.lat, +pano.Location.lng, -pano.Projection.pano_yaw_deg + 90);
 
         // compute world offset
         const worldPosition = this.lngLatToNormalOffset(+pano.Location.lat, +pano.Location.lng);
@@ -60,17 +58,6 @@ export class GSVPanoramaLoader {
         };
     }
 
-
-    private rotateDataZ(data: PointCloudData, angle: number) {
-        const zero = vec3.fromValues(0, 0, 0);
-        for (let i = 0; i < data.positions.length; i += 3) {
-            const point = new Float32Array(data.positions.buffer, i * 4, 3);
-            vec3.rotateZ(point, point, zero, angle);
-            const point2 = new Float32Array(data.normals.buffer, i * 4, 3);
-            vec3.rotateZ(point2, point2, zero, angle);
-        }
-    }
-
     private lngLatToNormalOffset(latitude: number, longitude: number) {
         const earthRadius = 6371000; // meters
         latitude = latitude * Math.PI / 180;
@@ -82,17 +69,16 @@ export class GSVPanoramaLoader {
         return {x, y, z};
     }
 
-
-    private rotateByLatLng(data: PointCloudData, latitude: number, longitude: number) {
+    private orientData(data: PointCloudData, latitude: number, longitude: number, yawDegree: number) {
         // data up vector: (0, 0, 1)
         // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
 
-        latitude = (latitude - 90) * Math.PI / 180;
-        longitude = (longitude - 180) * Math.PI / 180;
+        const zAngle = (longitude - 180 + yawDegree) * Math.PI / 180;
+        const yAngle = (latitude - 90) * Math.PI / 180;
 
         const rotMatrix = mat4.create();
-        mat4.rotateZ(rotMatrix, rotMatrix, longitude);
-        mat4.rotateY(rotMatrix, rotMatrix, latitude);
+        mat4.rotateZ(rotMatrix, rotMatrix, zAngle);
+        mat4.rotateY(rotMatrix, rotMatrix, yAngle);
 
         for (let i = 0; i < data.positions.length; i += 3) {
             const position = new Float32Array(data.positions.buffer, i * 4, 3);
