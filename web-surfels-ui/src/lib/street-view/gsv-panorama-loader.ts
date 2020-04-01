@@ -2,7 +2,7 @@ import { mat4, vec3 } from 'gl-matrix';
 import { PointCloudData } from '../data/point-cloud-data';
 import { BoundingSphere } from '../utils/geometry';
 import { DepthData } from './depth-data';
-import { PanoramaLoader } from './panorama-loader';
+import { GSVApiResponse } from './gsv-api-response';
 import { StreetViewConverter, StreetViewConverterOptions } from './street-view-converter';
 
 export interface GSVPanorama {
@@ -26,8 +26,8 @@ export class GSVPanoramaLoader {
     async loadPanorama(id: string): Promise<GSVPanorama> {
         // load panorama data & bitmap from google
         const [pano, bitmap] = await Promise.all([
-            PanoramaLoader.loadById(id),
-            PanoramaLoader.loadImage(id, 0, 0, 0),
+            GSVPanoramaLoader.loadById(id),
+            GSVPanoramaLoader.loadImage(id, 0, 0, 0),
         ]);
 
         // construct depth data
@@ -36,13 +36,13 @@ export class GSVPanoramaLoader {
         const depth = new DepthData(pano.model.depth_map);
 
         // construct point cloud
-        const pointCloud =  this.streetViewConverter.constructPointCloud(bitmap, imageWidth, imageHeight, depth);
+        const pointCloud = this.streetViewConverter.constructPointCloud(bitmap, imageWidth, imageHeight, depth);
 
         // rotate point cloud in order to match world orientation
-        this.orientData(pointCloud, +pano.Location.lat, +pano.Location.lng, -pano.Projection.pano_yaw_deg + 90);
+        GSVPanoramaLoader.orientData(pointCloud, +pano.Location.lat, +pano.Location.lng, -pano.Projection.pano_yaw_deg + 90);
 
         // compute world offset
-        const worldPosition = this.lngLatToNormalOffset(+pano.Location.lat, +pano.Location.lng);
+        const worldPosition = GSVPanoramaLoader.lngLatToPosition(+pano.Location.lat, +pano.Location.lng);
         const worldCoordinates = {latitude: +pano.Location.lat, longitude: +pano.Location.lng};
 
         // bounding sphere
@@ -58,7 +58,7 @@ export class GSVPanoramaLoader {
         };
     }
 
-    private lngLatToNormalOffset(latitude: number, longitude: number) {
+    private static lngLatToPosition(latitude: number, longitude: number) {
         const earthRadius = 6371000; // meters
         latitude = latitude * Math.PI / 180;
         longitude = longitude * Math.PI / 180;
@@ -69,7 +69,7 @@ export class GSVPanoramaLoader {
         return {x, y, z};
     }
 
-    private orientData(data: PointCloudData, latitude: number, longitude: number, yawDegree: number) {
+    private static orientData(data: PointCloudData, latitude: number, longitude: number, yawDegree: number) {
         // data up vector: (0, 0, 1)
         // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
 
@@ -86,7 +86,27 @@ export class GSVPanoramaLoader {
             const normal = new Float32Array(data.normals.buffer, i * 4, 3);
             vec3.transformMat4(normal, normal, rotMatrix);
         }
+    }
 
+    // ID like 'GTKQkr3G-rRZQisDUMzUtg'
+    private static async loadById(panoID: string): Promise<GSVApiResponse> {
+        const url = `http://maps.google.com/cbk?output=json&panoid=${panoID}&dm=1`;
+        const response = await fetch(url);
+        return response.json();
+    }
+
+    // Location like 40.762475, -73.974363
+    private static async loadByLocation(lat: number, lng: number): Promise<GSVApiResponse> {
+        const url = `http://maps.google.com/cbk?output=json&ll=${lat},${lng}&dm=1`;
+        const response = await fetch(url);
+        return response.json();
+    }
+
+    private static async loadImage(panoID: string, zoom: number, x: number, y: number): Promise<ImageBitmap> {
+        const url = `http://maps.google.com/cbk?output=tile&panoid=${panoID}&zoom=${zoom}&x=${x}&y=${y}`;
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return createImageBitmap(blob);
     }
 
 }
