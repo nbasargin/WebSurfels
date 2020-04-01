@@ -44,26 +44,6 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
-
-            <!--
-            <div>
-                latitude: {{panoramaStitching.latRot}}
-            </div>
-            <div>
-                <input #panoSliderLatRot (input)="panoramaStitching.latRot = +panoSliderLatRot.value; testAxis()"
-                       type="range" min="-90" max="90" step="0" value="0">
-            </div>
-            <div>
-                longitude: {{panoramaStitching.lngRot}}
-            </div>
-            <div>
-                <input #panoSliderLngRot (input)="panoramaStitching.lngRot = +panoSliderLngRot.value; testAxis()" 
-                       type="range" min="-180" max="180" step="1" value="0">
-            </div>
-            <div>
-                <button (click)="reloadPano()">RELOAD</button>
-            </div>
-            -->
         </div>
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
