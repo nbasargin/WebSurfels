@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChil
 import { Renderer2 } from '../lib/renderer2/renderer2';
 import { mat4, vec3 } from 'gl-matrix';
 import { ViewDirection } from '../lib/renderer2/view-direction';
+import { GSVPanoramaLoader } from '../lib/street-view/gsv-panorama-loader';
 import { AnimatedCamera } from '../lib/utils/animated-camera';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
@@ -9,9 +10,6 @@ import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-
 import { BoundingSphere, Geometry } from '../lib/utils/geometry';
 import { RendererNode } from '../lib/renderer2/renderer-node';
 import { CullingTree } from '../lib/culling-tree/culling-tree';
-import { StreetViewConverter } from '../lib/street-view/street-view-converter';
-import { PanoramaLoader } from '../lib/street-view/panorama-loader';
-import { DepthData } from '../lib/street-view/depth-data';
 import { StanfordDragonLoader } from '../lib/data/stanford-dragon-loader';
 import { Timing } from '../lib/utils/timing';
 import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
@@ -306,14 +304,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    reloadPano() {
-        this.renderer2.removeAllNodes();
-        this.testStreetViewStitching();
-        this.colorCounter = 0;
-    }
-
     testStreetViewStitching(setView = false) {
-
         if (setView) {
             this.view = new ViewDirection(true);
             this.animatedCamera = new AnimatedCamera(true);
@@ -324,162 +315,64 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         this.renderer2.removeAllNodes();
 
-        const factory = new StreetViewConverter({
+        const options = {
             skyDistance: -1,
             maxNonSkySplatSize: 2,
             minNonSkySplatSize: 0.1,
-        });
-
-        const panoIDs = [
-            'GTKQkr3G-rRZQisDUMzUtg',
-            //'tDHgZF2towFDY0XScMdogA',
-            'TX7hSqtNzoUQ3FHmd_B7jg',
-            //'DUC-bzTYi-qzKU43ZMy0Rw',
-            '0ugKJC8FPlIqvIu7gUjXoA',
-            //'ziNa0wg33om0UUk_zGb16g',
-            'FaTLGxzNsC77nmrZMKdBbQ',
-        ];
+        };
+        const loader = new GSVPanoramaLoader(options);
 
         const panoIDsMuc = [
             'yoDO0JAidwhxwcrHkiiO2A',
-            //'rUJScz5qeFNziiQQ2hMqjA',
+            'rUJScz5qeFNziiQQ2hMqjA',
             'HfTV_yDHhuJAxB_yMxcvhg',
-            //'kqvWX70FEJ9QJDVSr9FYUA',
+            'kqvWX70FEJ9QJDVSr9FYUA',
             'uqTmsw4aCg1TZvCNQMrASg',
-            //'x_lmhPUhXWzj18awTDu8sg',
+            'x_lmhPUhXWzj18awTDu8sg',
             'rGdyHoqO5yFBThYm8kiwpA',
-            //'giDo-scRn5kbweSI5xmtIg',
+            'giDo-scRn5kbweSI5xmtIg',
             '-bgCziklvIHyyrav6R4aug',
-            //'9ZPVekRqspFF5M0-ka2zTw',
+            '9ZPVekRqspFF5M0-ka2zTw',
             '6ZfcCQRcyZNdvEq0CGHKcQ',
         ];
 
-        PanoramaLoader.loadById(panoIDsMuc[0]).then(pano => {
+        const panoIDs = [
+            'GTKQkr3G-rRZQisDUMzUtg',
+            'tDHgZF2towFDY0XScMdogA',
+            'TX7hSqtNzoUQ3FHmd_B7jg',
+            'DUC-bzTYi-qzKU43ZMy0Rw',
+            '0ugKJC8FPlIqvIu7gUjXoA',
+            'ziNa0wg33om0UUk_zGb16g',
+            'FaTLGxzNsC77nmrZMKdBbQ',
+        ];
 
-            const top = this.lngLatToNormal(+pano.Location.lat, +pano.Location.lng); // or use original lat / lng?
 
-            for (const id of panoIDsMuc) {
-                this.loadPano(id, factory, top);
+        const loading = panoIDsMuc.map(id => loader.loadPanorama(id));
+        Promise.all(loading).then(panoramas => {
+            const middleID = Math.floor(panoramas.length / 2);
+            const basePanorama = panoramas[middleID];
+
+            for (const p of panoramas) {
+                if (p === basePanorama) {
+                    continue;
+                }
+                // compute offset
+                const x = basePanorama.worldPosition.x - p.worldPosition.x;
+                const y = basePanorama.worldPosition.y - p.worldPosition.y;
+                const z = basePanorama.worldPosition.z - p.worldPosition.z;
+
+                const positions = p.data.positions;
+                for (let i = 0; i < positions.length; i+=3) {
+                    positions[i] += x;
+                    positions[i + 1] += y;
+                    positions[i + 2] += z;
+                }
+
+                this.renderer2.addData(p.data.positions, p.data.sizes, p.data.colors, p.data.normals);
             }
 
         });
-    }
 
-    private loadPano(id: string, factory: StreetViewConverter, top: {x: number, y: number, z: number}) {
-        Promise.all([
-            PanoramaLoader.loadById(id),
-            PanoramaLoader.loadImage(id, 0, 0, 0),
-        ]).then(([pano, bitmap]) => {
-            console.log('loaded pano with id ', id, 'projection', pano.Projection);
-
-            const imageWidth = +pano.Data.image_width / (2 ** +pano.Location.zoomLevels);
-            const imageHeight = +pano.Data.image_height / (2 ** +pano.Location.zoomLevels);
-
-            const depth = new DepthData(pano.model.depth_map);
-            const pointCloud = factory.constructPointCloud(bitmap, imageWidth, imageHeight, depth);
-
-            // debug: use a few points to indicate orientation
-            //pointCloud.positions.set([0,0,0, 0,0,0, 0,0,0,    0,0,10,  0,10,0,  10,0,0]);
-            //pointCloud.normals.set([  1,0,0, 0,1,0, 0,0,1,    0,0,1,  0,1,0,  1,0,0]);
-            //pointCloud.colors.set([   1,0,0, 0,1,0, 0,0,1,    0,0,1,  0,1,0,  1,0,0]);
-            //pointCloud.sizes.set([20,20,20, 10,10,10]);
-
-            // rotate data along Z axis
-            const angleZ = (-pano.Projection.pano_yaw_deg + 90) * Math.PI / 180;
-            this.rotateDataZ(pointCloud, angleZ);
-
-            // rotate data to match earth orientation
-            const normal = this.lngLatToNormal(+pano.Location.lat, +pano.Location.lng);
-            this.rotateByLatLng(pointCloud, +pano.Location.lat, +pano.Location.lng);
-
-            const earthRadius = 6371000; // meters
-            const offset = {
-                x: (top.x - normal.x) * earthRadius,
-                y: (top.y - normal.y) * earthRadius,
-                z: (top.z - normal.z) * earthRadius,
-            };
-
-            for (let i = 0; i < pointCloud.positions.length; i += 3) {
-                pointCloud.positions[i] += offset.x;
-                pointCloud.positions[i + 1] += offset.y;
-                pointCloud.positions[i + 2] += offset.z;
-            }
-
-            this.renderer2.addData(pointCloud.positions, pointCloud.sizes, pointCloud.colors, pointCloud.normals);
-        })
-    }
-
-
-    rotateDataZ(data: PointCloudData, angle: number) {
-        const zero = vec3.fromValues(0, 0, 0);
-        for (let i = 0; i < data.positions.length; i += 3) {
-            const point = new Float32Array(data.positions.buffer, i * 4, 3);
-            vec3.rotateZ(point, point, zero, angle);
-            const point2 = new Float32Array(data.normals.buffer, i * 4, 3);
-            vec3.rotateZ(point2, point2, zero, angle);
-        }
-    }
-
-    rotateDataY(data: PointCloudData, angle: number) {
-        const zero = vec3.fromValues(0, 0, 0);
-        for (let i = 0; i < data.positions.length; i += 3) {
-            const point = new Float32Array(data.positions.buffer, i * 4, 3);
-            vec3.rotateY(point, point, zero, angle);
-            const point2 = new Float32Array(data.normals.buffer, i * 4, 3);
-            vec3.rotateY(point2, point2, zero, angle);
-        }
-    }
-
-    rotateByLatLng(data: PointCloudData, latitude: number, longitude: number) {
-        // data up vector: (0, 0, 1)
-        // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
-
-        latitude = (latitude - 90) * Math.PI / 180;
-        longitude = (longitude - 180) * Math.PI / 180;
-
-        const rotMatrix = mat4.create();
-        mat4.rotateZ(rotMatrix, rotMatrix, longitude);
-        mat4.rotateY(rotMatrix, rotMatrix, latitude);
-
-        for (let i = 0; i < data.positions.length; i += 3) {
-            const position = new Float32Array(data.positions.buffer, i * 4, 3);
-            vec3.transformMat4(position, position, rotMatrix);
-            const normal = new Float32Array(data.normals.buffer, i * 4, 3);
-            vec3.transformMat4(normal, normal, rotMatrix);
-        }
-
-    }
-
-    lngLatToNormal(latitude: number, longitude: number) {
-        latitude = latitude * Math.PI / 180;
-        longitude = longitude * Math.PI / 180;
-        const x = Math.cos(latitude) * Math.cos(longitude);
-        const y = Math.cos(latitude) * Math.sin(longitude);
-        const z = Math.sin(latitude);
-
-        return {x, y, z};
-    }
-
-    colorCounter = 0;
-
-    colorizeData(data: PointCloudData) {
-        const r = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
-        const g = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
-        const b = (Math.sin(this.colorCounter++) + 1) / 2 * 0.8 + 0.2;
-
-        for (let i = 0; i < data.colors.length; i += 3) {
-            data.colors[i] = r;
-            data.colors[i + 1] = g;
-            data.colors[i + 2] = b;
-        }
-    }
-
-    coordsToOffset(latitude: number, longitude: number) {
-        const halfEarthCircumference = 20037508.34;
-        // todo optimize numerics
-        const xOffset = longitude * halfEarthCircumference / 180;
-        const zOffset = Math.log(Math.tan((90 + latitude) * Math.PI / 360)) / (Math.PI / 180) * halfEarthCircumference / 180;
-        return {xOffset, zOffset};
     }
 
     createDragonLod2(resolution: number, maxDepth: number) {
@@ -652,6 +545,35 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
 
         this.renderer2.addData(data.positions, data.sizes, data.colors, data.normals);
+    }
+
+    rotateByLatLng(data: PointCloudData, latitude: number, longitude: number) {
+        // data up vector: (0, 0, 1)
+        // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
+
+        latitude = (latitude - 90) * Math.PI / 180;
+        longitude = (longitude - 180) * Math.PI / 180;
+
+        const rotMatrix = mat4.create();
+        mat4.rotateZ(rotMatrix, rotMatrix, longitude);
+        mat4.rotateY(rotMatrix, rotMatrix, latitude);
+
+        for (let i = 0; i < data.positions.length; i += 3) {
+            const position = new Float32Array(data.positions.buffer, i * 4, 3);
+            vec3.transformMat4(position, position, rotMatrix);
+            const normal = new Float32Array(data.normals.buffer, i * 4, 3);
+            vec3.transformMat4(normal, normal, rotMatrix);
+        }
+    }
+
+    lngLatToNormal(latitude: number, longitude: number) {
+        latitude = latitude * Math.PI / 180;
+        longitude = longitude * Math.PI / 180;
+        const x = Math.cos(latitude) * Math.cos(longitude);
+        const y = Math.cos(latitude) * Math.sin(longitude);
+        const z = Math.sin(latitude);
+
+        return {x, y, z};
     }
 
 }
