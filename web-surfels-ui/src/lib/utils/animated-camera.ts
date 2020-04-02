@@ -1,5 +1,5 @@
 import { vec3 } from 'gl-matrix';
-import { Renderer2 } from '../renderer2/renderer2';
+import { Renderer } from '../renderer/renderer';
 
 export class AnimatedCamera {
 
@@ -18,7 +18,7 @@ export class AnimatedCamera {
         }
     }
 
-    nextFrame(renderer: Renderer2) {
+    nextFrame(renderer: Renderer) {
         this.frame++;
         const twoPi = Math.PI * 2;
         const dist = 120 * (1.2 + Math.cos(this.frame / 1200 * twoPi));

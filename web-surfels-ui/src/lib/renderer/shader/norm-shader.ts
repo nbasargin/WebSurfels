@@ -1,4 +1,4 @@
-import { WebGLUtils } from './web-gl-utils';
+import { WebGLUtils } from '../web-gl-utils';
 
 export const normalizationVS = `
     #version 300 es

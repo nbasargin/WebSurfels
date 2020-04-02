@@ -1,8 +1,8 @@
 
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
 import { LodLoader } from './lod-loader';
-import { Renderer2 } from "../lib/renderer2/renderer2";
-import { RendererNode } from "../lib/renderer2/renderer-node";
+import { Renderer } from "../lib/renderer/renderer";
+import { RendererNode } from "../lib/renderer/renderer-node";
 import { LodNode } from "../lib/level-of-detail/lod-node";
 
 type UnloadConfig = {
@@ -26,7 +26,7 @@ export class DynamicLodTree {
     private frameCounter: number = 0;
 
     constructor(
-        public renderer: Renderer2,
+        public renderer: Renderer,
         public loader: LodLoader,
         public sizeThreshold: number,
         public unloadConfig: UnloadConfig = { strategy: 'nthFrame', unloadThreshold: 200, nthFrame: 100 }

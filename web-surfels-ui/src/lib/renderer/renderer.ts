@@ -1,13 +1,12 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { Camera } from './camera';
-
+import { Camera } from './camera/camera';
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
-import { NormShader } from './norm-shader';
+import { NormShader } from './shader/norm-shader';
 import { RendererNode } from './renderer-node';
-import { SplatShader } from './splat-shader';
+import { SplatShader } from './shader/splat-shader';
 import { WebGLUtils } from './web-gl-utils';
 
-export class Renderer2 {
+export class Renderer {
 
     public readonly nodes: Set<RendererNode> = new Set();
     public readonly camera: Camera;

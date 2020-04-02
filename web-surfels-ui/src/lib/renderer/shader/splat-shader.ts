@@ -1,4 +1,4 @@
-import { WebGLUtils } from './web-gl-utils';
+import { WebGLUtils } from '../web-gl-utils';
 
 const SPLAT_DEPTH_TO_SIZE_RATIO = 0.5; // multiplied with point size to determine base splatting depth
 const SPLAT_DEPTH_EPSILON = 0.0001; // added to base splatting depth during depth pass to reduce numerical issues

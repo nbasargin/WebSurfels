@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { FirstPersonController } from '../lib/renderer2/first-person-controller';
-import { Renderer2 } from '../lib/renderer2/renderer2';
+import { FirstPersonController } from '../lib/renderer/camera/first-person-controller';
+import { Renderer } from '../lib/renderer/renderer';
 import { mat4, vec3 } from 'gl-matrix';
 import { GSVPanoramaLoader } from '../lib/street-view/gsv-panorama-loader';
 import { AnimatedCamera } from '../lib/utils/animated-camera';
@@ -8,7 +8,7 @@ import { FpsCounter } from '../lib/utils/fps-counter';
 import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
 import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-data';
 import { BoundingSphere, Geometry } from '../lib/utils/geometry';
-import { RendererNode } from '../lib/renderer2/renderer-node';
+import { RendererNode } from '../lib/renderer/renderer-node';
 import { StanfordDragonLoader } from '../lib/data/stanford-dragon-loader';
 import { Timing } from '../lib/utils/timing';
 import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
@@ -113,7 +113,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     fps = '0';
 
     private animationRequest;
-    renderer2: Renderer2;
+    renderer2: Renderer;
 
     private pressedKeys: Set<string>;
 
@@ -154,7 +154,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit(): void {
-        this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
+        this.renderer2 = new Renderer(this.canvasRef.nativeElement, 1, 1);
         this.controller = new FirstPersonController(this.renderer2.camera);
         setTimeout(() => {
             //const instances = 64;

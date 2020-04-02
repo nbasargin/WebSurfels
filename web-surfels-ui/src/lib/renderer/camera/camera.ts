@@ -1,5 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { Plane2 } from '../utils/plane2';
+import { Plane2 } from '../../utils/plane2';
 
 /**
  * Default coordinate system: Z up, looking along y axis, x goes to the right.
