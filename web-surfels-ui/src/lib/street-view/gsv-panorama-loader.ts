@@ -65,28 +65,29 @@ export class GSVPanoramaLoader {
     }
 
     private static lngLatToPosition(latitude: number, longitude: number) {
+        // x-axis goes through (lat, lng) = (0, 0)
+        // y-axis goes through (lat, lng) = (0, 90)
+        // z-axis goes through the poles
+
         const earthRadius = 6371000; // meters
         latitude = latitude * Math.PI / 180;
         longitude = longitude * Math.PI / 180;
-        const x = Math.cos(latitude) * Math.sin(longitude) * earthRadius;
-        const y = Math.cos(latitude) * Math.cos(longitude) * earthRadius;
+        const x = Math.cos(latitude) * Math.cos(longitude) * earthRadius;
+        const y = Math.cos(latitude) * Math.sin(longitude) * earthRadius;
         const z = Math.sin(latitude) * earthRadius;
 
         return {x, y, z};
     }
 
     private static orientData(data: PointCloudData, latitude: number, longitude: number, yawDegree: number) {
-        const yAngle = longitude  * Math.PI / 180;
-        const zAngle = latitude * Math.PI / 180;
-        const zAngle1 = yawDegree * Math.PI / 180;
-
-        const rotMatrixA = mat4.create();
-        mat4.rotateZ(rotMatrixA, rotMatrixA, zAngle1);
+        const latAngle = -(latitude - 90) * Math.PI / 180;
+        const lngAngle = longitude * Math.PI / 180;
+        const yawAngle = yawDegree * Math.PI / 180;
 
         const rotMatrix = mat4.create();
-        mat4.rotateZ(rotMatrix, rotMatrix, zAngle);
-        mat4.rotateY(rotMatrix, rotMatrix, yAngle);
-        mat4.rotateZ(rotMatrix, rotMatrix, zAngle1);
+        mat4.rotateZ(rotMatrix, rotMatrix, lngAngle);
+        mat4.rotateY(rotMatrix, rotMatrix, latAngle);
+        mat4.rotateZ(rotMatrix, rotMatrix, yawAngle);
 
         for (let i = 0; i < data.positions.length; i += 3) {
             const position = new Float32Array(data.positions.buffer, i * 4, 3);
