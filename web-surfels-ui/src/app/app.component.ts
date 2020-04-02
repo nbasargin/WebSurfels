@@ -162,8 +162,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            //this.testStreetViewStitching();
-            this.testStreetViewCrawler();
+            this.testStreetViewStitching();
+            //this.testStreetViewCrawler();
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
             //this.testAxis(true);
@@ -278,7 +278,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     testStreetViewCrawler() {
         const crawler = new GSVCrawler();
-        crawler.crawl('yoDO0JAidwhxwcrHkiiO2A', 10).then(ids => {
+        crawler.crawl('s6A9P5A3iWvqNscixSRPsw', 10).then(ids => {
             console.log('crawl complete, found', ids.size, 'panoramas');
             console.log('ids', ids);
         });
@@ -289,35 +289,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         const options = {
             skyDistance: -1,
-            maxNonSkySplatSize: 2,
+            maxNonSkySplatSize: 1,
             minNonSkySplatSize: 0.1,
         };
         const loader = new GSVPanoramaLoader(options);
-
-        const panoIDsMuc = [
-            'yoDO0JAidwhxwcrHkiiO2A',
-            //'rUJScz5qeFNziiQQ2hMqjA',
-            'HfTV_yDHhuJAxB_yMxcvhg',
-            //'kqvWX70FEJ9QJDVSr9FYUA',
-            'uqTmsw4aCg1TZvCNQMrASg',
-            //'x_lmhPUhXWzj18awTDu8sg',
-            'rGdyHoqO5yFBThYm8kiwpA',
-            //'giDo-scRn5kbweSI5xmtIg',
-            '-bgCziklvIHyyrav6R4aug',
-            //'9ZPVekRqspFF5M0-ka2zTw',
-            '6ZfcCQRcyZNdvEq0CGHKcQ',
-        ];
-
-        const panoIDs = [
-            'GTKQkr3G-rRZQisDUMzUtg',
-            'tDHgZF2towFDY0XScMdogA',
-            'TX7hSqtNzoUQ3FHmd_B7jg',
-            'DUC-bzTYi-qzKU43ZMy0Rw',
-            '0ugKJC8FPlIqvIu7gUjXoA',
-            'ziNa0wg33om0UUk_zGb16g',
-            'FaTLGxzNsC77nmrZMKdBbQ',
-        ];
-
+        const panoIDs = GSVCrawler.crawls.manhattan.slice(0, 16);
 
         const loading = panoIDs.map(id => loader.loadPanorama(id));
         Promise.all(loading).then(panoramas => {
@@ -355,7 +331,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                     const z = p.worldPosition.z - basePanorama.worldPosition.z;
 
                     const positions = p.data.positions;
-                    for (let i = 0; i < positions.length; i+=3) {
+                    for (let i = 0; i < positions.length; i += 3) {
                         positions[i] += x;
                         positions[i + 1] += y;
                         positions[i + 2] += z;
@@ -464,18 +440,18 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer.removeAllNodes();
 
         const center: PointCloudData = {
-            positions: new Float32Array([0,0,0, 0,0,0, 0,0,0, 0,0,0.5, 0,0.5,0, 0.5,0,0]),
-            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
-            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
-            sizes: new Float32Array(    [1,1,1, 0.5, 0.5, 0.5]),
+            positions: new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0]),
+            normals: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]),
+            colors: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]),
+            sizes: new Float32Array([1, 1, 1, 0.5, 0.5, 0.5]),
         };
         this.renderer.addData(center);
 
         const data: PointCloudData = {
-            positions: new Float32Array([0,0,0, 0,0,0, 0,0,0,  0,0,0.5, 0,0.5,0, 0.5,0,0]),
-            normals: new Float32Array(  [1,0,0, 0,1,0, 0,0,1,  0,0,1,   0,1,0,   1,0,0]),
-            colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1,  0,0,1,   0,1,0,   1,0,0]),
-            sizes: new Float32Array([0.5,0.5,0.5, 0.2, 0.2, 0.2]),
+            positions: new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0]),
+            normals: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]),
+            colors: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]),
+            sizes: new Float32Array([0.5, 0.5, 0.5, 0.2, 0.2, 0.2]),
         };
 
         const normal2 = this.lngLatToNormal(this.panoramaStitching.lat, this.panoramaStitching.lng);
@@ -483,8 +459,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         for (let i = 0; i < data.positions.length; i += 3) {
             data.positions[i] += normal2.x * 1.1;
-            data.positions[i+1] += normal2.y * 1.1;
-            data.positions[i+2] += normal2.z * 1.1;
+            data.positions[i + 1] += normal2.y * 1.1;
+            data.positions[i + 2] += normal2.z * 1.1;
         }
 
         this.renderer.addData(data);
