@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { FirstPersonController } from '../lib/renderer/camera/first-person-controller';
+import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../lib/renderer/renderer';
 import { mat4, vec3 } from 'gl-matrix';
 import { GSVPanoramaLoader } from '../lib/street-view/gsv-panorama-loader';
@@ -120,7 +121,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     benchmarkRunning = false;
     splattingEnabled = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera(false);
-    private controller: FirstPersonController;
+    private fpController: FirstPersonController;
+    private orbitAnimation: OrbitAnimationController;
     movementSpeed = 10;
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
@@ -155,7 +157,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     ngAfterViewInit(): void {
         this.renderer2 = new Renderer(this.canvasRef.nativeElement, 1, 1);
-        this.controller = new FirstPersonController(this.renderer2.camera);
+        this.fpController = new FirstPersonController(this.renderer2.camera);
+        this.orbitAnimation = new OrbitAnimationController(this.renderer2.camera, 20, 30, 10, 10000);
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
@@ -192,8 +195,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             return;
         }
 
-        this.controller.addPitch(-e.movementY * 0.1);
-        this.controller.addYaw(-e.movementX * 0.1);
+        this.fpController.addPitch(-e.movementY * 0.1);
+        this.fpController.addYaw(-e.movementX * 0.1);
     }
 
     @HostListener('window:blur')
@@ -213,13 +216,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     renderLoop(timestamp) {
-        this.updateFPS(timestamp);
+        const duration = this.lastTimestamp > 0 ? timestamp - this.lastTimestamp : 0;
+        this.lastTimestamp = timestamp;
+
+        this.updateFPS(duration);
 
         this.animationRequest = requestAnimationFrame(timestamp => this.renderLoop(timestamp));
         this.checkCanvasSize();
 
         if (this.benchmarkRunning) {
-            this.animatedCamera.nextFrame(this.renderer2);
+            // this.animatedCamera.nextFrame(this.renderer2);
+            this.orbitAnimation.animate(duration);
         } else {
             this.checkCamera();
         }
@@ -231,29 +238,25 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    updateFPS(timestamp: number) {
-        if (this.lastTimestamp > 0) {
-            const duration = timestamp - this.lastTimestamp;
-            this.fpsCounter.addDuration(duration);
-            this.fps = (1000 / this.fpsCounter.getAvgDuration()).toFixed(2);
-        }
-        this.lastTimestamp = timestamp;
+    updateFPS(duration: number) {
+        this.fpsCounter.addDuration(duration);
+        this.fps = (1000 / this.fpsCounter.getAvgDuration()).toFixed(2);
     }
 
     checkCamera() {
         const movementSpeed = 0.05 * this.movementSpeed;
 
         if (this.pressedKeys.has('KeyW')) {
-            this.controller.moveForward(movementSpeed);
+            this.fpController.moveForward(movementSpeed);
         }
         if (this.pressedKeys.has('KeyA')) {
-            this.controller.moveRight(-movementSpeed);
+            this.fpController.moveRight(-movementSpeed);
         }
         if (this.pressedKeys.has('KeyS')) {
-            this.controller.moveForward(-movementSpeed);
+            this.fpController.moveForward(-movementSpeed);
         }
         if (this.pressedKeys.has('KeyD')) {
-            this.controller.moveRight(movementSpeed);
+            this.fpController.moveRight(movementSpeed);
         }
     }
 
@@ -320,7 +323,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.scaleAndAdd(cam.eye, cam.eye, up, height);
             vec3.scaleAndAdd(cam.target, cam.target, up, height);
             this.renderer2.camera.setOrientation(cam.eye, cam.target, up);
-            this.controller.setViewDirection(-30, 90);
 
             for (const p of panoramas) {
                 if (p !== basePanorama) {
@@ -374,7 +376,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.create(),
             vec3.fromValues(0, 1, 0)
         );
-        this.controller.setViewDirection(-20, 210);
 
         const loader = new XhrLodLoader('http://localhost:5000/');
         this.dynamicLod = new DynamicLodTree(this.renderer2, loader, sizeThreshold);

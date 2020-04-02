@@ -3,8 +3,6 @@ import { Camera } from './camera';
 
 export class FirstPersonController {
 
-    pitch: number = 0;
-    yaw: number = 0;
 
     constructor(private camera: Camera) {
     }
@@ -16,36 +14,30 @@ export class FirstPersonController {
     }
 
     moveRight(distance: number) {
-        const right = vec3.create();
-        vec3.cross(right, this.camera.viewDirection, this.camera.up);
+        const right = vec3.cross(vec3.create(), this.camera.viewDirection, this.camera.up);
         vec3.scaleAndAdd(this.camera.eye, this.camera.eye, right, distance);
         vec3.scaleAndAdd(this.camera.target, this.camera.target, right, distance);
         this.camera.setOrientation(this.camera.eye, this.camera.target, this.camera.up);
     }
 
-    addPitch(pitch: number) {
-        this.setViewDirection(this.pitch + pitch, this.yaw);
+    addPitch(pitchDelta: number) {
+        // current pitch: 90° - angle between top and view-direction
+        const currentPitch = 90 - vec3.angle(this.camera.up, this.camera.viewDirection) / Math.PI * 180;
+        const newPitch = Math.min(89.99, Math.max(-89.99, currentPitch + pitchDelta));
+        const right = vec3.cross(vec3.create(), this.camera.viewDirection, this.camera.up);
+        const rotation = mat4.create();
+        mat4.rotate(rotation, rotation, -(90 - newPitch) / 180 * Math.PI, right);
+        const newViewDirection = vec3.clone(this.camera.up);
+        vec3.transformMat4(newViewDirection, newViewDirection, rotation);
+        this.camera.setViewDirection(newViewDirection);
     }
 
     addYaw(yaw: number) {
-        this.setViewDirection(this.pitch, this.yaw + yaw);
-    }
-
-    setViewDirection(pitch: number, yaw: number) {
-        this.pitch = Math.min(89.99, Math.max(-89.99, pitch));
-        this.yaw = yaw;
-
-        const up = this.camera.up;
-        const frontReference = this.camera.isZAxisUp() ? vec3.fromValues(0, 1, 0) : vec3.fromValues(0, 0, 1);
-        const right = vec3.cross(vec3.create(), frontReference, up);
-        const front = vec3.cross(vec3.create(), up, right);
-
-        const rot = mat4.create();
-        mat4.rotate(rot, rot, this.yaw * Math.PI / 180, up);
-        mat4.rotate(rot, rot, this.pitch * Math.PI / 180, right);
-        vec3.transformMat4(front, front, rot);
-
-        this.camera.setViewDirection(front);
+        const rotation = mat4.create();
+        mat4.rotate(rotation, rotation, yaw / 180 * Math.PI, this.camera.up);
+        const newViewDirection = vec3.clone(this.camera.viewDirection);
+        vec3.transformMat4(newViewDirection, newViewDirection, rotation);
+        this.camera.setViewDirection(newViewDirection);
     }
 
 }
