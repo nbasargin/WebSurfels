@@ -306,7 +306,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             'FaTLGxzNsC77nmrZMKdBbQ',
         ];
 
-        this.renderer2.addData(PointCloudDataGenerator.genAxis());
 
         const loading = panoIDsMuc.map(id => loader.loadPanorama(id));
         Promise.all(loading).then(panoramas => {
@@ -314,9 +313,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const basePanorama = panoramas[middleID];
 
             const pos = basePanorama.worldPosition;
-            const posUp = vec3.fromValues(pos.x, pos.y, pos.z);
-            vec3.normalize(posUp, posUp);
-            this.renderer2.camera.setUpVector(posUp);
+            const up = vec3.fromValues(pos.x, pos.y, pos.z);
+            vec3.normalize(up, up);
+            const cam = this.renderer2.camera;
+            const height = 15;
+            vec3.scaleAndAdd(cam.eye, cam.eye, up, height);
+            vec3.scaleAndAdd(cam.target, cam.target, up, height);
+            this.renderer2.camera.setOrientation(cam.eye, cam.target, up);
+            this.controller.setViewDirection(-30, 90);
 
             for (const p of panoramas) {
                 if (p !== basePanorama) {
@@ -335,6 +339,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 this.renderer2.addData(p.data);
             }
 
+            this.renderer2.addData(PointCloudDataGenerator.genAxis());
         });
 
     }
