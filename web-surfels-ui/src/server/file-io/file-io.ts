@@ -2,11 +2,11 @@ import { promises as fs} from 'fs';
 
 export class FileIO {
 
-    static mkDir(path: string): Promise<void> {
+    static mkDir(path: string): Promise<any> {
         return fs.mkdir(path, {recursive: true});
     }
 
-    static writeFile(path: string, data: ArrayBuffer): Promise<void> {
+    static writeFile(path: string, data: ArrayBuffer): Promise<any> {
         const buffer = Buffer.from(data);
         return fs.writeFile(path, buffer);
     }
