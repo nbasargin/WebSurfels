@@ -41,7 +41,7 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 Size scale: {{sizeScaleSlider.value}}
             </div>
             <div>
-                <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
+                <input #sizeScaleSlider (input)="renderer.setSplatSizeScale(+sizeScaleSlider.value) "
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
             <!--  used in axis demo
@@ -114,7 +114,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     fps = '0';
 
     private animationRequest;
-    renderer2: Renderer;
+    renderer: Renderer;
 
     private pressedKeys: Set<string>;
 
@@ -156,9 +156,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit(): void {
-        this.renderer2 = new Renderer(this.canvasRef.nativeElement, 1, 1);
-        this.fpController = new FirstPersonController(this.renderer2.camera);
-        this.orbitAnimation = new OrbitAnimationController(this.renderer2.camera, 20, 30, 10, 10000);
+        this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
+        this.fpController = new FirstPersonController(this.renderer.camera);
+        this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 50, 200, 30, 20000);
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
@@ -173,7 +173,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     ngOnDestroy(): void {
         cancelAnimationFrame(this.animationRequest);
-        this.renderer2.removeAllNodes();
+        this.renderer.removeAllNodes();
     }
 
     @HostListener('document:keydown', ['$event'])
@@ -234,7 +234,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         if (this.dynamicLod) {
             this.dynamicLod.render(!this.splattingEnabled);
         } else {
-            this.renderer2.render(this.renderer2.nodes, !this.splattingEnabled);
+            this.renderer.render(this.renderer.nodes, !this.splattingEnabled);
         }
     }
 
@@ -270,13 +270,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const height = Math.round(bb.height * resolution);
 
         if (c.width !== width || c.height !== height) {
-            this.renderer2.setCanvasSize(width, height);
+            this.renderer.setCanvasSize(width, height);
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
     }
 
     testStreetViewStitching() {
-        this.renderer2.removeAllNodes();
+        this.renderer.removeAllNodes();
 
         const options = {
             skyDistance: -1,
@@ -310,7 +310,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         ];
 
 
-        const loading = panoIDsMuc.map(id => loader.loadPanorama(id));
+        const loading = panoIDs.map(id => loader.loadPanorama(id));
         Promise.all(loading).then(panoramas => {
             const middleID = Math.floor(panoramas.length / 2);
             const basePanorama = panoramas[middleID];
@@ -318,11 +318,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const pos = basePanorama.worldPosition;
             const up = vec3.fromValues(pos.x, pos.y, pos.z);
             vec3.normalize(up, up);
-            const cam = this.renderer2.camera;
-            const height = 15;
-            vec3.scaleAndAdd(cam.eye, cam.eye, up, height);
-            vec3.scaleAndAdd(cam.target, cam.target, up, height);
-            this.renderer2.camera.setOrientation(cam.eye, cam.target, up);
+            this.renderer.camera.setUpVector(up);
+            this.orbitAnimation.animate(0);
 
             for (const p of panoramas) {
                 if (p !== basePanorama) {
@@ -338,10 +335,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                         positions[i + 2] += z;
                     }
                 }
-                this.renderer2.addData(p.data);
+                this.renderer.addData(p.data);
             }
 
-            this.renderer2.addData(PointCloudDataGenerator.genAxis());
+            this.renderer.addData(PointCloudDataGenerator.genAxis());
         });
 
     }
@@ -371,14 +368,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     loadDynamicLod2(sizeThreshold: number) {
-        this.renderer2.camera.setOrientation(
+        this.renderer.camera.setOrientation(
             vec3.fromValues(70, 30, 80),
             vec3.create(),
             vec3.fromValues(0, 1, 0)
         );
 
         const loader = new XhrLodLoader('http://localhost:5000/');
-        this.dynamicLod = new DynamicLodTree(this.renderer2, loader, sizeThreshold);
+        this.dynamicLod = new DynamicLodTree(this.renderer, loader, sizeThreshold);
     }
 
     sphereTest(pointNumber: number, pointSize: number, resolution: number, maxDepth: number) {
@@ -398,7 +395,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     showLodLevel(lodLevel: number) {
-        this.renderer2.removeAllNodes();
+        this.renderer.removeAllNodes();
         const nodes = this.getNodesAtSpecificDepth(this.weightedLodNode, lodLevel);
         this.displayInfo.octreeNodes = nodes.length;
         for (const node of nodes) {
@@ -408,8 +405,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const {data, boundingSphere, sphereData} = this.optimizedLod[lodLevel];
         this.displayInfo.renderedPoints = data.positions.length / 3;
         this.boundingSphere = boundingSphere;
-        this.lodData = this.renderer2.addData(data);
-        this.sphereData = this.renderer2.addData(sphereData);
+        this.lodData = this.renderer.addData(data);
+        this.sphereData = this.renderer.addData(sphereData);
     }
 
     getNodesAtSpecificDepth(root: WeightedLodNode, depth: number): Array<WeightedLodNode> {
@@ -438,7 +435,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private testAxis() {
 
-        this.renderer2.removeAllNodes();
+        this.renderer.removeAllNodes();
 
         const center: PointCloudData = {
             positions: new Float32Array([0,0,0, 0,0,0, 0,0,0, 0,0,0.5, 0,0.5,0, 0.5,0,0]),
@@ -446,7 +443,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             colors: new Float32Array(   [1,0,0, 0,1,0, 0,0,1, 0,0,1,   0,1,0,   1,0,0]),
             sizes: new Float32Array(    [1,1,1, 0.5, 0.5, 0.5]),
         };
-        this.renderer2.addData(center);
+        this.renderer.addData(center);
 
         const data: PointCloudData = {
             positions: new Float32Array([0,0,0, 0,0,0, 0,0,0,  0,0,0.5, 0,0.5,0, 0.5,0,0]),
@@ -464,7 +461,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             data.positions[i+2] += normal2.z * 1.1;
         }
 
-        this.renderer2.addData(data);
+        this.renderer.addData(data);
     }
 
     rotateByLatLng(data: PointCloudData, latitude: number, longitude: number) {
