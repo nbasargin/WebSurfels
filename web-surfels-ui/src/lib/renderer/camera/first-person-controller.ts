@@ -36,16 +36,9 @@ export class FirstPersonController {
         this.yaw = yaw;
 
         const up = this.camera.up;
-        let frontReference = vec3.fromValues(0, 0, 1);
-        if (up[0] === 0 && up[1] === 0 && Math.abs(up[2]) === 1) {
-            frontReference = vec3.fromValues(0, 1, 0);
-        }
-        const right = vec3.create();
-        vec3.cross(right, frontReference, up);
-        vec3.normalize(right, right);
-        const front = vec3.create();
-        vec3.cross(front, up, right);
-        vec3.normalize(front, front);
+        const frontReference = this.camera.isZAxisUp() ? vec3.fromValues(0, 1, 0) : vec3.fromValues(0, 0, 1);
+        const right = vec3.cross(vec3.create(), frontReference, up);
+        const front = vec3.cross(vec3.create(), up, right);
 
         const rot = mat4.create();
         mat4.rotate(rot, rot, this.yaw * Math.PI / 180, up);

@@ -159,9 +159,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            //this.testStreetViewStitching();
+            this.testStreetViewStitching();
             //this.sphereTest(300000, 0.02, 4, 12);
-            this.loadDynamicLod2(1.4);
+            //this.loadDynamicLod2(1.4);
             //this.testAxis(true);
 
             this.renderLoop(0);

@@ -83,6 +83,10 @@ export class Camera {
         this.updateFrustum();
     }
 
+    isZAxisUp() {
+        return this.up[0] === 0 && this.up[1] === 0 && Math.abs(this.up[2]) === 1;
+    }
+
     isSphereInFrustum(cx: number, cy: number, cz: number, r: number): boolean {
         for (const plane of Object.values(this.frustumPlanes)) {
             const dist = plane.pointDistance(cx, cy, cz);
