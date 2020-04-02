@@ -68,16 +68,16 @@ export class GSVPanoramaLoader {
         const earthRadius = 6371000; // meters
         latitude = latitude * Math.PI / 180;
         longitude = longitude * Math.PI / 180;
-        const x = Math.cos(latitude) * Math.cos(longitude) * earthRadius;
-        const y = Math.cos(latitude) * Math.sin(longitude) * earthRadius;
+        const x = Math.cos(latitude) * Math.sin(longitude) * earthRadius;
+        const y = Math.cos(latitude) * Math.cos(longitude) * earthRadius;
         const z = Math.sin(latitude) * earthRadius;
 
         return {x, y, z};
     }
 
     private static orientData(data: PointCloudData, latitude: number, longitude: number, yawDegree: number) {
-        const zAngle = (longitude - 180) * Math.PI / 180;
-        const yAngle = (latitude - 90) * Math.PI / 180;
+        const yAngle = longitude  * Math.PI / 180;
+        const zAngle = latitude * Math.PI / 180;
         const zAngle1 = yawDegree * Math.PI / 180;
 
         const rotMatrixA = mat4.create();

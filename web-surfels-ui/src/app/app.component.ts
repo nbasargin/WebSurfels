@@ -43,6 +43,20 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
+            <div>
+                latitude: {{panoramaStitching.lat}}
+            </div>
+            <div>
+                <input #panoSliderLatRot (input)="panoramaStitching.lat = +panoSliderLatRot.value; testAxis()"
+                       type="range" min="-90" max="90" step="0" [value]="panoramaStitching.lat">
+            </div>
+            <div>
+                longitude: {{panoramaStitching.lng}}
+            </div>
+            <div>
+                <input #panoSliderLngRot (input)="panoramaStitching.lng = +panoSliderLngRot.value; testAxis()"
+                       type="range" min="-180" max="180" step="1" [value]="panoramaStitching.lng">
+            </div>
         </div>
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
@@ -103,7 +117,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private view: ViewDirection;
     private angleX: number = Math.PI / 180 * -27;
     private angleY: number = Math.PI / 180 * -22;
-    movementSpeed = 10;
+    movementSpeed = 1;
 
     private pressedKeys: Set<string>;
 
@@ -133,8 +147,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     frustumInfo = '';
 
     panoramaStitching = {
-        latRot: 0,
-        lngRot: 0,
+        lat: 90,
+        lng: 0,
     };
 
     constructor() {
@@ -149,10 +163,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            this.testStreetViewStitching(true);
+            //this.testStreetViewStitching(true);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
-            //this.testAxis(true);
+            this.testAxis(true);
 
             this.renderLoop(0);
         }, 0);
@@ -441,10 +455,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private testAxis(initialRun = false) {
         if (initialRun) {
             this.view = new ViewDirection(true);
-            this.angleY = 0;
-            this.angleX = 0;
+            this.angleY = -10 * Math.PI / 180;
+            this.angleX = 190 * Math.PI / 180;
             this.view.update(this.angleX, this.angleY);
-            vec3.set(this.cameraPos, 0, 5, 0);
+            vec3.set(this.cameraPos, 2, -4, 2);
 
         }
 
@@ -465,13 +479,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             sizes: new Float32Array([0.5,0.5,0.5, 0.2, 0.2, 0.2]),
         };
 
-        const normal2 = this.lngLatToNormal(this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
-        this.rotateByLatLng(data, this.panoramaStitching.latRot, this.panoramaStitching.lngRot);
+        const normal2 = this.lngLatToNormal(this.panoramaStitching.lat, this.panoramaStitching.lng);
+        this.rotateByLatLng(data, this.panoramaStitching.lat, this.panoramaStitching.lng);
 
         for (let i = 0; i < data.positions.length; i += 3) {
-            data.positions[i] += normal2.x * 2;
-            data.positions[i+1] += normal2.y * 2;
-            data.positions[i+2] += normal2.z * 2;
+            data.positions[i] += normal2.x * 1.1;
+            data.positions[i+1] += normal2.y * 1.1;
+            data.positions[i+2] += normal2.z * 1.1;
         }
 
         this.renderer2.addData(data);
@@ -482,11 +496,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
 
         latitude = (latitude - 90) * Math.PI / 180;
-        longitude = (longitude - 180) * Math.PI / 180;
+        longitude = (longitude) * Math.PI / 180;
 
         const rotMatrix = mat4.create();
-        mat4.rotateZ(rotMatrix, rotMatrix, longitude);
-        mat4.rotateY(rotMatrix, rotMatrix, latitude);
+        mat4.rotateZ(rotMatrix, rotMatrix, -longitude);
+        mat4.rotateX(rotMatrix, rotMatrix, -latitude);
 
         for (let i = 0; i < data.positions.length; i += 3) {
             const position = new Float32Array(data.positions.buffer, i * 4, 3);
@@ -499,8 +513,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     lngLatToNormal(latitude: number, longitude: number) {
         latitude = latitude * Math.PI / 180;
         longitude = longitude * Math.PI / 180;
-        const x = Math.cos(latitude) * Math.cos(longitude);
-        const y = Math.cos(latitude) * Math.sin(longitude);
+        const x = -Math.cos(latitude) * Math.sin(longitude);
+        const y = -Math.cos(latitude) * Math.cos(longitude);
         const z = Math.sin(latitude);
 
         return {x, y, z};
