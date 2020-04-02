@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
+import { Subgrid } from '../lib/level-of-detail/octree-lod-buider/subgrid';
 import { FirstPersonController } from '../lib/renderer/camera/first-person-controller';
 import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../lib/renderer/renderer';
@@ -7,7 +8,7 @@ import { GSVPanoramaLoader } from '../lib/street-view/gsv-panorama-loader';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
 import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-data';
-import { BoundingSphere, Geometry } from '../lib/utils/geometry';
+import { BoundingCube, BoundingSphere, Geometry } from '../lib/utils/geometry';
 import { RendererNode } from '../lib/renderer/renderer-node';
 import { StanfordDragonLoader } from '../lib/data/stanford-dragon-loader';
 import { Timing } from '../lib/utils/timing';
@@ -318,6 +319,22 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             vec3.normalize(up, up);
             this.renderer.camera.setUpVector(up);
             this.orbitAnimation.animate(0);
+
+            // test: reduce number of points per panorama
+            const subgrid = new Subgrid(64, 1);
+            for (const p of panoramas) {
+                const bc: BoundingCube = {
+                    size: p.boundingSphere.radius * 2,
+                    minX: p.boundingSphere.centerX - p.boundingSphere.radius,
+                    minY: p.boundingSphere.centerY - p.boundingSphere.radius,
+                    minZ: p.boundingSphere.centerZ - p.boundingSphere.radius,
+                };
+                const weights = new Float32Array(p.data.positions.length / 3);
+                weights.fill(1);
+                const reduced = subgrid.reduce({...p.data, weights}, bc);
+                console.log('data reduction', p.data.positions.length / 3, ' --> ', reduced.positions.length / 3, 'points');
+                p.data = reduced;
+            }
 
             for (const p of panoramas) {
                 if (p !== basePanorama) {
