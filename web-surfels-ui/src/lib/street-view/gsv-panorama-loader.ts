@@ -79,8 +79,13 @@ export class GSVPanoramaLoader {
         // data up vector: (0, 0, 1)
         // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
 
-        const zAngle = (longitude - 180 + yawDegree) * Math.PI / 180;
+        const zAngle = (longitude - 180 /*+ yawDegree*/) * Math.PI / 180;
         const yAngle = (latitude - 90) * Math.PI / 180;
+
+
+        // OLD working code (but with east-west flipped)
+        const angleZ = yawDegree * Math.PI / 180;
+        this.rotateDataZ(data, angleZ);
 
         const rotMatrix = mat4.create();
         mat4.rotateZ(rotMatrix, rotMatrix, zAngle);
@@ -93,6 +98,17 @@ export class GSVPanoramaLoader {
             vec3.transformMat4(normal, normal, rotMatrix);
         }
     }
+
+    private static rotateDataZ(data: PointCloudData, angle: number) {
+        const zero = vec3.fromValues(0, 0, 0);
+        for (let i = 0; i < data.positions.length; i += 3) {
+            const point = new Float32Array(data.positions.buffer, i * 4, 3);
+            vec3.rotateZ(point, point, zero, angle);
+            const point2 = new Float32Array(data.normals.buffer, i * 4, 3);
+            vec3.rotateZ(point2, point2, zero, angle);
+        }
+    }
+
 
     // ID like 'GTKQkr3G-rRZQisDUMzUtg'
     private static async loadById(panoID: string): Promise<GSVApiResponse> {
