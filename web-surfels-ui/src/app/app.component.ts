@@ -331,6 +331,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             'FaTLGxzNsC77nmrZMKdBbQ',
         ];
 
+this.renderer2.addData(PointCloudDataGenerator.genAxis())
 
         const loading = panoIDsMuc.map(id => loader.loadPanorama(id));
         Promise.all(loading).then(panoramas => {
@@ -495,12 +496,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         // data up vector: (0, 0, 1)
         // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
 
-        latitude = (latitude - 90) * Math.PI / 180;
-        longitude = (longitude) * Math.PI / 180;
+        latitude = -(latitude - 90) * Math.PI / 180;
+        longitude = longitude * Math.PI / 180;
 
         const rotMatrix = mat4.create();
-        mat4.rotateZ(rotMatrix, rotMatrix, -longitude);
-        mat4.rotateX(rotMatrix, rotMatrix, -latitude);
+        mat4.rotateZ(rotMatrix, rotMatrix, longitude);
+        mat4.rotateY(rotMatrix, rotMatrix, latitude);
 
         for (let i = 0; i < data.positions.length; i += 3) {
             const position = new Float32Array(data.positions.buffer, i * 4, 3);
@@ -513,8 +514,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     lngLatToNormal(latitude: number, longitude: number) {
         latitude = latitude * Math.PI / 180;
         longitude = longitude * Math.PI / 180;
-        const x = -Math.cos(latitude) * Math.sin(longitude);
-        const y = -Math.cos(latitude) * Math.cos(longitude);
+        const x = Math.cos(latitude) * Math.cos(longitude);
+        const y = Math.cos(latitude) * Math.sin(longitude);
         const z = Math.sin(latitude);
 
         return {x, y, z};
