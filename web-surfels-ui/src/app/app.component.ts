@@ -4,7 +4,6 @@ import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation
 import { Renderer } from '../lib/renderer/renderer';
 import { mat4, vec3 } from 'gl-matrix';
 import { GSVPanoramaLoader } from '../lib/street-view/gsv-panorama-loader';
-import { AnimatedCamera } from '../lib/utils/animated-camera';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
 import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-data';
@@ -118,9 +117,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private pressedKeys: Set<string>;
 
-    benchmarkRunning = false;
+    benchmarkRunning = true;
     splattingEnabled = true;
-    private animatedCamera: AnimatedCamera = new AnimatedCamera(false);
     private fpController: FirstPersonController;
     private orbitAnimation: OrbitAnimationController;
     movementSpeed = 10;
@@ -338,7 +336,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 this.renderer.addData(p.data);
             }
 
-            this.renderer.addData(PointCloudDataGenerator.genAxis());
+            // this.renderer.addData(PointCloudDataGenerator.genAxis());
         });
 
     }
