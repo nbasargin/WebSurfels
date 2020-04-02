@@ -55,6 +55,37 @@ export class PointCloudDataGenerator {
         return data;
     }
 
+    public static genAxis(): PointCloudData {
+        const pointsPerAxis = 999;
+        const positions = new Float32Array(pointsPerAxis * 3 * 3);
+        const sizes = new Float32Array(pointsPerAxis * 3);
+        const colors = new Float32Array(pointsPerAxis * 3 * 3);
+        const normals = new Float32Array(pointsPerAxis * 3 * 3);
+
+        // X axis
+        for (let i = 0; i < pointsPerAxis; i++) {
+            positions[i * 3] = Math.floor(i / 3) * 0.1;
+            normals[i * 3 + i % 3] = 1;
+            colors[i * 3] = 1;
+        }
+        // Y axis
+        for (let i = pointsPerAxis; i < pointsPerAxis * 2; i++) {
+            positions[i * 3 + 1] = Math.floor((i- pointsPerAxis) / 3)  * 0.1;
+            normals[i * 3 + i % 3] = 1;
+            colors[i * 3 + 1] = 1;
+        }
+        // Y axis
+        for (let i = pointsPerAxis * 2; i < pointsPerAxis * 3; i++) {
+            positions[i * 3 + 2] = Math.floor((i - pointsPerAxis * 2) / 3) * 0.1;
+            normals[i * 3 + i % 3] = 1;
+            colors[i * 3 + 2] = 1;
+        }
+        for (let i = 0; i < pointsPerAxis * 3; i++) {
+            sizes[i] = 0.1;
+        }
+        return {positions, sizes, colors, normals};
+    }
+
     /**
      * Sample random point on a sphere.
      * Uniform distribution.
