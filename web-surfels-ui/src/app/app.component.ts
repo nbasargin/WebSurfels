@@ -4,6 +4,7 @@ import { FirstPersonController } from '../lib/renderer/camera/first-person-contr
 import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../lib/renderer/renderer';
 import { mat4, vec3 } from 'gl-matrix';
+import { GSVCrawler } from '../lib/street-view/gsv-crawler';
 import { GSVPanoramaLoader } from '../lib/street-view/gsv-panorama-loader';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
@@ -161,7 +162,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            this.testStreetViewStitching();
+            //this.testStreetViewStitching();
+            this.testStreetViewCrawler();
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
             //this.testAxis(true);
@@ -274,6 +276,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
+    testStreetViewCrawler() {
+        const crawler = new GSVCrawler();
+        crawler.crawl('yoDO0JAidwhxwcrHkiiO2A', 10).then(ids => {
+            console.log('crawl complete, found', ids.size, 'panoramas');
+            console.log('ids', ids);
+        });
+    }
+
     testStreetViewStitching() {
         this.renderer.removeAllNodes();
 
@@ -321,6 +331,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.orbitAnimation.animate(0);
 
             // test: reduce number of points per panorama
+            /*
             const subgrid = new Subgrid(64, 1);
             for (const p of panoramas) {
                 const bc: BoundingCube = {
@@ -334,7 +345,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 const reduced = subgrid.reduce({...p.data, weights}, bc);
                 console.log('data reduction', p.data.positions.length / 3, ' --> ', reduced.positions.length / 3, 'points');
                 p.data = reduced;
-            }
+            }*/
 
             for (const p of panoramas) {
                 if (p !== basePanorama) {

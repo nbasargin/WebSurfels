@@ -99,7 +99,7 @@ export class GSVPanoramaLoader {
 
 
     // ID like 'GTKQkr3G-rRZQisDUMzUtg'
-    private static async loadById(panoID: string): Promise<GSVApiResponse> {
+    public static async loadById(panoID: string): Promise<GSVApiResponse> {
         const url = `http://maps.google.com/cbk?output=json&panoid=${panoID}&dm=1`;
         const response = await fetch(url);
         return response.json();
