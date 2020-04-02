@@ -23,7 +23,7 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
     template: `
         <div class="main-overlay">
             <div>FPS: {{fps}}</div>
-            <div>Points: {{pointsDrawn}}</div>
+            <div>Points: {{pointsDrawn.toLocaleString('en-us')}}</div>
             <div>
                 <label>
                     <input #animCheck type="checkbox" [checked]="benchmarkRunning"
