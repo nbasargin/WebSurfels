@@ -163,10 +163,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            //this.testStreetViewStitching(true);
+            this.testStreetViewStitching(true);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
-            this.testAxis(true);
+            //this.testAxis(true);
 
             this.renderLoop(0);
         }, 0);
@@ -309,15 +309,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         const panoIDsMuc = [
             'yoDO0JAidwhxwcrHkiiO2A',
-            'rUJScz5qeFNziiQQ2hMqjA',
+            //'rUJScz5qeFNziiQQ2hMqjA',
             'HfTV_yDHhuJAxB_yMxcvhg',
-            'kqvWX70FEJ9QJDVSr9FYUA',
+            //'kqvWX70FEJ9QJDVSr9FYUA',
             'uqTmsw4aCg1TZvCNQMrASg',
-            'x_lmhPUhXWzj18awTDu8sg',
+            //'x_lmhPUhXWzj18awTDu8sg',
             'rGdyHoqO5yFBThYm8kiwpA',
-            'giDo-scRn5kbweSI5xmtIg',
+            //'giDo-scRn5kbweSI5xmtIg',
             '-bgCziklvIHyyrav6R4aug',
-            '9ZPVekRqspFF5M0-ka2zTw',
+            //'9ZPVekRqspFF5M0-ka2zTw',
             '6ZfcCQRcyZNdvEq0CGHKcQ',
         ];
 
@@ -331,7 +331,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             'FaTLGxzNsC77nmrZMKdBbQ',
         ];
 
-this.renderer2.addData(PointCloudDataGenerator.genAxis())
+        this.renderer2.addData(PointCloudDataGenerator.genAxis());
 
         const loading = panoIDsMuc.map(id => loader.loadPanorama(id));
         Promise.all(loading).then(panoramas => {
@@ -341,9 +341,9 @@ this.renderer2.addData(PointCloudDataGenerator.genAxis())
             for (const p of panoramas) {
                 if (p !== basePanorama) {
                     // compute offset
-                    const x = basePanorama.worldPosition.x - p.worldPosition.x;
-                    const y = basePanorama.worldPosition.y - p.worldPosition.y;
-                    const z = basePanorama.worldPosition.z - p.worldPosition.z;
+                    const x = p.worldPosition.x - basePanorama.worldPosition.x;
+                    const y = p.worldPosition.y - basePanorama.worldPosition.y;
+                    const z = p.worldPosition.z - basePanorama.worldPosition.z;
 
                     const positions = p.data.positions;
                     for (let i = 0; i < positions.length; i+=3) {
