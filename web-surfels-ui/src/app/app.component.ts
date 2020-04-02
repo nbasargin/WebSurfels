@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
+import { FirstPersonController } from '../lib/renderer2/first-person-controller';
 import { Renderer2 } from '../lib/renderer2/renderer2';
 import { mat4, vec3 } from 'gl-matrix';
 import { ViewDirection } from '../lib/renderer2/view-direction';
@@ -117,12 +118,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private view: ViewDirection;
     private angleX: number = Math.PI / 180 * -27;
     private angleY: number = Math.PI / 180 * -22;
-    movementSpeed = 1;
+
+    private controller: FirstPersonController;
+    movementSpeed = 10;
 
     private pressedKeys: Set<string>;
 
     benchmarkRunning = false;
-    splattingEnabled = false;
+    splattingEnabled = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera(false);
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
@@ -159,6 +162,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     ngAfterViewInit(): void {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
+        this.controller = new FirstPersonController(this.renderer2.camera);
         this.view.update(this.angleX, this.angleY);
         setTimeout(() => {
             //const instances = 64;
@@ -196,13 +200,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             return;
         }
 
-        const degreesPerPixel = -0.1;
-        const radians = Math.PI / 180;
-        const maxVerticalAngle = 85;
-        this.angleX += radians * e.movementX * degreesPerPixel;
-        this.angleY += radians * e.movementY * degreesPerPixel;
-        this.angleY = Math.max(radians * -maxVerticalAngle, Math.min(radians * maxVerticalAngle, this.angleY));
-        this.view.update(this.angleX, this.angleY);
+        this.controller.addPitch(-e.movementY * 0.1);
+        this.controller.addYaw(-e.movementX * 0.1);
     }
 
     @HostListener('window:blur')
@@ -251,27 +250,27 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     checkCamera() {
         const movementSpeed = 0.05 * this.movementSpeed;
-        const right = vec3.create();
-        vec3.cross(right, this.view.direction, this.view.up);
-        vec3.normalize(right, right);
-        const front = vec3.create();
-        vec3.normalize(front, this.view.direction);
+        //const right = vec3.create();
+        //vec3.cross(right, this.view.direction, this.view.up);
+        //vec3.normalize(right, right);
+        //const front = vec3.create();
+        //vec3.normalize(front, this.view.direction);
 
         if (this.pressedKeys.has('KeyW')) {
-            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, front, movementSpeed);
+            this.controller.moveForward(movementSpeed);
         }
         if (this.pressedKeys.has('KeyA')) {
-            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, -movementSpeed);
+            this.controller.moveRight(-movementSpeed);
         }
         if (this.pressedKeys.has('KeyS')) {
-            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, front, -movementSpeed);
+            this.controller.moveForward(-movementSpeed);
         }
         if (this.pressedKeys.has('KeyD')) {
-            vec3.scaleAndAdd(this.cameraPos, this.cameraPos, right, movementSpeed);
+            this.controller.moveRight(movementSpeed);
         }
 
-        const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.view.direction);
-        this.renderer2.camera.setOrientation(this.cameraPos, viewTarget, this.view.up);
+        //const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.view.direction);
+        //this.renderer2.camera.setOrientation(this.cameraPos, viewTarget, this.view.up);
     }
 
     checkCanvasSize() {
@@ -333,10 +332,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         this.renderer2.addData(PointCloudDataGenerator.genAxis());
 
-        const loading = panoIDsMuc.map(id => loader.loadPanorama(id));
+        const loading = panoIDs.map(id => loader.loadPanorama(id));
         Promise.all(loading).then(panoramas => {
             const middleID = Math.floor(panoramas.length / 2);
             const basePanorama = panoramas[middleID];
+
+            const pos = basePanorama.worldPosition;
+            const posUp = vec3.fromValues(pos.x, pos.y, pos.z);
+            vec3.normalize(posUp, posUp);
+            this.renderer2.camera.setUpVector(posUp);
 
             for (const p of panoramas) {
                 if (p !== basePanorama) {
