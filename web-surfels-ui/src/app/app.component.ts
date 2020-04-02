@@ -2,7 +2,6 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChil
 import { FirstPersonController } from '../lib/renderer2/first-person-controller';
 import { Renderer2 } from '../lib/renderer2/renderer2';
 import { mat4, vec3 } from 'gl-matrix';
-import { ViewDirection } from '../lib/renderer2/view-direction';
 import { GSVPanoramaLoader } from '../lib/street-view/gsv-panorama-loader';
 import { AnimatedCamera } from '../lib/utils/animated-camera';
 import { FpsCounter } from '../lib/utils/fps-counter';
@@ -44,6 +43,7 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 <input #sizeScaleSlider (input)="renderer2.setSplatSizeScale(+sizeScaleSlider.value) "
                        type="range" min="0.2" max="2" step="0.1" value="1">
             </div>
+            <!--  used in axis demo
             <div>
                 latitude: {{panoramaStitching.lat}}
             </div>
@@ -58,6 +58,7 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 <input #panoSliderLngRot (input)="panoramaStitching.lng = +panoSliderLngRot.value; testAxis()"
                        type="range" min="-180" max="180" step="1" [value]="panoramaStitching.lng">
             </div>
+            -->
         </div>
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
@@ -114,19 +115,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private animationRequest;
     renderer2: Renderer2;
 
-    private readonly cameraPos: vec3;
-    private view: ViewDirection;
-    private angleX: number = Math.PI / 180 * -27;
-    private angleY: number = Math.PI / 180 * -22;
-
-    private controller: FirstPersonController;
-    movementSpeed = 10;
-
     private pressedKeys: Set<string>;
 
     benchmarkRunning = false;
     splattingEnabled = true;
     private animatedCamera: AnimatedCamera = new AnimatedCamera(false);
+    private controller: FirstPersonController;
+    movementSpeed = 10;
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private lastTimestamp = 0;
 
@@ -155,19 +150,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     };
 
     constructor() {
-        this.cameraPos = vec3.fromValues(-2, 1.2, 2.5);
-        this.view = new ViewDirection(false);
         this.pressedKeys = new Set();
     }
 
     ngAfterViewInit(): void {
         this.renderer2 = new Renderer2(this.canvasRef.nativeElement, 1, 1);
         this.controller = new FirstPersonController(this.renderer2.camera);
-        this.view.update(this.angleX, this.angleY);
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            this.testStreetViewStitching(true);
+            this.testStreetViewStitching();
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
             //this.testAxis(true);
@@ -250,11 +242,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     checkCamera() {
         const movementSpeed = 0.05 * this.movementSpeed;
-        //const right = vec3.create();
-        //vec3.cross(right, this.view.direction, this.view.up);
-        //vec3.normalize(right, right);
-        //const front = vec3.create();
-        //vec3.normalize(front, this.view.direction);
 
         if (this.pressedKeys.has('KeyW')) {
             this.controller.moveForward(movementSpeed);
@@ -268,9 +255,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         if (this.pressedKeys.has('KeyD')) {
             this.controller.moveRight(movementSpeed);
         }
-
-        //const viewTarget = vec3.add(vec3.create(), this.cameraPos, this.view.direction);
-        //this.renderer2.camera.setOrientation(this.cameraPos, viewTarget, this.view.up);
     }
 
     checkCanvasSize() {
@@ -288,15 +272,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    testStreetViewStitching(setView = false) {
-        if (setView) {
-            this.view = new ViewDirection(true);
-            this.animatedCamera = new AnimatedCamera(true);
-            this.angleY = 0;
-            this.angleX = 0;
-            this.view.update(this.angleX, this.angleY);
-        }
-
+    testStreetViewStitching() {
         this.renderer2.removeAllNodes();
 
         const options = {
@@ -332,7 +308,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         this.renderer2.addData(PointCloudDataGenerator.genAxis());
 
-        const loading = panoIDs.map(id => loader.loadPanorama(id));
+        const loading = panoIDsMuc.map(id => loader.loadPanorama(id));
         Promise.all(loading).then(panoramas => {
             const middleID = Math.floor(panoramas.length / 2);
             const basePanorama = panoramas[middleID];
@@ -388,21 +364,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     loadDynamicLod2(sizeThreshold: number) {
-        // castle cam config
-        vec3.set(this.cameraPos, -90, 23, 92);
-        this.angleX = -0.69;
-        this.angleY = -0.29;
-        this.view.update(this.angleX, this.angleY);
-
         const loader = new XhrLodLoader('http://localhost:5000/');
         this.dynamicLod = new DynamicLodTree(this.renderer2, loader, sizeThreshold);
     }
 
     sphereTest(pointNumber: number, pointSize: number, resolution: number, maxDepth: number) {
-        vec3.set(this.cameraPos, 0, 0, 3);
-        this.angleX = 0;
-        this.angleY = 0;
-        this.view.update(this.angleX, this.angleY);
         Timing.measure();
         const data = PointCloudDataGenerator.generateSphere(pointNumber, pointSize);
         console.log(Timing.measure(), 'data generated');
@@ -457,15 +423,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         return optimizedLod;
     }
 
-    private testAxis(initialRun = false) {
-        if (initialRun) {
-            this.view = new ViewDirection(true);
-            this.angleY = -10 * Math.PI / 180;
-            this.angleX = 190 * Math.PI / 180;
-            this.view.update(this.angleX, this.angleY);
-            vec3.set(this.cameraPos, 2, -4, 2);
-
-        }
+    private testAxis() {
 
         this.renderer2.removeAllNodes();
 
