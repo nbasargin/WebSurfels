@@ -159,9 +159,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            this.testStreetViewStitching();
+            //this.testStreetViewStitching();
             //this.sphereTest(300000, 0.02, 4, 12);
-            //this.loadDynamicLod2(1.4);
+            this.loadDynamicLod2(1.4);
             //this.testAxis(true);
 
             this.renderLoop(0);
@@ -369,6 +369,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
 
     loadDynamicLod2(sizeThreshold: number) {
+        this.renderer2.camera.setOrientation(
+            vec3.fromValues(70, 30, 80),
+            vec3.create(),
+            vec3.fromValues(0, 1, 0)
+        );
+        this.controller.setViewDirection(-20, 210);
+
         const loader = new XhrLodLoader('http://localhost:5000/');
         this.dynamicLod = new DynamicLodTree(this.renderer2, loader, sizeThreshold);
     }
