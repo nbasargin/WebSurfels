@@ -81,7 +81,7 @@ export class PointCloudDataGenerator {
             colors[i * 3 + 2] = 1;
         }
         for (let i = 0; i < pointsPerAxis * 3; i++) {
-            sizes[i] = 0.1;
+            sizes[i] = 0.2;
         }
         return {positions, sizes, colors, normals};
     }
