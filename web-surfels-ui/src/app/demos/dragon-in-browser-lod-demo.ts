@@ -2,6 +2,7 @@ import { vec3 } from 'gl-matrix';
 import { StanfordDragonLoader } from '../../lib/data/stanford-dragon-loader';
 import { LodNode, WeightedLodNode } from '../../lib/level-of-detail/lod-node';
 import { OctreeLodBuilder } from '../../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
+import { OrbitAnimationController } from '../../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
 import { Geometry } from '../../lib/utils/geometry';
 import { Timing } from '../../lib/utils/timing';
@@ -18,10 +19,17 @@ export class DragonInBrowserLodDemo implements DemoBase {
 
     constructor(
         public renderer: Renderer,
-        resolution: number,
-        maxDepth: number
+        private orbitAnimation: OrbitAnimationController,
+        resolution: number = 32,
+        maxDepth: number = 10,
     ) {
-        this.renderer.camera.setOrientation(vec3.fromValues(3,3,3), vec3.fromValues(0,0,0), vec3.fromValues(0,1,0));
+        this.renderer.camera.setOrientation(vec3.fromValues(3, 3, 3), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+
+        this.orbitAnimation.minDistance = 2;
+        this.orbitAnimation.maxDistance = 4;
+        this.orbitAnimation.elevation = 2;
+        this.orbitAnimation.rotationDuration = 25000;
+        this.orbitAnimation.animate(3000);
 
         Timing.measure();
         const dragonLoader = new StanfordDragonLoader();

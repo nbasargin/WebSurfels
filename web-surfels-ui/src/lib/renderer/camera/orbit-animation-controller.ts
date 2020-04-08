@@ -6,11 +6,11 @@ export class OrbitAnimationController {
     private time: number = 0;
 
     constructor(
-        private camera: Camera,
-        private minDistance: number,
-        private maxDistance: number,
-        private elevation: number,
-        private rotationDuration: number
+        public camera: Camera,
+        public minDistance: number,
+        public maxDistance: number,
+        public elevation: number,
+        public rotationDuration: number
     ) {
     }
 

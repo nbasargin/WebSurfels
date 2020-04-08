@@ -15,32 +15,33 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
     selector: 'app-root',
     template: `
         <app-main-overlay class="main-overlay-2"
-                          [fps]="fps" 
+                          [fps]="fps"
                           [nodes]="nodesDrawn"
                           [points]="pointsDrawn"
-                          [animate]="benchmarkRunning"
+                          [animate]="animate"
                           [hqSplats]="splattingEnabled"
                           [scale]="sizeScale"
-                          (animateChange)="benchmarkRunning = $event"
+                          (animateChange)="animate = $event"
                           (hqSplatsChange)="splattingEnabled = $event"
-                          (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">         
-            
+                          (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">
+
             <ng-container *ngIf="demos?.dragon as demo">
                 <h1>In-Browser LOD Demo</h1>
                 <span *ngIf="demo.loading">LOADING...</span>
                 <ng-container *ngIf="!demo.loading">
                     Show LOD level:
-                    <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i)">{{i}}</button>                    
-                </ng-container>                
+                    <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i)">{{i}}</button>
+                </ng-container>
             </ng-container>
 
             <ng-container *ngIf="demos?.sphere as demo">
                 <h1>Sphere Demo</h1>
-                <button *ngFor="let preset of demo.presets" (click)="demo.addSphere(preset)">{{preset.points + ' points'}}</button>
+                <button *ngFor="let preset of demo.presets"
+                        (click)="demo.addSphere(preset)">{{preset.points + ' points'}}</button>
             </ng-container>
-            
+
         </app-main-overlay>
-        
+
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
         </div>
@@ -71,7 +72,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     fps = 0;
     pointsDrawn: number = 0;
     nodesDrawn: number = 0;
-    benchmarkRunning = false;
+    animate = true;
     splattingEnabled = true;
     sizeScale = 1;
 
@@ -107,10 +108,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             this.demos = {
                 // select ONE here
-                // dragon: new DragonInBrowserLodDemo(this.renderer, 32, 12),
+                // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
-                sphere: new SphereDemo(this.renderer)
+                sphere: new SphereDemo(this.renderer, this.orbitAnimation)
             };
 
             for (const demo of Object.values(this.demos)) {
@@ -181,7 +182,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.animationRequest = requestAnimationFrame(timestamp => this.renderLoop(timestamp));
         this.checkCanvasSize();
 
-        if (this.benchmarkRunning) {
+        if (this.animate) {
             this.orbitAnimation.animate(duration);
         } else {
             this.checkCamera();
