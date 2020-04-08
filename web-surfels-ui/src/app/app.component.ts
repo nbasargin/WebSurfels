@@ -139,7 +139,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             //this.testStreetViewCrawler();
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
-            //this.testAxis(true);
 
             this.renderLoop(0);
         }, 0);
@@ -349,64 +348,5 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         return optimizedLod;
     }
 
-    private testAxis() {
-
-        this.renderer.removeAllNodes();
-
-        const center: PointCloudData = {
-            positions: new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0]),
-            normals: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]),
-            colors: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]),
-            sizes: new Float32Array([1, 1, 1, 0.5, 0.5, 0.5]),
-        };
-        this.renderer.addData(center);
-
-        const data: PointCloudData = {
-            positions: new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0]),
-            normals: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]),
-            colors: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]),
-            sizes: new Float32Array([0.5, 0.5, 0.5, 0.2, 0.2, 0.2]),
-        };
-
-        const normal2 = this.lngLatToNormal(this.panoramaStitching.lat, this.panoramaStitching.lng);
-        this.rotateByLatLng(data, this.panoramaStitching.lat, this.panoramaStitching.lng);
-
-        for (let i = 0; i < data.positions.length; i += 3) {
-            data.positions[i] += normal2.x * 1.1;
-            data.positions[i + 1] += normal2.y * 1.1;
-            data.positions[i + 2] += normal2.z * 1.1;
-        }
-
-        this.renderer.addData(data);
-    }
-
-    rotateByLatLng(data: PointCloudData, latitude: number, longitude: number) {
-        // data up vector: (0, 0, 1)
-        // for latitude = longitude = 0°, the transformed vector should be (1, 0, 0)
-
-        latitude = -(latitude - 90) * Math.PI / 180;
-        longitude = longitude * Math.PI / 180;
-
-        const rotMatrix = mat4.create();
-        mat4.rotateZ(rotMatrix, rotMatrix, longitude);
-        mat4.rotateY(rotMatrix, rotMatrix, latitude);
-
-        for (let i = 0; i < data.positions.length; i += 3) {
-            const position = new Float32Array(data.positions.buffer, i * 4, 3);
-            vec3.transformMat4(position, position, rotMatrix);
-            const normal = new Float32Array(data.normals.buffer, i * 4, 3);
-            vec3.transformMat4(normal, normal, rotMatrix);
-        }
-    }
-
-    lngLatToNormal(latitude: number, longitude: number) {
-        latitude = latitude * Math.PI / 180;
-        longitude = longitude * Math.PI / 180;
-        const x = Math.cos(latitude) * Math.cos(longitude);
-        const y = Math.cos(latitude) * Math.sin(longitude);
-        const z = Math.sin(latitude);
-
-        return {x, y, z};
-    }
 
 }
