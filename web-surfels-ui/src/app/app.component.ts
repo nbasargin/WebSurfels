@@ -16,6 +16,7 @@ import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octre
 import { PointCloudDataGenerator } from '../lib/data/point-cloud-data-generator';
 import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
 import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
+import { StreetViewCrawlerDemo } from './demos/street-view-crawler-demo';
 import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
 @Component({
@@ -102,6 +103,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     // demos
     streetViewStitching: StreetViewStitchingDemo;
+    streetViewCrawler: StreetViewCrawlerDemo;
 
     weightedLodNode: WeightedLodNode;
     treeDepth: number;
@@ -130,13 +132,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.fpController = new FirstPersonController(this.renderer.camera);
         this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 15000);
 
-        this.streetViewStitching = new StreetViewStitchingDemo(this.renderer, this.orbitAnimation);
-        this.streetViewStitching.run(GSVCrawler.crawls.manhattan.slice(0, 16)).catch(console.error);
+        this.streetViewStitching = new StreetViewStitchingDemo(this.renderer, this.orbitAnimation, GSVCrawler.crawls.manhattan.slice(0, 16));
+        // this.streetViewCrawler = new StreetViewCrawlerDemo();
+
 
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            //this.testStreetViewCrawler();
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
 
@@ -248,14 +250,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.renderer.setCanvasSize(width, height);
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
-    }
-
-    testStreetViewCrawler() {
-        const crawler = new GSVCrawler();
-        crawler.crawl('s6A9P5A3iWvqNscixSRPsw', 10).then(ids => {
-            console.log('crawl complete, found', ids.size, 'panoramas');
-            console.log('ids', ids);
-        });
     }
 
     createDragonLod2(resolution: number, maxDepth: number) {

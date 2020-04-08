@@ -5,8 +5,12 @@ import { GSVPanoramaLoader } from '../../lib/street-view/gsv-panorama-loader';
 
 export class StreetViewStitchingDemo {
 
-    constructor(public renderer: Renderer,
-                private orbitAnimation: OrbitAnimationController) {
+    constructor(
+        public renderer: Renderer,
+        private orbitAnimation: OrbitAnimationController,
+        panoIDs: Array<string>
+    ) {
+        this.run(panoIDs).catch(console.error);
     }
 
     async run(panoIDs: Array<string>) {
