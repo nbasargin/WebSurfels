@@ -21,47 +21,18 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
 @Component({
     selector: 'app-root',
     template: `
-        <div class="main-overlay">
-            <div>FPS: {{fps}}</div>
-            <div>Points: {{pointsDrawn.toLocaleString('en-us')}}</div>
-            <div>
-                <label>
-                    <input #animCheck type="checkbox" [checked]="benchmarkRunning"
-                           (change)="benchmarkRunning = animCheck.checked">
-                    Animate
-                </label>
-            </div>
-            <div>
-                <label>
-                    <input #splatCheck type="checkbox" [checked]="splattingEnabled"
-                           (change)="splattingEnabled = splatCheck.checked">
-                    HQ splats
-                </label>
-            </div>
-            <div>
-                Size scale: {{sizeScaleSlider.value}}
-            </div>
-            <div>
-                <input #sizeScaleSlider (input)="renderer.setSplatSizeScale(+sizeScaleSlider.value) "
-                       type="range" min="0.2" max="2" step="0.1" value="1">
-            </div>
-            <!--  used in axis demo
-            <div>
-                latitude: {{panoramaStitching.lat}}
-            </div>
-            <div>
-                <input #panoSliderLatRot (input)="panoramaStitching.lat = +panoSliderLatRot.value; testAxis()"
-                       type="range" min="-90" max="90" step="0" [value]="panoramaStitching.lat">
-            </div>
-            <div>
-                longitude: {{panoramaStitching.lng}}
-            </div>
-            <div>
-                <input #panoSliderLngRot (input)="panoramaStitching.lng = +panoSliderLngRot.value; testAxis()"
-                       type="range" min="-180" max="180" step="1" [value]="panoramaStitching.lng">
-            </div>
-            -->
-        </div>
+        <app-main-overlay class="main-overlay-2"
+                          [fps]="fps" 
+                          [nodes]="nodesDrawn"
+                          [points]="pointsDrawn"
+                          [animate]="benchmarkRunning"
+                          [hqSplats]="splattingEnabled"
+                          [scale]="sizeScale"
+                          (animateChange)="benchmarkRunning = $event"
+                          (hqSplatsChange)="splattingEnabled = $event"
+                          (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">            
+        </app-main-overlay>
+        
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
         </div>
@@ -112,16 +83,19 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('canvas', {static: true}) canvasRef: ElementRef<HTMLCanvasElement>;
     @ViewChild('wrapper', {static: true}) wrapperRef: ElementRef<HTMLDivElement>;
-    fps = '0';
+    fps = 0;
 
     private animationRequest;
     renderer: Renderer;
     pointsDrawn: number = 0;
+    nodesDrawn: number = 0;
 
     private pressedKeys: Set<string>;
 
     benchmarkRunning = true;
     splattingEnabled = true;
+    sizeScale = 1;
+
     private fpController: FirstPersonController;
     private orbitAnimation: OrbitAnimationController;
     movementSpeed = 10;
@@ -238,12 +212,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         } else {
             const stats = this.renderer.render(this.renderer.nodes, !this.splattingEnabled);
             this.pointsDrawn = stats.pointsDrawn;
+            this.nodesDrawn = stats.nodesDrawn;
         }
     }
 
     updateFPS(duration: number) {
         this.fpsCounter.addDuration(duration);
-        this.fps = (1000 / this.fpsCounter.getAvgDuration()).toFixed(2);
+        this.fps = (1000 / this.fpsCounter.getAvgDuration());
     }
 
     checkCamera() {

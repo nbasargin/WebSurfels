@@ -16,21 +16,10 @@ canvas {
   height: 100%;
 }
 
-.main-overlay {
+.main-overlay-2 {
   position: fixed;
   top: 10px;
   right: 10px;
-  color: white;
-  font-family: monospace;
-
-  width: 300px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 32px;
-  align-items: center;
-
-  background: rgba(0, 0, 0, 0.5);
-  padding: 5px;
 }
 
 .info-overlay {
