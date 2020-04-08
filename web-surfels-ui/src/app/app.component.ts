@@ -53,11 +53,6 @@ import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
                 LoD Octree nodes: {{displayInfo.octreeNodes}}
                 <br> (geometry merged into one node)
             </div>
-            {{frustumInfo}}
-        </div>
-        <div class="lod-overlay" *ngIf="rendererDetails">
-            Nodes rendered: {{rendererDetails.nodesDrawn}}<br>
-            Points rendered: {{rendererDetails.pointsDrawn}}<br>
         </div>
         <div class="lod-overlay" *ngIf="dynamicLod">
             Nodes loaded: {{dynamicLod.stats.loadedNodes}}<br>
@@ -83,24 +78,25 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('canvas', {static: true}) canvasRef: ElementRef<HTMLCanvasElement>;
     @ViewChild('wrapper', {static: true}) wrapperRef: ElementRef<HTMLDivElement>;
-    fps = 0;
 
-    private animationRequest;
-    renderer: Renderer;
+    fps = 0;
     pointsDrawn: number = 0;
     nodesDrawn: number = 0;
-
-    private pressedKeys: Set<string>;
-
     benchmarkRunning = true;
     splattingEnabled = true;
     sizeScale = 1;
 
+    movementSpeed = 10;
+
+    renderer: Renderer;
+
+    private fpsCounter: FpsCounter = new FpsCounter(20);
+    private animationRequest;
+    private lastTimestamp = 0;
+
+    private pressedKeys: Set<string> = new Set();
     private fpController: FirstPersonController;
     private orbitAnimation: OrbitAnimationController;
-    movementSpeed = 10;
-    private fpsCounter: FpsCounter = new FpsCounter(20);
-    private lastTimestamp = 0;
 
     weightedLodNode: WeightedLodNode;
     treeDepth: number;
@@ -110,7 +106,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     lodData: RendererNode;
 
     dynamicLod: DynamicLodTree;
-    rendererDetails: { nodesDrawn: number, pointsDrawn: number };
 
     displayInfo = {
         totalPoints: 0,
@@ -119,16 +114,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     };
 
     overlayMessage = '';
-    frustumInfo = '';
 
     panoramaStitching = {
         lat: 90,
         lng: 0,
     };
-
-    constructor() {
-        this.pressedKeys = new Set();
-    }
 
     ngAfterViewInit(): void {
         this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
