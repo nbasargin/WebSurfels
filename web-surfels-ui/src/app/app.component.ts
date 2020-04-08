@@ -7,6 +7,7 @@ import { FpsCounter } from '../lib/utils/fps-counter';
 import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
 import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
+import { DynamicLodLoadingDemo } from './demos/dynamic-lod-loading-demo';
 import { SphereDemo } from './demos/sphere-demo';
 import { StreetViewCrawlerDemo } from './demos/street-view-crawler-demo';
 import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
@@ -26,7 +27,7 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                           (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">
 
             <ng-container *ngIf="demos?.dragon as demo">
-                <h1>In-Browser LOD Demo</h1>
+                <h1>In-Browser LOD Construction Demo</h1>
                 <span *ngIf="demo.loading">LOADING...</span>
                 <ng-container *ngIf="!demo.loading">
                     Show LOD level:
@@ -40,23 +41,22 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                         (click)="demo.addSphere(preset)">{{preset.points + ' points'}}</button>
             </ng-container>
 
+            <ng-container *ngIf="demos?.castle as demo">
+                <h1>Dynamic LOD Loading Demo</h1>
+                <div>Points loaded: {{demo.dynamicLod.stats.loadedPoints}}</div>
+                <div>Nodes loaded: {{demo.dynamicLod.stats.loadedNodes}}</div>
+                <div>Size threshold:
+                    <input #sizeThresholdSlider (input)="demo.dynamicLod.sizeThreshold = +sizeThresholdSlider.value"
+                           type="range" min="0.4" max="2.4" step="0.1" [value]="demo.initialSizeThreshold">
+                    {{demo.dynamicLod.sizeThreshold}}
+                </div>
+                (higher threshold = lower quality)
+            </ng-container>
+
         </app-main-overlay>
 
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
-        </div>
-        <div class="lod-overlay" *ngIf="dynamicLod">
-            Nodes loaded: {{dynamicLod.stats.loadedNodes}}<br>
-            Points loaded: {{dynamicLod.stats.loadedPoints}}<br><br>
-            Nodes rendered: {{dynamicLod.stats.renderedNodes}}<br>
-            Points rendered: {{dynamicLod.stats.renderedPoints}}<br><br>
-            <div class="flex-line">
-                Size threshold:
-                <input #sizeThresholdSlider (input)="dynamicLod.sizeThreshold = +sizeThresholdSlider.value"
-                       type="range" min="0.4" max="2.4" step="0.1" value="1.4">
-                {{dynamicLod.sizeThreshold}}
-            </div>
-            (higher threshold = lower quality)
         </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
@@ -96,9 +96,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         stitching?: StreetViewStitchingDemo,
         crawler?: StreetViewCrawlerDemo,
         sphere?: SphereDemo,
+        castle?: DynamicLodLoadingDemo,
     };
-
-    dynamicLod: DynamicLodTree;
 
     ngAfterViewInit(): void {
         this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
@@ -111,7 +110,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
-                sphere: new SphereDemo(this.renderer, this.orbitAnimation)
+                // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
+                castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
             };
 
             for (const demo of Object.values(this.demos)) {
@@ -125,7 +125,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }, 0);
 
         setTimeout(() => {
-            //this.loadDynamicLod2(1.4);
+           // this.loadDynamicLod2(1.4);
         }, 0);
     }
 
@@ -185,11 +185,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         if (this.animate) {
             this.orbitAnimation.animate(duration);
         } else {
-            this.checkCamera();
+            this.moveCamera();
         }
 
-        if (this.dynamicLod) {
-            this.dynamicLod.render(!this.splattingEnabled);
+        if (this.demos.castle) {
+            this.demos.castle.dynamicLod.render(!this.splattingEnabled);
+            this.pointsDrawn = this.demos.castle.dynamicLod.stats.renderedPoints;
+            this.nodesDrawn = this.demos.castle.dynamicLod.stats.renderedNodes;
+
         } else {
             const stats = this.renderer.render(this.renderer.nodes, !this.splattingEnabled);
             this.pointsDrawn = stats.pointsDrawn;
@@ -202,7 +205,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.fps = (1000 / this.fpsCounter.getAvgDuration());
     }
 
-    checkCamera() {
+    moveCamera() {
         const movementSpeed = 0.05 * this.movementSpeed;
 
         if (this.pressedKeys.has('KeyW')) {
@@ -232,17 +235,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.renderer.setCanvasSize(width, height);
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
-    }
-
-    loadDynamicLod2(sizeThreshold: number) {
-        this.renderer.camera.setOrientation(
-            vec3.fromValues(70, 30, 80),
-            vec3.create(),
-            vec3.fromValues(0, 1, 0)
-        );
-
-        const loader = new XhrLodLoader('http://localhost:5000/');
-        this.dynamicLod = new DynamicLodTree(this.renderer, loader, sizeThreshold);
     }
 
 }
