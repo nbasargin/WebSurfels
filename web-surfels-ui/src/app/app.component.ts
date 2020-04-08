@@ -5,7 +5,6 @@ import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation
 import { Renderer } from '../lib/renderer/renderer';
 import { mat4, vec3 } from 'gl-matrix';
 import { GSVCrawler } from '../lib/street-view/gsv-crawler';
-import { GSVPanoramaLoader } from '../lib/street-view/gsv-panorama-loader';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
 import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-data';
@@ -17,6 +16,7 @@ import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octre
 import { PointCloudDataGenerator } from '../lib/data/point-cloud-data-generator';
 import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
 import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
+import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
 @Component({
     selector: 'app-root',
@@ -90,13 +90,18 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     renderer: Renderer;
 
+    // render loop
     private fpsCounter: FpsCounter = new FpsCounter(20);
     private animationRequest;
     private lastTimestamp = 0;
 
+    // controls
     private pressedKeys: Set<string> = new Set();
     private fpController: FirstPersonController;
     private orbitAnimation: OrbitAnimationController;
+
+    // demos
+    streetViewStitching: StreetViewStitchingDemo;
 
     weightedLodNode: WeightedLodNode;
     treeDepth: number;
@@ -124,10 +129,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
         this.fpController = new FirstPersonController(this.renderer.camera);
         this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 15000);
+
+        this.streetViewStitching = new StreetViewStitchingDemo(this.renderer, this.orbitAnimation);
+        this.streetViewStitching.run(GSVCrawler.crawls.manhattan.slice(0, 16)).catch(console.error);
+
         setTimeout(() => {
             //const instances = 64;
             //this.createDragonLod2(32, 12);
-            this.testStreetViewStitching(GSVCrawler.crawls.manhattan.slice(0, 16)).catch(console.error);
             //this.testStreetViewCrawler();
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
@@ -249,61 +257,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             console.log('crawl complete, found', ids.size, 'panoramas');
             console.log('ids', ids);
         });
-    }
-
-    async testStreetViewStitching(panoIDs: Array<string>) {
-        this.renderer.removeAllNodes();
-
-        const options = {
-            skyDistance: -1,
-            maxNonSkySplatSize: 1,
-            minNonSkySplatSize: 0.2,
-        };
-        const loader = new GSVPanoramaLoader(options);
-
-        // set up camera and coordinate system based on first panorama
-        const basePanorama = await loader.loadPanorama(panoIDs[0]);
-        const pos = basePanorama.worldPosition;
-        const up = vec3.fromValues(pos.x, pos.y, pos.z);
-        vec3.normalize(up, up);
-        this.renderer.camera.setUpVector(up);
-        this.orbitAnimation.animate(0);
-
-        // load others one after one (reduces cpu load when receiving)
-        for (const id of panoIDs) {
-            const p = await loader.loadPanorama(id);
-
-            // test: reduce number of points per panorama
-            /*
-            const subgrid = new Subgrid(64, 1);
-            for (const p of panoramas) {
-                const bc: BoundingCube = {
-                    size: p.boundingSphere.radius * 2,
-                    minX: p.boundingSphere.centerX - p.boundingSphere.radius,
-                    minY: p.boundingSphere.centerY - p.boundingSphere.radius,
-                    minZ: p.boundingSphere.centerZ - p.boundingSphere.radius,
-                };
-                const weights = new Float32Array(p.data.positions.length / 3);
-                weights.fill(1);
-                const reduced = subgrid.reduce({...p.data, weights}, bc);
-                console.log('data reduction', p.data.positions.length / 3, ' --> ', reduced.positions.length / 3, 'points');
-                p.data = reduced;
-            }*/
-
-            // compute offset
-            const x = p.worldPosition.x - basePanorama.worldPosition.x;
-            const y = p.worldPosition.y - basePanorama.worldPosition.y;
-            const z = p.worldPosition.z - basePanorama.worldPosition.z;
-
-            const positions = p.data.positions;
-            for (let i = 0; i < positions.length; i += 3) {
-                positions[i] += x;
-                positions[i + 1] += y;
-                positions[i + 2] += z;
-            }
-            this.renderer.addData(p.data);
-        }
-
     }
 
     createDragonLod2(resolution: number, maxDepth: number) {
