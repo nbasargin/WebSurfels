@@ -10,8 +10,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             <span>FPS:</span>
             <span>{{fps.toFixed(2)}}</span>
 
-            <span class="span-2">
-            </span>
+            <label class="span-2">
+                <input #hqCheck type="checkbox" [checked]="hqSplats" (change)="hqSplatsChange.emit(hqCheck.checked)"> HQ Splats
+            </label>
 
             <span>Points:</span>
             <span>{{points.toLocaleString('en-us')}}</span>
@@ -24,9 +25,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             <input class="span-2" #sizeScaleSlider (input)="scaleChange.emit(+sizeScaleSlider.value)"
                    type="range" min="0.2" max="2" step="0.1" value="1">
 
-            <label class="span-2">
-                <input #hqCheck type="checkbox" [checked]="hqSplats" (change)="hqSplatsChange.emit(hqCheck.checked)"> HQ Splats
-            </label>
+            <span>Speed:</span>
+            <span>{{speed.toFixed(2)}}</span>
+            
             <label class="span-2">
                 <input #animCheck type="checkbox" [checked]="animate" (change)="animateChange.emit(animCheck.checked)"> Animate
             </label>
@@ -42,6 +43,7 @@ export class MainOverlayComponent {
     @Input() fps: number = 0;
     @Input() points: number = 0;
     @Input() nodes: number = 0;
+    @Input() speed: number = 1;
 
     @Input() animate: boolean = false;
     @Input() hqSplats: boolean = false;

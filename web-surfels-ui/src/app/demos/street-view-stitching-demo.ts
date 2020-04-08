@@ -17,7 +17,7 @@ export class StreetViewStitchingDemo implements DemoBase {
         this.orbitAnimation.minDistance = 30;
         this.orbitAnimation.maxDistance = 100;
         this.orbitAnimation.elevation = 30;
-        this.orbitAnimation.rotationDuration = 15000;
+        this.orbitAnimation.rotationDuration = 15000 * this.preferredMovementSpeed;
 
         this.run(panoIDs).catch(console.error);
     }

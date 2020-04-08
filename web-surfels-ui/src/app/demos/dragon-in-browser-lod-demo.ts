@@ -28,7 +28,7 @@ export class DragonInBrowserLodDemo implements DemoBase {
         this.orbitAnimation.minDistance = 2;
         this.orbitAnimation.maxDistance = 4;
         this.orbitAnimation.elevation = 2;
-        this.orbitAnimation.rotationDuration = 25000;
+        this.orbitAnimation.rotationDuration = 25000 * this.preferredMovementSpeed;
         this.orbitAnimation.animate(3000);
 
         Timing.measure();

@@ -2,10 +2,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChil
 import { FirstPersonController } from '../lib/renderer/camera/first-person-controller';
 import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../lib/renderer/renderer';
-import { vec3 } from 'gl-matrix';
 import { FpsCounter } from '../lib/utils/fps-counter';
-import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
-import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
 import { DynamicLodLoadingDemo } from './demos/dynamic-lod-loading-demo';
 import { SphereDemo } from './demos/sphere-demo';
@@ -22,6 +19,7 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                           [animate]="animate"
                           [hqSplats]="splattingEnabled"
                           [scale]="sizeScale"
+                          [speed]="movementSpeed"
                           (animateChange)="animate = $event"
                           (hqSplatsChange)="splattingEnabled = $event"
                           (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">
@@ -43,8 +41,8 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
             <ng-container *ngIf="demos?.castle as demo">
                 <h1>Dynamic LOD Loading Demo</h1>
-                <div>Points loaded: {{demo.dynamicLod.stats.loadedPoints}}</div>
-                <div>Nodes loaded: {{demo.dynamicLod.stats.loadedNodes}}</div>
+                <div>Points loaded: {{demo.dynamicLod.stats.loadedPoints.toLocaleString('en-us')}}</div>
+                <div>Nodes loaded: {{demo.dynamicLod.stats.loadedNodes.toLocaleString('en-us')}}</div>
                 <div>Size threshold:
                     <input #sizeThresholdSlider (input)="demo.dynamicLod.sizeThreshold = +sizeThresholdSlider.value"
                            type="range" min="0.4" max="2.4" step="0.1" [value]="demo.initialSizeThreshold">
@@ -55,9 +53,6 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
         </app-main-overlay>
 
-        <div class="info-overlay">
-            movement speed: {{movementSpeed.toFixed(2)}}
-        </div>
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
         </div>
@@ -124,9 +119,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.renderLoop(0);
         }, 0);
 
-        setTimeout(() => {
-           // this.loadDynamicLod2(1.4);
-        }, 0);
     }
 
     ngOnDestroy(): void {
@@ -183,7 +175,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.checkCanvasSize();
 
         if (this.animate) {
-            this.orbitAnimation.animate(duration);
+            this.orbitAnimation.animate(duration * this.movementSpeed);
         } else {
             this.moveCamera();
         }
