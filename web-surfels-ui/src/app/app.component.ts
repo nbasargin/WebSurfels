@@ -31,12 +31,12 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                           (hqSplatsChange)="splattingEnabled = $event"
                           (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">         
             
-            <ng-container *ngIf="dragonInBrowserLod">
+            <ng-container *ngIf="demos?.dragon as demo">
                 <h1>In-Browser LOD Demo</h1>
-                <span *ngIf="dragonInBrowserLod.loading">LOADING...</span>
-                <ng-container *ngIf="!dragonInBrowserLod.loading">
+                <span *ngIf="demo.loading">LOADING...</span>
+                <ng-container *ngIf="!demo.loading">
                     Show LOD level:
-                    <button *ngFor="let i of dragonInBrowserLod.levels" (click)="dragonInBrowserLod.showLodLevel(i)">{{i}}</button>                    
+                    <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i)">{{i}}</button>                    
                 </ng-container>                
             </ng-container>            
             
@@ -79,7 +79,6 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
         </div>
-        <div class="message-overlay" *ngIf="overlayMessage">{{overlayMessage}}</div>
     `,
     styleUrls: ['app.component.scss']
 })
@@ -110,9 +109,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private orbitAnimation: OrbitAnimationController;
 
     // demos
-    streetViewStitching: StreetViewStitchingDemo;
-    streetViewCrawler: StreetViewCrawlerDemo;
-    dragonInBrowserLod: DragonInBrowserLodDemo;
+    demos: {
+        dragon?: DragonInBrowserLodDemo,
+        stitching?: StreetViewStitchingDemo,
+        crawler?: StreetViewCrawlerDemo,
+    };
 
     weightedLodNode: WeightedLodNode;
     treeDepth: number;
@@ -129,27 +130,34 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         octreeNodes: 0
     };
 
-    overlayMessage = '';
-
     ngAfterViewInit(): void {
         this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
         this.fpController = new FirstPersonController(this.renderer.camera);
         this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 15000);
 
         setTimeout(() => {
-            // this.streetViewStitching = new StreetViewStitchingDemo(this.renderer, this.orbitAnimation, GSVCrawler.crawls.manhattan.slice(0, 16));
-            // this.streetViewCrawler = new StreetViewCrawlerDemo();
-            this.dragonInBrowserLod = new DragonInBrowserLodDemo(this.renderer, 32, 12);
+            this.demos = {
+                // select ONE here
+                dragon: new DragonInBrowserLodDemo(this.renderer, 32, 12),
+                // crawler: new StreetViewCrawlerDemo(),
+                // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation, GSVCrawler.crawls.manhattan.slice(0, 16)),
+            };
+
+            for (const demo of Object.values(this.demos)) {
+                if (!demo) {
+                    continue;
+                }
+                this.movementSpeed = demo.preferredMovementSpeed;
+            }
+
+            this.renderLoop(0);
         }, 0);
 
 
 
         setTimeout(() => {
-            //const instances = 64;
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
-
-            this.renderLoop(0);
         }, 0);
     }
 
