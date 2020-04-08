@@ -7,14 +7,13 @@
 
   width: 410px;
 
+}
+
+.main-options {
   display: grid;
   grid-template-columns: 2fr 3fr 2fr 3fr;
   grid-auto-rows: 32px;
   align-items: center;
-
-  color: white;
-  font-family: Verdana, sans-serif;
-
 }
 
 .span-2 {

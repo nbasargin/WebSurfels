@@ -1,21 +1,19 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { Subgrid } from '../lib/level-of-detail/octree-lod-buider/subgrid';
 import { FirstPersonController } from '../lib/renderer/camera/first-person-controller';
 import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../lib/renderer/renderer';
-import { mat4, vec3 } from 'gl-matrix';
-import { GSVCrawler } from '../lib/street-view/gsv-crawler';
+import { vec3 } from 'gl-matrix';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
 import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-data';
-import { BoundingCube, BoundingSphere, Geometry } from '../lib/utils/geometry';
+import { BoundingSphere, Geometry } from '../lib/utils/geometry';
 import { RendererNode } from '../lib/renderer/renderer-node';
-import { StanfordDragonLoader } from '../lib/data/stanford-dragon-loader';
 import { Timing } from '../lib/utils/timing';
 import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
 import { PointCloudDataGenerator } from '../lib/data/point-cloud-data-generator';
 import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
 import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
+import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
 import { StreetViewCrawlerDemo } from './demos/street-view-crawler-demo';
 import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
@@ -31,7 +29,17 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                           [scale]="sizeScale"
                           (animateChange)="benchmarkRunning = $event"
                           (hqSplatsChange)="splattingEnabled = $event"
-                          (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">            
+                          (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">         
+            
+            <ng-container *ngIf="dragonInBrowserLod">
+                <h1>In-Browser LOD Demo</h1>
+                <span *ngIf="dragonInBrowserLod.loading">LOADING...</span>
+                <ng-container *ngIf="!dragonInBrowserLod.loading">
+                    Show LOD level:
+                    <button *ngFor="let i of dragonInBrowserLod.levels" (click)="dragonInBrowserLod.showLodLevel(i)">{{i}}</button>                    
+                </ng-container>                
+            </ng-container>            
+            
         </app-main-overlay>
         
         <div class="info-overlay">
@@ -83,7 +91,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     fps = 0;
     pointsDrawn: number = 0;
     nodesDrawn: number = 0;
-    benchmarkRunning = true;
+    benchmarkRunning = false;
     splattingEnabled = true;
     sizeScale = 1;
 
@@ -104,6 +112,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     // demos
     streetViewStitching: StreetViewStitchingDemo;
     streetViewCrawler: StreetViewCrawlerDemo;
+    dragonInBrowserLod: DragonInBrowserLodDemo;
 
     weightedLodNode: WeightedLodNode;
     treeDepth: number;
@@ -122,23 +131,21 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     overlayMessage = '';
 
-    panoramaStitching = {
-        lat: 90,
-        lng: 0,
-    };
-
     ngAfterViewInit(): void {
         this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
         this.fpController = new FirstPersonController(this.renderer.camera);
         this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 15000);
 
-        this.streetViewStitching = new StreetViewStitchingDemo(this.renderer, this.orbitAnimation, GSVCrawler.crawls.manhattan.slice(0, 16));
-        // this.streetViewCrawler = new StreetViewCrawlerDemo();
+        setTimeout(() => {
+            // this.streetViewStitching = new StreetViewStitchingDemo(this.renderer, this.orbitAnimation, GSVCrawler.crawls.manhattan.slice(0, 16));
+            // this.streetViewCrawler = new StreetViewCrawlerDemo();
+            this.dragonInBrowserLod = new DragonInBrowserLodDemo(this.renderer, 32, 12);
+        }, 0);
+
 
 
         setTimeout(() => {
             //const instances = 64;
-            //this.createDragonLod2(32, 12);
             //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
 
@@ -252,29 +259,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    createDragonLod2(resolution: number, maxDepth: number) {
-        this.overlayMessage = 'Loading...';
-        Timing.measure();
-        const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.loadDropbox().then(data => {
-            console.log(Timing.measure(), 'data loaded');
-            this.displayInfo.totalPoints = data.positions.length / 3;
-
-            const bb = Geometry.getBoundingBox(data.positions);
-            const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
-            octree.addData(data);
-
-            console.log(Timing.measure(), 'octree created');
-            this.treeDepth = octree.root.getDepth();
-            this.weightedLodNode = octree.buildLod();
-            console.log(Timing.measure(), 'lod computed');
-            this.optimizedLod = this.optimizeLod(this.weightedLodNode, octree.root.getDepth());
-            console.log(Timing.measure(), 'lod optimized');
-
-            this.overlayMessage = '';
-            this.showLodLevel(0);
-        });
-    }
 
     loadDynamicLod2(sizeThreshold: number) {
         this.renderer.camera.setOrientation(
