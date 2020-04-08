@@ -5,8 +5,11 @@ import { OctreeLodBuilder } from '../../lib/level-of-detail/octree-lod-buider/oc
 import { Renderer } from '../../lib/renderer/renderer';
 import { Geometry } from '../../lib/utils/geometry';
 import { Timing } from '../../lib/utils/timing';
+import { DemoBase } from './demo-base';
 
-export class DragonInBrowserLodDemo {
+export class DragonInBrowserLodDemo implements DemoBase {
+
+    preferredMovementSpeed = 1;
 
     private lodRoot: WeightedLodNode;
 

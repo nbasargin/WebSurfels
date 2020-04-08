@@ -2,8 +2,11 @@ import { vec3 } from 'gl-matrix';
 import { OrbitAnimationController } from '../../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
 import { GSVPanoramaLoader } from '../../lib/street-view/gsv-panorama-loader';
+import { DemoBase } from './demo-base';
 
-export class StreetViewStitchingDemo {
+export class StreetViewStitchingDemo implements DemoBase {
+
+    preferredMovementSpeed = 10;
 
     constructor(
         public renderer: Renderer,

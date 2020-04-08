@@ -1,6 +1,9 @@
 import { GSVCrawler } from '../../lib/street-view/gsv-crawler';
+import { DemoBase } from './demo-base';
 
-export class StreetViewCrawlerDemo {
+export class StreetViewCrawlerDemo implements DemoBase {
+
+    preferredMovementSpeed = 1;
 
     constructor() {
         const crawler = new GSVCrawler();
