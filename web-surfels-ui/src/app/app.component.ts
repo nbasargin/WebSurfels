@@ -4,16 +4,10 @@ import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation
 import { Renderer } from '../lib/renderer/renderer';
 import { vec3 } from 'gl-matrix';
 import { FpsCounter } from '../lib/utils/fps-counter';
-import { WeightedLodNode } from '../lib/level-of-detail/lod-node';
-import { PointCloudData, WeightedPointCloudData } from '../lib/data/point-cloud-data';
-import { BoundingSphere, Geometry } from '../lib/utils/geometry';
-import { RendererNode } from '../lib/renderer/renderer-node';
-import { Timing } from '../lib/utils/timing';
-import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
-import { PointCloudDataGenerator } from '../lib/data/point-cloud-data-generator';
 import { DynamicLodTree } from '../dynamic-lod/dynamic-lod-tree';
 import { XhrLodLoader } from '../dynamic-lod/xhr-lod-loader';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
+import { SphereDemo } from './demos/sphere-demo';
 import { StreetViewCrawlerDemo } from './demos/street-view-crawler-demo';
 import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
@@ -38,30 +32,17 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                     Show LOD level:
                     <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i)">{{i}}</button>                    
                 </ng-container>                
-            </ng-container>            
+            </ng-container>
+
+            <ng-container *ngIf="demos?.sphere as demo">
+                <h1>Sphere Demo</h1>
+                <button *ngFor="let preset of demo.presets" (click)="demo.addSphere(preset)">{{preset.points + ' points'}}</button>
+            </ng-container>
             
         </app-main-overlay>
         
         <div class="info-overlay">
             movement speed: {{movementSpeed.toFixed(2)}}
-        </div>
-        <div class="lod-overlay" *ngIf="weightedLodNode && optimizedLod">
-            <div class="flex-line">
-                LoD level:
-                <input #lodSlider2 (input)="showLodLevel(+lodSlider2.value)" type="range" min="0"
-                       max="{{optimizedLod.length - 1}}" step="1" value="0">
-                {{+lodSlider2.value === treeDepth ? 'original data' : lodSlider2.value}}
-            </div>
-            <div>
-                Total points: {{displayInfo.totalPoints}}
-            </div>
-            <div>
-                Points rendered: {{displayInfo.renderedPoints}}
-            </div>
-            <div>
-                LoD Octree nodes: {{displayInfo.octreeNodes}}
-                <br> (geometry merged into one node)
-            </div>
         </div>
         <div class="lod-overlay" *ngIf="dynamicLod">
             Nodes loaded: {{dynamicLod.stats.loadedNodes}}<br>
@@ -113,22 +94,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         dragon?: DragonInBrowserLodDemo,
         stitching?: StreetViewStitchingDemo,
         crawler?: StreetViewCrawlerDemo,
+        sphere?: SphereDemo,
     };
-
-    weightedLodNode: WeightedLodNode;
-    treeDepth: number;
-    optimizedLod: Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }>;
-    boundingSphere: BoundingSphere;
-    sphereData: RendererNode;
-    lodData: RendererNode;
 
     dynamicLod: DynamicLodTree;
-
-    displayInfo = {
-        totalPoints: 0,
-        renderedPoints: 0,
-        octreeNodes: 0
-    };
 
     ngAfterViewInit(): void {
         this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
@@ -138,9 +107,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             this.demos = {
                 // select ONE here
-                dragon: new DragonInBrowserLodDemo(this.renderer, 32, 12),
+                // dragon: new DragonInBrowserLodDemo(this.renderer, 32, 12),
                 // crawler: new StreetViewCrawlerDemo(),
-                // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation, GSVCrawler.crawls.manhattan.slice(0, 16)),
+                // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
+                sphere: new SphereDemo(this.renderer)
             };
 
             for (const demo of Object.values(this.demos)) {
@@ -153,10 +123,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.renderLoop(0);
         }, 0);
 
-
-
         setTimeout(() => {
-            //this.sphereTest(300000, 0.02, 4, 12);
             //this.loadDynamicLod2(1.4);
         }, 0);
     }
@@ -215,7 +182,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.checkCanvasSize();
 
         if (this.benchmarkRunning) {
-            // this.animatedCamera.nextFrame(this.renderer2);
             this.orbitAnimation.animate(duration);
         } else {
             this.checkCamera();
@@ -267,7 +233,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-
     loadDynamicLod2(sizeThreshold: number) {
         this.renderer.camera.setOrientation(
             vec3.fromValues(70, 30, 80),
@@ -278,61 +243,5 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const loader = new XhrLodLoader('http://localhost:5000/');
         this.dynamicLod = new DynamicLodTree(this.renderer, loader, sizeThreshold);
     }
-
-    sphereTest(pointNumber: number, pointSize: number, resolution: number, maxDepth: number) {
-        Timing.measure();
-        const data = PointCloudDataGenerator.generateSphere(pointNumber, pointSize);
-        console.log(Timing.measure(), 'data generated');
-        const bb = Geometry.getBoundingBox(data.positions);
-        const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
-        octree.addData(data);
-        this.treeDepth = octree.root.getDepth();
-        console.log(Timing.measure(), 'octree created');
-        this.weightedLodNode = octree.buildLod();
-        console.log(Timing.measure(), 'lod computed');
-        this.optimizedLod = this.optimizeLod(this.weightedLodNode, this.treeDepth + 1);
-        console.log(Timing.measure(), 'lod optimized');
-        this.showLodLevel(0);
-    }
-
-    showLodLevel(lodLevel: number) {
-        this.renderer.removeAllNodes();
-        const nodes = this.getNodesAtSpecificDepth(this.weightedLodNode, lodLevel);
-        this.displayInfo.octreeNodes = nodes.length;
-        for (const node of nodes) {
-            // this.renderer2.addData(node.positions, node.sizes, node.colors, node.normals);
-        }
-
-        const {data, boundingSphere, sphereData} = this.optimizedLod[lodLevel];
-        this.displayInfo.renderedPoints = data.positions.length / 3;
-        this.boundingSphere = boundingSphere;
-        this.lodData = this.renderer.addData(data);
-        this.sphereData = this.renderer.addData(sphereData);
-    }
-
-    getNodesAtSpecificDepth(root: WeightedLodNode, depth: number): Array<WeightedLodNode> {
-        if (depth <= 0 || root.children.length == 0) {
-            return [root];
-        } else {
-            let nodes: Array<WeightedLodNode> = [];
-            for (const child of root.children) {
-                nodes = nodes.concat(this.getNodesAtSpecificDepth(child as WeightedLodNode, depth - 1));
-            }
-            return nodes;
-        }
-    }
-
-    optimizeLod(lodNode: WeightedLodNode, levels: number): Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }> {
-        const optimizedLod: Array<{ data: WeightedPointCloudData, boundingSphere: BoundingSphere, sphereData: PointCloudData }> = [];
-        for (let level = 0; level < levels; level++) {
-            const nodes = this.getNodesAtSpecificDepth(lodNode, level);
-            const data = Geometry.mergeLodNodes(nodes);
-            const boundingSphere = Geometry.getBoundingSphere(data.positions, data.sizes);
-            const sphereData = PointCloudDataGenerator.generateBoundingSphere(boundingSphere);
-            optimizedLod.push({data, boundingSphere, sphereData});
-        }
-        return optimizedLod;
-    }
-
 
 }

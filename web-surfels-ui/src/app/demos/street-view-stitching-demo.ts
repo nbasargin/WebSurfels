@@ -1,6 +1,7 @@
 import { vec3 } from 'gl-matrix';
 import { OrbitAnimationController } from '../../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
+import { GSVCrawler } from '../../lib/street-view/gsv-crawler';
 import { GSVPanoramaLoader } from '../../lib/street-view/gsv-panorama-loader';
 import { DemoBase } from './demo-base';
 
@@ -11,7 +12,7 @@ export class StreetViewStitchingDemo implements DemoBase {
     constructor(
         public renderer: Renderer,
         private orbitAnimation: OrbitAnimationController,
-        panoIDs: Array<string>
+        panoIDs: Array<string> = GSVCrawler.crawls.manhattan.slice(0, 16)
     ) {
         this.run(panoIDs).catch(console.error);
     }
