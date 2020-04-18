@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { FirstPersonController } from '../lib/renderer/camera/first-person-controller';
 import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation-controller';
+import { HeadlightController } from '../lib/renderer/light/headlight-controller';
 import { Renderer } from '../lib/renderer/renderer';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
@@ -41,6 +42,9 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <input #specularIShininessSlider type="range" min="1" max="64" step="1"
                        (input)="renderer.light.specularShininess = +specularIShininessSlider.value"
                        [value]="renderer.light.specularShininess">
+                <label>
+                    <input #hqCheck type="checkbox" [checked]="headlight.enabled" (change)="headlight.enabled = hqCheck.checked"> Use Headlight
+                </label>
             </div>
 
             <ng-container *ngIf="demos?.dragon as demo">
@@ -106,6 +110,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private fpController: FirstPersonController;
     private orbitAnimation: OrbitAnimationController;
 
+    private headlight: HeadlightController;
+
     // demos
     demos: {
         dragon?: DragonInBrowserLodDemo,
@@ -119,6 +125,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
         this.fpController = new FirstPersonController(this.renderer.camera);
         this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 15000);
+
+        this.headlight = new HeadlightController(this.renderer.light, this.renderer.camera);
 
         setTimeout(() => {
             this.demos = {
@@ -201,6 +209,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         } else {
             this.moveCamera();
         }
+
+        this.headlight.update();
 
         if (this.demos.castle) {
             this.demos.castle.dynamicLod.render(!this.splattingEnabled);
