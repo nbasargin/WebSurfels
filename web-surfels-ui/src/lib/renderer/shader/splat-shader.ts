@@ -34,6 +34,13 @@ export const quadVS = `
     uniform bool uDepthPass;
     uniform float uSizeScale;
     
+    // lighting
+    uniform bool uEnableLighting;
+    uniform vec3 uLightDir;
+    uniform float uLightAmbientIntensity;
+    uniform float uLightSpecularIntensity;
+    uniform float uLightSpecularShininess;
+    
     out highp vec2 uv;
     flat out vec3 v_color;
     
@@ -139,6 +146,12 @@ export class SplatShader {
         modelViewMatrixIT: WebGLUniformLocation,
         depthPass: WebGLUniformLocation,
         sizeScale: WebGLUniformLocation,
+
+        enableLighting: WebGLUniformLocation,
+        lightDir: WebGLUniformLocation,
+        lightAmbientIntensity: WebGLUniformLocation,
+        lightSpecularIntensity: WebGLUniformLocation,
+        lightSpecularShininess: WebGLUniformLocation,
     };
 
     constructor(private gl: WebGL2RenderingContext) {
@@ -167,6 +180,12 @@ export class SplatShader {
             modelViewMatrixIT: gl.getUniformLocation(this.program, 'uModelViewMatrixIT') as WebGLUniformLocation,
             depthPass: gl.getUniformLocation(this.program, 'uDepthPass') as WebGLUniformLocation,
             sizeScale: gl.getUniformLocation(this.program, 'uSizeScale') as WebGLUniformLocation,
+
+            enableLighting: gl.getUniformLocation(this.program, 'uEnableLighting') as WebGLUniformLocation,
+            lightDir: gl.getUniformLocation(this.program, 'uLightDir') as WebGLUniformLocation,
+            lightAmbientIntensity: gl.getUniformLocation(this.program, 'uLightAmbientIntensity') as WebGLUniformLocation,
+            lightSpecularIntensity: gl.getUniformLocation(this.program, 'uLightSpecularIntensity') as WebGLUniformLocation,
+            lightSpecularShininess: gl.getUniformLocation(this.program, 'uLightSpecularShininess') as WebGLUniformLocation,
         };
     }
 
