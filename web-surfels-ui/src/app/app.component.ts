@@ -46,6 +46,14 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                     <input #hqCheck type="checkbox" [checked]="headlight.enabled" (change)="headlight.enabled = hqCheck.checked"> Use Headlight
                 </label>
             </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr;">
+                <h1 style="grid-column: span 2">Splatting Depth</h1>
+                <span>Depth-Size Ratio: {{renderer['uniforms'].splatDepthSizeRatio}}</span>
+                <input #depthSizeRatioSlider type="range" min="0.1" max="2" step="0.1"
+                       (input)="renderer['uniforms'].splatDepthSizeRatio = +depthSizeRatioSlider.value"
+                       [value]="renderer['uniforms'].splatDepthSizeRatio">
+            </div>
 
             <ng-container *ngIf="demos?.dragon as demo">
                 <h1>In-Browser LOD Construction Demo</h1>

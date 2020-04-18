@@ -20,6 +20,8 @@ export class Renderer {
 
     private readonly uniforms: {
         sizeScale: number,
+        splatDepthSizeRatio: number,
+        splatDepthEpsilon: number,
     };
     constructor(public readonly canvas: HTMLCanvasElement, initialWidth: number, initialHeight: number) {
         const context = canvas.getContext('webgl2');
@@ -44,6 +46,8 @@ export class Renderer {
 
         this.uniforms = {
             sizeScale: 1,
+            splatDepthSizeRatio: 0.5,
+            splatDepthEpsilon: 0.0001,
         };
 
         this.gl.clearColor(0, 0, 0, 0);
@@ -103,6 +107,11 @@ export class Renderer {
         this.uniforms.sizeScale = sizeScale;
     }
 
+    setSplatDepthParams(depthSizeRatio: number, depthEpsilon: number) {
+        this.uniforms.splatDepthSizeRatio = depthSizeRatio;
+        this.uniforms.splatDepthEpsilon = depthEpsilon;
+    }
+
     render(nodes: Iterable<RendererNode> = this.nodes, disableSplatting: boolean = false): {nodesDrawn: number, pointsDrawn: number} {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
@@ -127,13 +136,18 @@ export class Renderer {
         this.gl.uniformMatrix4fv(uniforms.projectionMatrix, false, this.camera.projectionMatrix);
         this.gl.uniformMatrix4fv(uniforms.modelViewMatrix, false, this.camera.modelViewMatrix);
         this.gl.uniformMatrix4fv(uniforms.modelViewMatrixIT, false, this.camera.modelViewMatrixIT);
+
         this.gl.uniform1f(uniforms.sizeScale, this.uniforms.sizeScale);
+        this.gl.uniform1f(uniforms.splatDepthSizeRatio, this.uniforms.splatDepthSizeRatio);
+        this.gl.uniform1f(uniforms.splatDepthEpsilon, this.uniforms.splatDepthEpsilon);
+
         this.gl.uniform1i(uniforms.enableLighting, this.light.enabled ? 1 : 0);
         this.gl.uniform3fv(uniforms.lightDirection, this.light.direction);
         this.gl.uniform1f(uniforms.lightAmbientIntensity, this.light.ambientIntensity);
         this.gl.uniform1f(uniforms.lightSpecularIntensity, this.light.specularIntensity);
         this.gl.uniform1f(uniforms.lightSpecularShininess, this.light.specularShininess);
 
+        // quad vertices for instanced rendering
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.splatShader.quadVertexBuffer);
         this.gl.vertexAttribPointer(this.splatShader.attributeLocations.quadVertex, 3, this.gl.FLOAT, false, 0, 0);
 

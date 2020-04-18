@@ -1,8 +1,5 @@
 import { WebGLUtils } from '../web-gl-utils';
 
-const SPLAT_DEPTH_TO_SIZE_RATIO = 0.5; // multiplied with point size to determine base splatting depth
-const SPLAT_DEPTH_EPSILON = 0.0001; // added to base splatting depth during depth pass to reduce numerical issues
-
 export const quadVS = `
     #version 300 es
     
@@ -38,6 +35,10 @@ export const quadVS = `
     uniform float uLightSpecularIntensity;
     uniform float uLightSpecularShininess;
     
+    // splatting depth
+    uniform float uSplatDepthSizeRatio; // multiplied with point size to determine base splatting depth
+    uniform float uSplatDepthEpsilon;   // added to base splatting depth during depth pass to reduce numerical issues
+    
     out highp vec2 uv;
     flat out vec3 v_color;
     
@@ -66,9 +67,9 @@ export const quadVS = `
             // it can lead to projected shape distortion when camera is very close
             // therefore, a version that preserves shape is used below
             vec3 view_direction = normalize(vertex_pos - uEyePos);
-            vertex_pos += view_direction * world_point_size * ${SPLAT_DEPTH_TO_SIZE_RATIO};
+            vertex_pos += view_direction * world_point_size * uSplatDepthSizeRatio;
             vec4 new = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0);
-            gl_Position.z = new.z * (gl_Position.w / new.w) + ${SPLAT_DEPTH_EPSILON};
+            gl_Position.z = new.z * (gl_Position.w / new.w) + uSplatDepthEpsilon;
                       
         } else {        
             // Gouraud shading
@@ -149,6 +150,9 @@ export class SplatShader {
         lightAmbientIntensity: WebGLUniformLocation,
         lightSpecularIntensity: WebGLUniformLocation,
         lightSpecularShininess: WebGLUniformLocation,
+
+        splatDepthSizeRatio: WebGLUniformLocation,
+        splatDepthEpsilon: WebGLUniformLocation,
     };
 
     constructor(private gl: WebGL2RenderingContext) {
@@ -183,6 +187,9 @@ export class SplatShader {
             lightAmbientIntensity: gl.getUniformLocation(this.program, 'uLightAmbientIntensity') as WebGLUniformLocation,
             lightSpecularIntensity: gl.getUniformLocation(this.program, 'uLightSpecularIntensity') as WebGLUniformLocation,
             lightSpecularShininess: gl.getUniformLocation(this.program, 'uLightSpecularShininess') as WebGLUniformLocation,
+
+            splatDepthSizeRatio: gl.getUniformLocation(this.program, 'uSplatDepthSizeRatio') as WebGLUniformLocation,
+            splatDepthEpsilon: gl.getUniformLocation(this.program, 'uSplatDepthEpsilon') as WebGLUniformLocation,
         };
     }
 
