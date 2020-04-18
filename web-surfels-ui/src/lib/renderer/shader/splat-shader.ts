@@ -148,7 +148,7 @@ export class SplatShader {
         sizeScale: WebGLUniformLocation,
 
         enableLighting: WebGLUniformLocation,
-        lightDir: WebGLUniformLocation,
+        lightDirection: WebGLUniformLocation,
         lightAmbientIntensity: WebGLUniformLocation,
         lightSpecularIntensity: WebGLUniformLocation,
         lightSpecularShininess: WebGLUniformLocation,
@@ -182,7 +182,7 @@ export class SplatShader {
             sizeScale: gl.getUniformLocation(this.program, 'uSizeScale') as WebGLUniformLocation,
 
             enableLighting: gl.getUniformLocation(this.program, 'uEnableLighting') as WebGLUniformLocation,
-            lightDir: gl.getUniformLocation(this.program, 'uLightDir') as WebGLUniformLocation,
+            lightDirection: gl.getUniformLocation(this.program, 'uLightDir') as WebGLUniformLocation,
             lightAmbientIntensity: gl.getUniformLocation(this.program, 'uLightAmbientIntensity') as WebGLUniformLocation,
             lightSpecularIntensity: gl.getUniformLocation(this.program, 'uLightSpecularIntensity') as WebGLUniformLocation,
             lightSpecularShininess: gl.getUniformLocation(this.program, 'uLightSpecularShininess') as WebGLUniformLocation,

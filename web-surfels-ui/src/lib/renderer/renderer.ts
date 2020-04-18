@@ -1,5 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
 import { Camera } from './camera/camera';
+import { DirectionalLight } from './directional-light';
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
 import { NormShader } from './shader/norm-shader';
 import { RendererNode } from './renderer-node';
@@ -10,6 +11,7 @@ export class Renderer {
 
     public readonly nodes: Set<RendererNode> = new Set();
     public readonly camera: Camera;
+    public readonly light: DirectionalLight;
 
     private readonly gl: WebGL2RenderingContext;
     private readonly offscreenFramebuffer: OffscreenFramebuffer;
@@ -27,6 +29,7 @@ export class Renderer {
         this.gl = context;
         this.offscreenFramebuffer = new OffscreenFramebuffer(this.gl);
         this.camera = new Camera();
+        this.light = new DirectionalLight();
 
         // ext check
         const extensions = ['EXT_color_buffer_float', 'EXT_float_blend'];
@@ -117,11 +120,19 @@ export class Renderer {
         this.gl.vertexAttribDivisor(this.splatShader.attributeLocations.normal, 1);
 
         this.gl.useProgram(this.splatShader.program);
-        this.gl.uniform3fv(this.splatShader.uniformLocations.eyePos, this.camera.eye);
-        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.projectionMatrix, false, this.camera.projectionMatrix);
-        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.modelViewMatrix, false, this.camera.modelViewMatrix);
-        this.gl.uniformMatrix4fv(this.splatShader.uniformLocations.modelViewMatrixIT, false, this.camera.modelViewMatrixIT);
-        this.gl.uniform1f(this.splatShader.uniformLocations.sizeScale, this.uniforms.sizeScale);
+
+        // update uniforms
+        const uniforms = this.splatShader.uniformLocations;
+        this.gl.uniform3fv(uniforms.eyePos, this.camera.eye);
+        this.gl.uniformMatrix4fv(uniforms.projectionMatrix, false, this.camera.projectionMatrix);
+        this.gl.uniformMatrix4fv(uniforms.modelViewMatrix, false, this.camera.modelViewMatrix);
+        this.gl.uniformMatrix4fv(uniforms.modelViewMatrixIT, false, this.camera.modelViewMatrixIT);
+        this.gl.uniform1f(uniforms.sizeScale, this.uniforms.sizeScale);
+        this.gl.uniform1i(uniforms.enableLighting, this.light.enabled ? 1 : 0);
+        this.gl.uniform3fv(uniforms.lightDirection, this.light.direction);
+        this.gl.uniform1f(uniforms.lightAmbientIntensity, this.light.ambientIntensity);
+        this.gl.uniform1f(uniforms.lightSpecularIntensity, this.light.specularIntensity);
+        this.gl.uniform1f(uniforms.lightSpecularShininess, this.light.specularShininess);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.splatShader.quadVertexBuffer);
         this.gl.vertexAttribPointer(this.splatShader.attributeLocations.quadVertex, 3, this.gl.FLOAT, false, 0, 0);
