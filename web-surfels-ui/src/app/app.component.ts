@@ -12,7 +12,8 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 @Component({
     selector: 'app-root',
     template: `
-        <app-main-overlay class="main-overlay-2"
+        <app-main-overlay *ngIf="showOverlay"
+                          class="main-overlay-2"
                           [fps]="fps"
                           [nodes]="nodesDrawn"
                           [points]="pointsDrawn"
@@ -23,6 +24,24 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                           (animateChange)="animate = $event"
                           (hqSplatsChange)="splattingEnabled = $event"
                           (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr;">
+                <h1 style="grid-column: span 2">Lighting</h1>
+                <span>Ambient: {{renderer.light.ambientIntensity}}</span>
+                <input #ambientIntensitySlider type="range" min="0.0" max="1.0" step="0.1"
+                       (input)="renderer.light.ambientIntensity = +ambientIntensitySlider.value"
+                       [value]="renderer.light.ambientIntensity">
+
+                <span>Specular: {{renderer.light.specularIntensity}}</span>
+                <input #specularIntensitySlider type="range" min="0.0" max="1.0" step="0.1"
+                       (input)="renderer.light.specularIntensity = +specularIntensitySlider.value"
+                       [value]="renderer.light.specularIntensity">
+
+                <span>Shininess: {{renderer.light.specularShininess}}</span>
+                <input #specularIShininessSlider type="range" min="1" max="64" step="1"
+                       (input)="renderer.light.specularShininess = +specularIShininessSlider.value"
+                       [value]="renderer.light.specularShininess">
+            </div>
 
             <ng-container *ngIf="demos?.dragon as demo">
                 <h1>In-Browser LOD Construction Demo</h1>
@@ -64,6 +83,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     @ViewChild('canvas', {static: true}) canvasRef: ElementRef<HTMLCanvasElement>;
     @ViewChild('wrapper', {static: true}) wrapperRef: ElementRef<HTMLDivElement>;
 
+    showOverlay = false;
+
     fps = 0;
     pointsDrawn: number = 0;
     nodesDrawn: number = 0;
@@ -102,9 +123,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             this.demos = {
                 // select ONE here
-                // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
+                dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
-                stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
+                // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
                 // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
             };
@@ -117,6 +138,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             }
 
             this.renderLoop(0);
+            this.showOverlay = true;
         }, 0);
 
     }

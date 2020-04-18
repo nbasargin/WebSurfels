@@ -2,7 +2,7 @@ import { vec3 } from 'gl-matrix';
 
 export class DirectionalLight {
 
-    enabled: boolean = false;
+    enabled: boolean = true;
     direction: vec3 = vec3.fromValues(0, 0, 1);
 
     ambientIntensity: number = 0.3;
