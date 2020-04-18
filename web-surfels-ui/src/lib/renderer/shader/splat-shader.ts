@@ -6,9 +6,6 @@ const SPLAT_DEPTH_EPSILON = 0.0001; // added to base splatting depth during dept
 export const quadVS = `
     #version 300 es
     
-    #define USE_LIGHTING 0
-    #define MIN_LIGHTNESS 0.99
-    
     // adapted from http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
     // expecting normalized axis (length of 1)
     mat3 rotation_matrix(vec3 axis, float angle) {
@@ -75,20 +72,20 @@ export const quadVS = `
                       
         } else {        
             // Gouraud shading
-            #if defined(USE_LIGHTING) && USE_LIGHTING == 1
-                // MIN_LIGHTNESS is the minimal received light (ambient)
-                // The remaining contribution is scaled by (1.0 - MIN_LIGHTNESS) and depends on surface normal and light direction
-                vec3 light_dir = normalize(vec3(1.0, 3.0, 1.0));
+            if (uEnableLighting) {
+                // uLightAmbientIntensity is the minimal received light
+                // The remaining contribution is scaled by (1.0 - uLightAmbientIntensity) and depends on surface normal and light direction
+                vec3 light_dir = normalize(uLightDir);
                 // ambient and diffuse: scale point color
-                float diffuse = MIN_LIGHTNESS + (1.0 - MIN_LIGHTNESS) * max(0.0, dot(light_dir, normal));
+                float diffuse = uLightAmbientIntensity + (1.0 - uLightAmbientIntensity) * max(0.0, dot(light_dir, normal));
                 // specular: add light color (white)
                 vec3 view_direction_to_center = normalize(pos - uEyePos);
                 vec3 reflect_direction = reflect(light_dir, normal);
-                float specular = 0.2 * pow(max(dot(view_direction_to_center, reflect_direction), 0.0), 32.0);            
+                float specular = uLightSpecularIntensity * pow(max(dot(view_direction_to_center, reflect_direction), 0.0), uLightSpecularShininess);            
                 v_color = color * diffuse + vec3(1.0, 1.0, 1.0) * specular;
-            #else
+            } else {
                 v_color = color;
-            #endif        
+            }     
         }
     }
 `.trim();
