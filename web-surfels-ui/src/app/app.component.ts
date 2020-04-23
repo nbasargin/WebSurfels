@@ -118,7 +118,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private fpController: FirstPersonController;
     private orbitAnimation: OrbitAnimationController;
 
-    private headlight: HeadlightController;
+    headlight: HeadlightController;
 
     // demos
     demos: {
