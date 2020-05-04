@@ -107,6 +107,9 @@ export class Subgrid {
             ny += input.normals[i * 3 + 1] * weight;
             nz += input.normals[i * 3 + 2] * weight;
         }
+        x /= weightSum;
+        y /= weightSum;
+        z /= weightSum;
 
         const normalLength = Math.max(0.0001, Math.sqrt(nx * nx + ny * ny + nz * nz));
 
@@ -117,13 +120,13 @@ export class Subgrid {
             const dx = x - input.positions[i * 3];
             const dy = y - input.positions[i * 3 + 1];
             const dz = z - input.positions[i * 3 + 2];
-            const radius = Math.sqrt(dx * dx + dy * dy + dz * dz) + input.sizes[i];
+            const radius = Math.sqrt(dx * dx + dy * dy + dz * dz) + input.sizes[i] / 2;
             maxRadius = Math.max(maxRadius, radius);
         }
-        const size = Math.min(constAreaSize, maxRadius * Math.sqrt(2), cellSize * Math.sqrt(3));
+        const size = Math.min(constAreaSize, 2 * maxRadius, cellSize * Math.sqrt(3));
 
         // append to output
-        outputBuffer.positions.push(x / weightSum, y / weightSum, z / weightSum);
+        outputBuffer.positions.push(x, y, z);
         outputBuffer.sizes.push(size);
         outputBuffer.colors.push(r / weightSum, g / weightSum, b / weightSum);
         outputBuffer.normals.push(nx / normalLength, ny / normalLength, nz / normalLength);
