@@ -5,6 +5,15 @@ import { GSVCrawler } from '../../lib/street-view/gsv-crawler';
 import { GSVPanoramaLoader } from '../../lib/street-view/gsv-panorama-loader';
 import { DemoBase } from './demo-base';
 
+export type PanoramaInput = {
+    type: 'static',
+    panoIDs: Iterable<string>
+} | {
+    type: 'crawl',
+    startID: string,
+    bfsLimit: number
+}
+
 export class StreetViewStitchingDemo implements DemoBase {
 
     preferredMovementSpeed = 10;
@@ -12,17 +21,30 @@ export class StreetViewStitchingDemo implements DemoBase {
     constructor(
         public renderer: Renderer,
         private orbitAnimation: OrbitAnimationController,
-        panoIDs: Array<string> = GSVCrawler.crawls.manhattan.slice(0, 16)
+        input: PanoramaInput
+            // = {type: 'crawl', startID: GSVCrawler.crawls.manhattan[0], bfsLimit: 30},
+             = {type: 'static', panoIDs: GSVCrawler.crawls.manhattan.slice(0, 16)},
     ) {
         this.orbitAnimation.minDistance = 30;
         this.orbitAnimation.maxDistance = 100;
         this.orbitAnimation.elevation = 30;
         this.orbitAnimation.rotationDuration = 15000 * this.preferredMovementSpeed;
 
-        this.run(panoIDs).catch(console.error);
+
+        if (input.type === 'static') {
+            this.run(input.panoIDs).catch(console.error);
+        } else {
+            const crawler = new GSVCrawler();
+            crawler.crawl(input.startID, input.bfsLimit).then(ids => {
+                console.log('crawl complete, found', ids.size, 'panoramas');
+                console.log('ids', ids);
+                this.run([... ids.values()]).catch(console.error);
+            });
+        }
+
     }
 
-    async run(panoIDs: Array<string>) {
+    async run(panoIDs: Iterable<string>) {
         this.renderer.removeAllNodes();
 
         const options = {
