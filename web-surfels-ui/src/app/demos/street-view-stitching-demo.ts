@@ -1,8 +1,10 @@
 import { vec3 } from 'gl-matrix';
+import { Subgrid } from '../../lib/level-of-detail/octree-lod-buider/subgrid';
 import { OrbitAnimationController } from '../../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
 import { GSVCrawler } from '../../lib/street-view/gsv-crawler';
 import { GSVPanoramaLoader } from '../../lib/street-view/gsv-panorama-loader';
+import { BoundingCube } from '../../lib/utils/geometry';
 import { DemoBase } from './demo-base';
 
 export type PanoramaInput = {
@@ -21,9 +23,10 @@ export class StreetViewStitchingDemo implements DemoBase {
     constructor(
         public renderer: Renderer,
         private orbitAnimation: OrbitAnimationController,
+        private reducePointNumber: boolean = false,
         input: PanoramaInput
-            // = {type: 'crawl', startID: GSVCrawler.crawls.manhattan[0], bfsLimit: 30},
-             = {type: 'static', panoIDs: GSVCrawler.crawls.manhattan.slice(0, 16)},
+             = {type: 'crawl', startID: GSVCrawler.crawls.manhattan[0], bfsLimit: 30},
+            // = {type: 'static', panoIDs: GSVCrawler.crawls.manhattan.slice(0, 16)},
     ) {
         this.orbitAnimation.minDistance = 30;
         this.orbitAnimation.maxDistance = 100;
@@ -67,9 +70,8 @@ export class StreetViewStitchingDemo implements DemoBase {
             const p = await loader.loadPanorama(id);
 
             // test: reduce number of points per panorama
-            /*
-            const subgrid = new Subgrid(64, 1);
-            for (const p of panoramas) {
+            if (this.reducePointNumber) {
+                const subgrid = new Subgrid(64, 1);
                 const bc: BoundingCube = {
                     size: p.boundingSphere.radius * 2,
                     minX: p.boundingSphere.centerX - p.boundingSphere.radius,
@@ -80,8 +82,9 @@ export class StreetViewStitchingDemo implements DemoBase {
                 weights.fill(1);
                 const reduced = subgrid.reduce({...p.data, weights}, bc);
                 console.log('data reduction', p.data.positions.length / 3, ' --> ', reduced.positions.length / 3, 'points');
+
                 p.data = reduced;
-            }*/
+            }
 
             // compute offset
             const x = p.worldPosition.x - basePanorama.worldPosition.x;
