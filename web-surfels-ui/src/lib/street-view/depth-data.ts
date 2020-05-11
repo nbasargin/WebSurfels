@@ -48,7 +48,7 @@ export class DepthData {
             numberOfPlanes: data.getUint16(1, true),
             width: data.getUint16(3, true),
             height: data.getUint16(5, true),
-            offset: data.getUint16(7, true)
+            offset: data.getUint8(7)
         };
     }
 
