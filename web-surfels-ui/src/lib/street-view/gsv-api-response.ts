@@ -23,7 +23,7 @@ export interface GSVApiResponse {
         tilt_yaw_deg: string,
         tilt_pitch_deg: string,
     };
-    model: {
+    model?: {
         depth_map: string
     }
 }

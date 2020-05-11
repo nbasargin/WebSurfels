@@ -33,6 +33,10 @@ export class GSVPanoramaLoader {
         // construct depth data
         const imageWidth = +pano.Data.image_width / (2 ** +pano.Location.zoomLevels);
         const imageHeight = +pano.Data.image_height / (2 ** +pano.Location.zoomLevels);
+        if (!pano.model) {
+            throw new Error('provided panorama has no depth data');
+        }
+
         const depth = new DepthData(pano.model.depth_map);
 
         // construct point cloud
