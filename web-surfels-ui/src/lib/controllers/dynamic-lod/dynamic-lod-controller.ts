@@ -37,7 +37,7 @@ export class DynamicLodController {
         });
     }
 
-    render(disableSplatting: boolean = false) {
+    render() {
         if (!this.root) {
             return;
         }
@@ -80,7 +80,7 @@ export class DynamicLodController {
             }
         }
 
-        const {nodesDrawn, pointsDrawn} = this.renderer.render(renderList, disableSplatting);
+        const {nodesDrawn, pointsDrawn} = this.renderer.render(renderList);
         this.stats.renderedNodes = nodesDrawn;
         this.stats.renderedPoints = pointsDrawn;
 

@@ -19,11 +19,11 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                           [nodes]="nodesDrawn"
                           [points]="pointsDrawn"
                           [animate]="animate"
-                          [hqSplats]="splattingEnabled"
+                          [hqSplats]="renderer.highQuality"
                           [scale]="sizeScale"
                           [speed]="movementSpeed"
                           (animateChange)="animate = $event"
-                          (hqSplatsChange)="splattingEnabled = $event"
+                          (hqSplatsChange)="renderer.highQuality = $event"
                           (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr;">
@@ -222,12 +222,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.headlight.update();
 
         if (this.demos.castle) {
-            this.demos.castle.dynamicLod.render(!this.splattingEnabled);
+            this.demos.castle.dynamicLod.render();
             this.pointsDrawn = this.demos.castle.dynamicLod.stats.renderedPoints;
             this.nodesDrawn = this.demos.castle.dynamicLod.stats.renderedNodes;
 
         } else {
-            const stats = this.renderer.render(this.renderer.nodes, !this.splattingEnabled);
+            const stats = this.renderer.render(this.renderer.nodes);
             this.pointsDrawn = stats.pointsDrawn;
             this.nodesDrawn = stats.nodesDrawn;
         }

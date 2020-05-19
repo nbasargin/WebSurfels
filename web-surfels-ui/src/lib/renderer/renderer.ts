@@ -9,6 +9,9 @@ import { WebGLUtils } from './web-gl-utils';
 
 export class Renderer {
 
+    // options
+    public highQuality = true;
+
     public readonly nodes: Set<RendererNode> = new Set();
     public readonly camera: Camera;
     public readonly light: DirectionalLight;
@@ -112,7 +115,7 @@ export class Renderer {
         this.uniforms.splatDepthEpsilon = depthEpsilon;
     }
 
-    render(nodes: Iterable<RendererNode> = this.nodes, disableSplatting: boolean = false): {nodesDrawn: number, pointsDrawn: number} {
+    render(nodes: Iterable<RendererNode> = this.nodes): {nodesDrawn: number, pointsDrawn: number} {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
@@ -156,7 +159,7 @@ export class Renderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
         let drawStats: {nodesDrawn: number, pointsDrawn: number};
-        if (!disableSplatting) {
+        if (this.highQuality) {
             // depth pass
             this.gl.depthMask(true);
             this.gl.colorMask(false, false, false, false);
