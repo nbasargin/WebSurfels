@@ -1,5 +1,4 @@
 import { PointCloudData } from '../../data/point-cloud-data';
-import { LodBuilder } from '../lod-builder';
 import { WeightedLodNode } from '../lod-node';
 import { InnerDataNode } from './data-nodes/inner-data-node';
 import { OctreeDataNode } from './data-nodes/octree-data-node';
@@ -12,7 +11,7 @@ import { Subgrid } from './subgrid';
  * After all data has been added, the data octree is converted into a lod tree.
  * This process removes all the original data in the process.
  */
-export class OctreeLodBuilder implements LodBuilder {
+export class OctreeLodBuilder {
 
     root: OctreeDataNode;
 
