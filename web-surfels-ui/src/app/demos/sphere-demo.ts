@@ -1,4 +1,4 @@
-import { PointCloudDataGenerator } from '../../lib/data/point-cloud-data-generator';
+import { DummyData } from '../../lib/data/dummy-data';
 import { OrbitAnimationController } from '../../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
 import { DemoBase } from './demo-base';
@@ -28,7 +28,7 @@ export class SphereDemo implements DemoBase {
 
     addSphere(preset: { points: number, size: number }) {
         this.renderer.removeAllNodes();
-        const data = PointCloudDataGenerator.generateSphere(preset.points, preset.size);
+        const data = DummyData.generateSphere(preset.points, preset.size);
         this.renderer.addData(data);
     }
 }

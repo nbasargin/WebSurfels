@@ -1,23 +1,6 @@
-import { BoundingSphere } from '../utils/geometry';
 import { PointCloudData } from './point-cloud-data';
 
-export class PointCloudDataGenerator {
-
-    public static generateBoundingSphere(sphere: BoundingSphere) {
-        const pointNumber = 1000;
-        const data = PointCloudDataGenerator.generateSphere(pointNumber, sphere.radius / 10, false);
-        for (let i = 0; i < pointNumber; i++) {
-            const offset = i * 3;
-            data.positions[offset] = data.positions[offset] * sphere.radius + sphere.centerX;
-            data.positions[offset + 1] = data.positions[offset + 1] * sphere.radius + sphere.centerY;
-            data.positions[offset + 2] = data.positions[offset + 2] * sphere.radius + sphere.centerZ;
-
-            data.colors[offset] = 0.5;
-            data.colors[offset + 1] = 0.5;
-            data.colors[offset + 2] = 0.5;
-        }
-        return data;
-    }
+export class DummyData {
 
     public static generateSphere(pointNumber: number, pointSize: number, randomizeColors: boolean = true): PointCloudData {
         const data: PointCloudData = {
@@ -29,7 +12,7 @@ export class PointCloudDataGenerator {
 
         for (let i = 0; i < pointNumber; i++) {
             const offset = i * 3;
-            const randomPoint = PointCloudDataGenerator.randomPointOnSphere();
+            const randomPoint = DummyData.randomPointOnSphere();
 
             data.positions[offset] = randomPoint[0];
             data.positions[offset + 1] = randomPoint[1];
@@ -110,30 +93,7 @@ export class PointCloudDataGenerator {
         normal[axis] = direction;
         const color = pos.map(p => Math.max(0, p));
 
-        return [...pos, ...color, ...normal] as any;
-    }
-
-    private static randomPointOnQuads(): [number, number, number, number, number, number, number, number, number] {
-        const x = Math.random() * 2 - 1;
-        const y = Math.random() * 2 - 1;
-        const z = Math.floor(Math.random() * 5) + y;
-
-        const r = Math.random() * 0.3 + 0.7 * (1 - z / 4);
-        const g = Math.random() * 0.3 + 0.7 * (1 - z / 4);
-        const b = Math.random() * 0.3 + 0.7 * (1 - z / 4);
-
-        const nx = 0;
-        const ny = Math.sqrt(2) / 2;
-        const nz = Math.sqrt(2) / 2;
-
-        return [x, y, -z, r, g, b, nx, ny, nz];
-    }
-
-    private static randomPointOnQuads2() {
-        const x = Math.floor(Math.random() * 5) - 2 + Math.random() * 0.5;  // {0, 1, ... 4} - 2 + [0 ... 0.5]
-        const y = Math.floor(Math.random() * 5) - 2 + Math.random() * 0.5;
-        const z = 0;
-        return [x, y, -z, 0.9, 0.9, 0.9, 0, 0, 1];
+        return [pos[0], pos[1], pos[2], color[0], color[1], color[2], normal[0], normal[1], normal[2]];
     }
 
 }

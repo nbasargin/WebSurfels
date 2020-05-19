@@ -1,5 +1,5 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { PointCloudDataGenerator } from '../data/point-cloud-data-generator';
+import { DummyData } from '../data/dummy-data';
 import { LodBinary } from './lod-binary';
 import { LodNode } from './lod-node';
 
@@ -9,7 +9,7 @@ describe('Binary Lod', () => {
     let node: LodNode;
 
     beforeAll(() => {
-        data = PointCloudDataGenerator.generateSphere(points, 0.1, true);
+        data = DummyData.generateSphere(points, 0.1, true);
         node = {
             id: 42,
             boundingSphere: {
