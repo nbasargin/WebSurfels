@@ -1,4 +1,4 @@
-import { LodNode } from '../../data/level-of-detail/lod-node';
+import { LodNode } from './lod-node';
 
 export interface LodLoader {
 

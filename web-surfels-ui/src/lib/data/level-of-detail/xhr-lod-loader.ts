@@ -1,7 +1,7 @@
 import { LodLoader } from './lod-loader';
-import { LodNode } from '../../data/level-of-detail/lod-node';
+import { LodNode } from './lod-node';
 import { BinaryXHR } from '../../utils/binary-xhr';
-import { LodBinary } from '../../data/level-of-detail/lod-binary';
+import { LodBinary } from './lod-binary';
 
 export class XhrLodLoader implements LodLoader {
 

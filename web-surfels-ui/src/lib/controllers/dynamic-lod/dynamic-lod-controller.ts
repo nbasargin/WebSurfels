@@ -1,5 +1,5 @@
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
-import { LodLoader } from './lod-loader';
+import { LodLoader } from '../../data/level-of-detail/lod-loader';
 import { Renderer } from '../../renderer/renderer';
 import { RendererNode } from '../../renderer/renderer-node';
 import { LodNode } from '../../data/level-of-detail/lod-node';
