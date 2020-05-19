@@ -2,8 +2,8 @@ import { vec3 } from 'gl-matrix';
 import { Subgrid } from '../../lib/data/level-of-detail/subgrid';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
-import { GSVCrawler } from '../../lib/data/street-view/gsv-crawler';
-import { GSVPanoramaLoader } from '../../lib/data/street-view/gsv-panorama-loader';
+import { StreetViewCrawler } from '../../lib/data/street-view/street-view-crawler';
+import { StreetViewLoader } from '../../lib/data/street-view/street-view-loader';
 import { BoundingCube } from '../../lib/utils/bounding-geometry';
 import { DemoBase } from './demo-base';
 
@@ -25,8 +25,8 @@ export class StreetViewStitchingDemo implements DemoBase {
         private orbitAnimation: OrbitAnimationController,
         private reducePointNumber: boolean = false,
         input: PanoramaInput
-             = {type: 'crawl', startID: GSVCrawler.crawls.manhattan[0], bfsLimit: 30},
-            // = {type: 'static', panoIDs: GSVCrawler.crawls.manhattan.slice(0, 16)},
+            // = {type: 'crawl', startID: StreetViewCrawler.crawls.manhattan[0], bfsLimit: 30},
+             = {type: 'static', panoIDs: StreetViewCrawler.crawls.manhattan.slice(0, 16)},
     ) {
         this.orbitAnimation.minDistance = 30;
         this.orbitAnimation.maxDistance = 100;
@@ -37,7 +37,7 @@ export class StreetViewStitchingDemo implements DemoBase {
         if (input.type === 'static') {
             this.run(input.panoIDs).catch(console.error);
         } else {
-            const crawler = new GSVCrawler();
+            const crawler = new StreetViewCrawler();
             crawler.crawl(input.startID, input.bfsLimit).then(ids => {
                 console.log('crawl complete, found', ids.size, 'panoramas');
                 console.log('ids', ids);
@@ -55,7 +55,7 @@ export class StreetViewStitchingDemo implements DemoBase {
             maxNonSkySplatSize: 1,
             minNonSkySplatSize: 0.2,
         };
-        const loader = new GSVPanoramaLoader(options);
+        const loader = new StreetViewLoader(options);
 
         // set up camera and coordinate system based on first panorama
         const basePanorama = await loader.loadPanorama(panoIDs[0]);

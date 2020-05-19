@@ -1,4 +1,4 @@
-export interface GSVApiResponse {
+export interface StreetViewApiResponse {
     Data: {
         image_width: string,
         image_height: string,

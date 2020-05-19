@@ -1,5 +1,8 @@
+import { mat4, vec3 } from 'gl-matrix';
 import { PointCloudData } from '../point-cloud-data';
-import { DepthData } from './depth-data';
+import { StreetViewApiResponse } from './street-view-api-response';
+import { StreetViewDepthData } from './street-view-depth-data';
+import { StreetViewPanorama } from './street-view-panorama';
 
 export interface StreetViewConverterOptions {
     skyDistance: number;
@@ -34,6 +37,47 @@ export class StreetViewConverter {
         };
     }
 
+    processPanorama(panoramaData: StreetViewApiResponse, colorData: ImageBitmap): StreetViewPanorama {
+
+        // construct depth data
+        const imageWidth = +panoramaData.Data.image_width / (2 ** +panoramaData.Location.zoomLevels);
+        const imageHeight = +panoramaData.Data.image_height / (2 ** +panoramaData.Location.zoomLevels);
+        if (!panoramaData.model) {
+            throw new Error('provided panorama has no depth data');
+        }
+
+        const depth = new StreetViewDepthData(panoramaData.model.depth_map);
+
+        // construct point cloud
+        const pointCloud = this.constructPointCloud(colorData, imageWidth, imageHeight, depth);
+
+        // rotate point cloud in order to match world orientation
+        this.orientData(pointCloud, +panoramaData.Location.lat, +panoramaData.Location.lng, -panoramaData.Projection.pano_yaw_deg + 90);
+
+        // compute world offset
+        const worldPosition = this.lngLatToPosition(+panoramaData.Location.lat, +panoramaData.Location.lng);
+        const worldCoordinates = {latitude: +panoramaData.Location.lat, longitude: +panoramaData.Location.lng};
+
+        // bounding sphere with center at origin
+        let radius = 0;
+        const pos = pointCloud.positions;
+        for (let i = 0; i < pos.length; i += 3) {
+            const dist = Math.sqrt(pos[i] ** 2 + pos[i + 1] ** 2 + pos[i + 2] ** 2);
+            const size = pointCloud.sizes[i / 3];
+            radius = Math.max(radius, dist + size / 2)
+        }
+
+        return {
+            id: panoramaData.Location.panoId,
+            boundingSphere: {centerX: 0, centerY: 0, centerZ: 0, radius},
+            data: pointCloud,
+            links: panoramaData.Links.map(link => link.panoId),
+            worldPosition,
+            worldCoordinates
+        };
+    }
+
+
     /**
      * Constructs point cloud from given color and depth data.
      *
@@ -42,7 +86,7 @@ export class StreetViewConverter {
      * @param imageHeight - effective image height (typically 208 or 256), can be computed with image_height / (2 ^ num_zoom_levels)
      * @param depthData
      */
-    constructPointCloud(colorData: ImageBitmap, imageWidth: number, imageHeight: number, depthData: DepthData): PointCloudData {
+    private constructPointCloud(colorData: ImageBitmap, imageWidth: number, imageHeight: number, depthData: StreetViewDepthData): PointCloudData {
         const splatScale = 0.02;
 
         this.ctx.drawImage(colorData, 0, 0);
@@ -114,5 +158,37 @@ export class StreetViewConverter {
 
     }
 
+    private lngLatToPosition(latitude: number, longitude: number) {
+        // x-axis goes through (lat, lng) = (0, 0)
+        // y-axis goes through (lat, lng) = (0, 90)
+        // z-axis goes through the poles
+
+        const earthRadius = 6371000; // meters
+        latitude = latitude * Math.PI / 180;
+        longitude = longitude * Math.PI / 180;
+        const x = Math.cos(latitude) * Math.cos(longitude) * earthRadius;
+        const y = Math.cos(latitude) * Math.sin(longitude) * earthRadius;
+        const z = Math.sin(latitude) * earthRadius;
+
+        return {x, y, z};
+    }
+
+    private orientData(data: PointCloudData, latitude: number, longitude: number, yawDegree: number) {
+        const latAngle = -(latitude - 90) * Math.PI / 180;
+        const lngAngle = longitude * Math.PI / 180;
+        const yawAngle = yawDegree * Math.PI / 180;
+
+        const rotMatrix = mat4.create();
+        mat4.rotateZ(rotMatrix, rotMatrix, lngAngle);
+        mat4.rotateY(rotMatrix, rotMatrix, latAngle);
+        mat4.rotateZ(rotMatrix, rotMatrix, yawAngle);
+
+        for (let i = 0; i < data.positions.length; i += 3) {
+            const position = new Float32Array(data.positions.buffer, i * 4, 3);
+            vec3.transformMat4(position, position, rotMatrix);
+            const normal = new Float32Array(data.normals.buffer, i * 4, 3);
+            vec3.transformMat4(normal, normal, rotMatrix);
+        }
+    }
 
 }

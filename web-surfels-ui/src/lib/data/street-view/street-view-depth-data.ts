@@ -1,6 +1,6 @@
 import * as pako from 'pako';
 
-export interface DepthDataHeader {
+export interface StreetViewDepthDataHeader {
     headerSize: number;
     numberOfPlanes: number;
     width: number;
@@ -8,17 +8,17 @@ export interface DepthDataHeader {
     offset: number;
 }
 
-export class DepthData {
+export class StreetViewDepthData {
 
-    public readonly header: DepthDataHeader;
+    public readonly header: StreetViewDepthDataHeader;
     // todo: use low-level typed arrays, no need to copy data
     public readonly indices: Array<number>;
     public readonly planes: Array<{ normal: [number, number, number], distance: number }>;
 
     constructor(depthString: string) {
-        const rawData = DepthData.decodeDepthString(depthString);
-        this.header = DepthData.extractHeader(rawData);
-        const {indices, planes} = DepthData.extractPlanes(rawData, this.header);
+        const rawData = StreetViewDepthData.decodeDepthString(depthString);
+        this.header = StreetViewDepthData.extractHeader(rawData);
+        const {indices, planes} = StreetViewDepthData.extractPlanes(rawData, this.header);
         this.indices = indices;
         this.planes = planes;
     }
@@ -42,7 +42,7 @@ export class DepthData {
         return new DataView(inflated.buffer);
     }
 
-    private static extractHeader(data: DataView): DepthDataHeader {
+    private static extractHeader(data: DataView): StreetViewDepthDataHeader {
         return {
             headerSize: data.getUint8(0),
             numberOfPlanes: data.getUint16(1, true),
@@ -52,7 +52,7 @@ export class DepthData {
         };
     }
 
-    private static extractPlanes(data: DataView, header: DepthDataHeader) {
+    private static extractPlanes(data: DataView, header: StreetViewDepthDataHeader) {
         const indices: Array<number> = [];
         for (let i = 0; i < header.width * header.height; i++) {
             indices.push(data.getUint8(header.offset + i));

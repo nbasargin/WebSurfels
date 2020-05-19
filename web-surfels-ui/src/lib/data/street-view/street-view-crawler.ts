@@ -1,6 +1,6 @@
-import { GSVPanoramaLoader } from './gsv-panorama-loader';
+import { StreetViewLoader } from './street-view-loader';
 
-export class GSVCrawler {
+export class StreetViewCrawler {
 
     async crawl(startID: string, bfsLimit: number): Promise<Set<string>> {
         const ids: Set<string> = new Set();
@@ -13,7 +13,7 @@ export class GSVCrawler {
             const {id, remDepth} = queue[queuePos];
             queuePos++;
 
-            const response = await GSVPanoramaLoader.loadById(id);
+            const response = await StreetViewLoader.loadDataById(id);
             for (const link of response.Links) {
                 if (!ids.has(link.panoId)) {
                     ids.add(link.panoId);
