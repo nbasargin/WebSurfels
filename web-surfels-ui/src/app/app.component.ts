@@ -43,10 +43,11 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                        (input)="renderer.light.specularShininess = +specularIShininessSlider.value"
                        [value]="renderer.light.specularShininess">
                 <label>
-                    <input #hqCheck type="checkbox" [checked]="headlight.enabled" (change)="headlight.enabled = hqCheck.checked"> Use Headlight
+                    <input #hqCheck type="checkbox" [checked]="headlight.enabled"
+                           (change)="headlight.enabled = hqCheck.checked"> Use Headlight
                 </label>
             </div>
-            
+
             <div style="display: grid; grid-template-columns: 1fr 1fr;">
                 <h1 style="grid-column: span 2">Splatting Depth</h1>
                 <span>Depth-Size Ratio: {{renderer['uniforms'].splatDepthSizeRatio}}</span>
@@ -139,9 +140,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             this.demos = {
                 // select ONE here
-                // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
+                dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
-                stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
+                // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
                 // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
             };

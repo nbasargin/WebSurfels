@@ -1,12 +1,11 @@
 import { FileIO } from './file-io/file-io';
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
-import { LodNode } from "../lib/level-of-detail/lod-node";
-import { LodBinary } from "../lib/level-of-detail/lod-binary";
-import { Timing } from "../lib/utils/timing";
-import { StanfordDragonLoader } from "../lib/data/stanford-dragon-loader";
-import { Geometry } from "../lib/utils/geometry";
-import { OctreeLodBuilder } from "../lib/level-of-detail/octree-lod-buider/octree-lod-builder";
+import { LodNode } from '../lib/level-of-detail/lod-node';
+import { LodBinary } from '../lib/level-of-detail/lod-binary';
+import { Timing } from '../lib/utils/timing';
+import { Geometry } from '../lib/utils/geometry';
+import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
 
 let filesWritten = 0;
 
@@ -37,7 +36,12 @@ async function generateLod() {
     const rawData = await parse(castleFile, PLYLoader);
     console.log(Timing.measure(), 'ply format parsed');
 
-    const data = StanfordDragonLoader.processCastleData(rawData);
+    const data = {
+        positions: rawData.attributes.POSITION.value,
+        sizes: new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3)).fill(0.07),
+        normals: rawData.attributes.NORMAL.value,
+        colors: new Float32Array(rawData.attributes.COLOR_0.value).map(c => c / 255),
+    };
     console.log(Timing.measure(), 'data pre-processing done');
 
     const bb = Geometry.getBoundingBox(data.positions);
@@ -52,7 +56,7 @@ async function generateLod() {
     console.log(Timing.measure(), 'lod computed, start writing to disk');
 
     const folderPath = '../lod/';
-    writeLodTreeToFiles(lod, folderPath, Math.floor(numNodes / 20) ).then(() => {
+    writeLodTreeToFiles(lod, folderPath, Math.floor(numNodes / 20)).then(() => {
         console.log(Timing.measure(), 'done writing lod');
     }).catch(err => {
         console.log('error writing lod', err);

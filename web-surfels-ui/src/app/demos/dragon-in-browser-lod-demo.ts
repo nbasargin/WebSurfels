@@ -1,12 +1,15 @@
 import { vec3 } from 'gl-matrix';
-import { StanfordDragonLoader } from '../../lib/data/stanford-dragon-loader';
+import { PointCloudData } from '../../lib/data/point-cloud-data';
 import { LodNode, WeightedLodNode } from '../../lib/level-of-detail/lod-node';
 import { OctreeLodBuilder } from '../../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
 import { OrbitAnimationController } from '../../lib/renderer/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
+import { BinaryXHR } from '../../lib/utils/binary-xhr';
 import { Geometry } from '../../lib/utils/geometry';
 import { Timing } from '../../lib/utils/timing';
 import { DemoBase } from './demo-base';
+import { PLYLoader } from '@loaders.gl/ply';
+import { parse } from '@loaders.gl/core';
 
 export class DragonInBrowserLodDemo implements DemoBase {
 
@@ -32,9 +35,25 @@ export class DragonInBrowserLodDemo implements DemoBase {
         this.orbitAnimation.animate(3000);
 
         Timing.measure();
-        const dragonLoader = new StanfordDragonLoader();
-        dragonLoader.loadDropbox().then(data => {
-            console.log(Timing.measure(), 'data loaded');
+        const url = 'https://www.dl.dropboxusercontent.com/s/9inx5f1n5sm2cp8/stanford_dragon.ply?dl=1';
+        BinaryXHR.get(url).then(buffer => {
+            return parse(buffer, PLYLoader);
+        }).then(rawData => {
+            console.log(Timing.measure(), 'raw data received');
+
+            const data: PointCloudData = {
+                positions: rawData.attributes.POSITION.value,
+                sizes: new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3)).fill(0.03),
+                normals: rawData.attributes.NORMAL.value,
+                colors: new Float32Array(rawData.attributes.COLOR_0.value).map(c => c / 255),
+            };
+            for (let i = 0; i < data.positions.length; i++) {
+                data.positions[i] *= 20.0;
+            }
+            for (let i = 1; i < data.positions.length; i += 3) {
+                data.positions[i] -= 2.5;
+            }
+            console.log(Timing.measure(), 'data preprocessed');
 
             const bb = Geometry.getBoundingBox(data.positions);
             const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
@@ -51,7 +70,6 @@ export class DragonInBrowserLodDemo implements DemoBase {
             for (let i = 0; i < treeDepth; i++) {
                 this.levels.push(i);
             }
-
         });
     }
 
