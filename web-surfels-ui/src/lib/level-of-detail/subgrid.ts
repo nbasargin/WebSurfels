@@ -1,5 +1,5 @@
-import { WeightedPointCloudData } from '../../data/point-cloud-data';
-import { BoundingCube } from '../../utils/geometry';
+import { WeightedPointCloudData } from '../data/point-cloud-data';
+import { BoundingCube } from '../utils/geometry';
 
 type SubgridOutputBuffer = {
     positions: Array<number>;
