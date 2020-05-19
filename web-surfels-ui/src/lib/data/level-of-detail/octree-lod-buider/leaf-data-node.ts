@@ -1,9 +1,9 @@
-import { PointCloudData } from '../../../point-cloud-data';
-import { UidGenerator } from '../../../../utils/uid-generator';
-import { WeightedLodNode } from '../../lod-node';
-import { Geometry } from '../../../../utils/geometry';
-import { Bitfield } from '../../../../utils/bitfield';
-import { Subgrid } from '../../subgrid';
+import { PointCloudData } from '../../point-cloud-data';
+import { UidGenerator } from '../../../utils/uid-generator';
+import { WeightedLodNode } from '../lod-node';
+import { Geometry } from '../../../utils/geometry';
+import { Bitfield } from '../../../utils/bitfield';
+import { Subgrid } from '../subgrid';
 import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
 
 /**
