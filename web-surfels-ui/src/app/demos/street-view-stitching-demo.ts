@@ -1,9 +1,9 @@
 import { vec3 } from 'gl-matrix';
 import { Subgrid } from '../../lib/data/level-of-detail/subgrid';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
+import { StreetViewLoader } from '../../lib/data/street-view/street-view-loader';
 import { Renderer } from '../../lib/renderer/renderer';
 import { StreetViewCrawler } from '../../lib/data/street-view/street-view-crawler';
-import { StreetViewLoader } from '../../lib/data/street-view/street-view-loader';
 import { BoundingCube } from '../../lib/utils/bounding-geometry';
 import { DemoBase } from './demo-base';
 
@@ -55,10 +55,11 @@ export class StreetViewStitchingDemo implements DemoBase {
             maxNonSkySplatSize: 1,
             minNonSkySplatSize: 0.2,
         };
-        const loader = new StreetViewLoader(options);
+
+        const converter = new StreetViewLoader(options);
 
         // set up camera and coordinate system based on first panorama
-        const basePanorama = await loader.loadPanorama(panoIDs[0]);
+        const basePanorama = await converter.loadPanorama(panoIDs[0]);
         const pos = basePanorama.worldPosition;
         const up = vec3.fromValues(pos.x, pos.y, pos.z);
         vec3.normalize(up, up);
@@ -67,7 +68,7 @@ export class StreetViewStitchingDemo implements DemoBase {
 
         // load others one after one (reduces cpu load when receiving)
         for (const id of panoIDs) {
-            const p = await loader.loadPanorama(id);
+            const p = await converter.loadPanorama(id);
 
             // test: reduce number of points per panorama
             if (this.reducePointNumber) {

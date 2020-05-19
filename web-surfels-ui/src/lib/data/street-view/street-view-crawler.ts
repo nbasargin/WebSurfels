@@ -1,4 +1,4 @@
-import { StreetViewLoader } from './street-view-loader';
+import { StreetViewApi } from './street-view-api';
 
 export class StreetViewCrawler {
 
@@ -13,7 +13,7 @@ export class StreetViewCrawler {
             const {id, remDepth} = queue[queuePos];
             queuePos++;
 
-            const response = await StreetViewLoader.loadDataById(id);
+            const response = await StreetViewApi.loadDataById(id);
             for (const link of response.Links) {
                 if (!ids.has(link.panoId)) {
                     ids.add(link.panoId);
