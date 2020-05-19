@@ -1,5 +1,4 @@
 import { PointCloudData, WeightedPointCloudData } from '../data/point-cloud-data';
-import { WeightedLodNode } from '../data/level-of-detail/lod-node';
 
 export type BoundingBox = { minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number };
 
@@ -29,30 +28,6 @@ export class Geometry {
             merged.normals.set(node.normals, writePos * 3);
             merged.weights.set(node.weights, writePos);
             writePos += node.positions.length / 3;
-        }
-        return merged;
-    }
-
-    public static mergeLodNodes(nodes: Array<WeightedLodNode>): WeightedPointCloudData {
-        let points = 0;
-        for (const node of nodes) {
-            points += node.data.positions.length / 3;
-        }
-        const merged = {
-            positions: new Float32Array(points * 3),
-            sizes: new Float32Array(points),
-            colors: new Float32Array(points * 3),
-            normals: new Float32Array(points * 3),
-            weights: new Float32Array(points),
-        };
-        let writePos = 0;
-        for (const node of nodes) {
-            merged.positions.set(node.data.positions, writePos * 3);
-            merged.sizes.set(node.data.sizes, writePos);
-            merged.colors.set(node.data.colors, writePos * 3);
-            merged.normals.set(node.data.normals, writePos * 3);
-            merged.weights.set(node.weights, writePos);
-            writePos += node.data.sizes.length;
         }
         return merged;
     }
