@@ -12,7 +12,7 @@ type UnloadConfig = {
     unloadThreshold: number
 }
 
-export class DynamicLodTree {
+export class DynamicLodController {
 
     readonly stats = {
         loadedNodes: 0,

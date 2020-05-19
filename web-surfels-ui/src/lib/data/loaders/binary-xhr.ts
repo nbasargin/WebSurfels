@@ -1,6 +1,9 @@
+/**
+ * Utility class to send XMLHttpRequests to get binary data.
+ */
 export class BinaryXHR {
 
-    static get(url: string) {
+    static get(url: string): Promise<ArrayBuffer> {
         return new Promise<ArrayBuffer>((resolve, reject) => {
             const req = new XMLHttpRequest();
             req.open('GET', url, true);
