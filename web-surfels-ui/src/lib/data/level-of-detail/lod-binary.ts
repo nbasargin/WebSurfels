@@ -1,5 +1,5 @@
-import { PointCloudData } from '../data/point-cloud-data';
-import { BoundingSphere } from '../utils/geometry';
+import { PointCloudData } from '../point-cloud-data';
+import { BoundingSphere } from '../../utils/geometry';
 import { LodNode } from './lod-node';
 
 export class LodBinary {

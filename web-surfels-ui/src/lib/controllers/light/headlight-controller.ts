@@ -1,6 +1,6 @@
 import { vec3 } from 'gl-matrix';
-import { Camera } from '../camera/camera';
-import { DirectionalLight } from './directional-light';
+import { Camera } from '../../renderer/camera';
+import { DirectionalLight } from '../../renderer/directional-light';
 
 export class HeadlightController {
 

@@ -1,6 +1,6 @@
-import { PointCloudData, WeightedPointCloudData } from '../../../data/point-cloud-data';
-import { Geometry } from '../../../utils/geometry';
-import { UidGenerator } from '../../../utils/uid-generator';
+import { PointCloudData, WeightedPointCloudData } from '../../../point-cloud-data';
+import { Geometry } from '../../../../utils/geometry';
+import { UidGenerator } from '../../../../utils/uid-generator';
 import { WeightedLodNode } from '../../lod-node';
 import { LeafDataNode } from './leaf-data-node';
 import { Subgrid } from '../../subgrid';

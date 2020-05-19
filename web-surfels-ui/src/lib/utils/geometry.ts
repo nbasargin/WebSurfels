@@ -1,5 +1,5 @@
 import { PointCloudData, WeightedPointCloudData } from '../data/point-cloud-data';
-import { WeightedLodNode } from '../level-of-detail/lod-node';
+import { WeightedLodNode } from '../data/level-of-detail/lod-node';
 
 export type BoundingBox = { minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number };
 

@@ -1,11 +1,11 @@
 import { FileIO } from './file-io/file-io';
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
-import { LodNode } from '../lib/level-of-detail/lod-node';
-import { LodBinary } from '../lib/level-of-detail/lod-binary';
+import { LodNode } from '../lib/data/level-of-detail/lod-node';
+import { LodBinary } from '../lib/data/level-of-detail/lod-binary';
 import { Timing } from '../lib/utils/timing';
 import { Geometry } from '../lib/utils/geometry';
-import { OctreeLodBuilder } from '../lib/level-of-detail/octree-lod-buider/octree-lod-builder';
+import { OctreeLodBuilder } from '../lib/data/level-of-detail/octree-lod-buider/octree-lod-builder';
 
 let filesWritten = 0;
 

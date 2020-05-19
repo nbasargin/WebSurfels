@@ -1,8 +1,8 @@
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
 import { LodLoader } from './lod-loader';
-import { Renderer } from '../lib/renderer/renderer';
-import { RendererNode } from '../lib/renderer/renderer-node';
-import { LodNode } from '../lib/level-of-detail/lod-node';
+import { Renderer } from '../../renderer/renderer';
+import { RendererNode } from '../../renderer/renderer-node';
+import { LodNode } from '../../data/level-of-detail/lod-node';
 
 type UnloadConfig = {
     strategy: 'never'

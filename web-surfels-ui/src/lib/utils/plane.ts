@@ -1,6 +1,6 @@
 import { vec3 } from 'gl-matrix';
 
-export class Plane2 {
+export class Plane {
 
     public nx: number;
     public ny: number;

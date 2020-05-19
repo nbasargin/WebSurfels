@@ -1,6 +1,6 @@
 import { vec3 } from 'gl-matrix';
-import { Subgrid } from '../../lib/level-of-detail/subgrid';
-import { OrbitAnimationController } from '../../lib/renderer/camera/orbit-animation-controller';
+import { Subgrid } from '../../lib/data/level-of-detail/subgrid';
+import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
 import { GSVCrawler } from '../../lib/street-view/gsv-crawler';
 import { GSVPanoramaLoader } from '../../lib/street-view/gsv-panorama-loader';

@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
-import { DynamicLodController } from '../../dynamic-lod/dynamic-lod-controller';
-import { XhrLodLoader } from '../../dynamic-lod/xhr-lod-loader';
-import { OrbitAnimationController } from '../../lib/renderer/camera/orbit-animation-controller';
+import { DynamicLodController } from '../../lib/controllers/dynamic-lod/dynamic-lod-controller';
+import { XhrLodLoader } from '../../lib/controllers/dynamic-lod/xhr-lod-loader';
+import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
 import { DemoBase } from './demo-base';
 

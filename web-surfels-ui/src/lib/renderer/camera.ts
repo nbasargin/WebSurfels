@@ -1,5 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { Plane2 } from '../../utils/plane2';
+import { Plane } from '../utils/plane';
 
 /**
  * Default coordinate system: Z up, looking along y axis, x goes to the right.
@@ -22,12 +22,12 @@ export class Camera {
     private farDist: number = 1000;
 
     private frustumPlanes = {
-        near: new Plane2(),
-        far: new Plane2(),
-        top: new Plane2(),
-        bottom: new Plane2(),
-        left: new Plane2(),
-        right: new Plane2()
+        near: new Plane(),
+        far: new Plane(),
+        top: new Plane(),
+        bottom: new Plane(),
+        left: new Plane(),
+        right: new Plane()
     };
 
     constructor() {

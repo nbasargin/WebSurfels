@@ -1,6 +1,6 @@
 import { PointCloudData } from '../data/point-cloud-data';
-import { Camera } from './camera/camera';
-import { DirectionalLight } from './light/directional-light';
+import { Camera } from './camera';
+import { DirectionalLight } from './directional-light';
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
 import { NormShader } from './shader/norm-shader';
 import { RendererNode } from './renderer-node';

@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { FirstPersonController } from '../lib/renderer/camera/first-person-controller';
-import { OrbitAnimationController } from '../lib/renderer/camera/orbit-animation-controller';
-import { HeadlightController } from '../lib/renderer/light/headlight-controller';
+import { FirstPersonController } from '../lib/controllers/camera/first-person-controller';
+import { OrbitAnimationController } from '../lib/controllers/camera/orbit-animation-controller';
+import { HeadlightController } from '../lib/controllers/light/headlight-controller';
 import { Renderer } from '../lib/renderer/renderer';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';

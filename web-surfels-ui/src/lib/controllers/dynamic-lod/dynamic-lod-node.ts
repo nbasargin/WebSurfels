@@ -1,5 +1,5 @@
-import { BoundingSphere } from '../lib/utils/geometry';
-import { RendererNode } from '../lib/renderer/renderer-node';
+import { BoundingSphere } from '../../utils/geometry';
+import { RendererNode } from '../../renderer/renderer-node';
 
 
 export enum DynamicLodNodeState {

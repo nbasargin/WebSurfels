@@ -1,4 +1,4 @@
-import { PointCloudData } from '../../../data/point-cloud-data';
+import { PointCloudData } from '../../../point-cloud-data';
 import { WeightedLodNode } from '../../lod-node';
 import { Subgrid } from '../../subgrid';
 
