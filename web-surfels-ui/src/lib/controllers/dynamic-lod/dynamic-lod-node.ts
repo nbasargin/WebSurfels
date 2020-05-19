@@ -1,6 +1,5 @@
-import { BoundingSphere } from '../../utils/geometry';
+import { BoundingSphere } from '../../utils/bounding-geometry';
 import { RendererNode } from '../../renderer/renderer-node';
-
 
 export enum DynamicLodNodeState {
     CHILDREN_NEED_TO_BE_LOADED,

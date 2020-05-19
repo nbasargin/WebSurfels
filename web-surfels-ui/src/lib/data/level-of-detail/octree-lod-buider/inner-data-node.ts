@@ -1,5 +1,5 @@
 import { PointCloudData, WeightedPointCloudData } from '../../point-cloud-data';
-import { Geometry } from '../../../utils/geometry';
+import { BoundingSphere } from '../../../utils/bounding-geometry';
 import { UidGenerator } from '../../../utils/uid-generator';
 import { WeightedLodNode } from '../lod-node';
 import { LeafDataNode } from './leaf-data-node';
@@ -67,11 +67,11 @@ export class InnerDataNode implements OctreeDataNode {
         const minZ = this.nodeInfo.centerZ - this.nodeInfo.size / 2;
         const reduced = subgrid.reduce(mergedLoD, {minX, minY, minZ, size: this.nodeInfo.size});
 
-        const boundingSphere = Geometry.getBoundingSphere(reduced.positions, reduced.sizes);
+        const boundingSphere = BoundingSphere.create(reduced.positions, reduced.sizes);
         // ensure that resulting bounding sphere contains children's bounding spheres
         // advantage: if parent is outside of frustum, children are guaranteed to be outside frustum as well
         for (const child of childLoDs) {
-            const dist = Geometry.sphereDist(boundingSphere, child.boundingSphere);
+            const dist = BoundingSphere.sphereDist(boundingSphere, child.boundingSphere);
             const minRadius = dist + child.boundingSphere.radius;
             if (boundingSphere.radius < minRadius) {
                 boundingSphere.radius = minRadius;

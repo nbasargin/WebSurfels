@@ -1,5 +1,5 @@
 import { PointCloudData } from '../point-cloud-data';
-import { DummyData } from '../dummy-data';
+import { DummyData } from '../../utils/dummy-data';
 import { LodBinary } from './lod-binary';
 import { LodNode } from './lod-node';
 

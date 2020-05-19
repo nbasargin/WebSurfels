@@ -4,7 +4,7 @@ import { parse } from '@loaders.gl/core';
 import { LodNode } from '../lib/data/level-of-detail/lod-node';
 import { LodBinary } from '../lib/data/level-of-detail/lod-binary';
 import { Timing } from '../lib/utils/timing';
-import { Geometry } from '../lib/utils/geometry';
+import { BoundingBox } from '../lib/utils/bounding-geometry';
 import { OctreeLodBuilder } from '../lib/data/level-of-detail/octree-lod-buider/octree-lod-builder';
 
 let filesWritten = 0;
@@ -44,7 +44,7 @@ async function generateLod() {
     };
     console.log(Timing.measure(), 'data pre-processing done');
 
-    const bb = Geometry.getBoundingBox(data.positions);
+    const bb = BoundingBox.create(data.positions);
     console.log(Timing.measure(), 'bounding box computed');
 
     const octree = new OctreeLodBuilder(bb, 128, 10);

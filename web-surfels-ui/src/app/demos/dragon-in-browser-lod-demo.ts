@@ -4,8 +4,8 @@ import { LodNode, WeightedLodNode } from '../../lib/data/level-of-detail/lod-nod
 import { OctreeLodBuilder } from '../../lib/data/level-of-detail/octree-lod-buider/octree-lod-builder';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
-import { BinaryXHR } from '../../lib/data/loaders/binary-xhr';
-import { Geometry } from '../../lib/utils/geometry';
+import { BinaryXHR } from '../../lib/utils/binary-xhr';
+import { BoundingBox } from '../../lib/utils/bounding-geometry';
 import { Timing } from '../../lib/utils/timing';
 import { DemoBase } from './demo-base';
 import { PLYLoader } from '@loaders.gl/ply';
@@ -55,7 +55,7 @@ export class DragonInBrowserLodDemo implements DemoBase {
             }
             console.log(Timing.measure(), 'data preprocessed');
 
-            const bb = Geometry.getBoundingBox(data.positions);
+            const bb = BoundingBox.create(data.positions);
             const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
             octree.addData(data);
             console.log(Timing.measure(), 'octree created');

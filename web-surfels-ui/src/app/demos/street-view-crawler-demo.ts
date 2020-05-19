@@ -1,4 +1,4 @@
-import { GSVCrawler } from '../../lib/street-view/gsv-crawler';
+import { GSVCrawler } from '../../lib/data/street-view/gsv-crawler';
 import { DemoBase } from './demo-base';
 
 export class StreetViewCrawlerDemo implements DemoBase {

@@ -1,7 +1,7 @@
 import { PointCloudData } from '../../point-cloud-data';
 import { UidGenerator } from '../../../utils/uid-generator';
 import { WeightedLodNode } from '../lod-node';
-import { Geometry } from '../../../utils/geometry';
+import { BoundingBox, BoundingSphere } from '../../../utils/bounding-geometry';
 import { Bitfield } from '../../../utils/bitfield';
 import { Subgrid } from '../subgrid';
 import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
@@ -95,7 +95,7 @@ export class LeafDataNode implements OctreeDataNode {
         const normals = this.normals.slice(0, this.pointCount * 3);
         const weights = new Float32Array(this.pointCount);
         weights.fill(1);
-        const boundingSphere = Geometry.getBoundingSphere(positions, sizes);
+        const boundingSphere = BoundingSphere.create(positions, sizes);
         const id = UidGenerator.genUID();
         const data: PointCloudData = {positions, sizes, colors, normals};
 

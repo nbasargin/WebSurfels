@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { PointCloudData } from '../data/point-cloud-data';
-import { BoundingSphere } from '../utils/geometry';
+import { PointCloudData } from '../point-cloud-data';
+import { BoundingSphere } from '../../utils/bounding-geometry';
 import { DepthData } from './depth-data';
 import { GSVApiResponse } from './gsv-api-response';
 import { StreetViewConverter, StreetViewConverterOptions } from './street-view-converter';

@@ -2,9 +2,9 @@ import { vec3 } from 'gl-matrix';
 import { Subgrid } from '../../lib/data/level-of-detail/subgrid';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
-import { GSVCrawler } from '../../lib/street-view/gsv-crawler';
-import { GSVPanoramaLoader } from '../../lib/street-view/gsv-panorama-loader';
-import { BoundingCube } from '../../lib/utils/geometry';
+import { GSVCrawler } from '../../lib/data/street-view/gsv-crawler';
+import { GSVPanoramaLoader } from '../../lib/data/street-view/gsv-panorama-loader';
+import { BoundingCube } from '../../lib/utils/bounding-geometry';
 import { DemoBase } from './demo-base';
 
 export type PanoramaInput = {

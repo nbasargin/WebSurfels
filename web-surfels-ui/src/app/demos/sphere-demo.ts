@@ -1,4 +1,4 @@
-import { DummyData } from '../../lib/data/dummy-data';
+import { DummyData } from '../../lib/utils/dummy-data';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
 import { DemoBase } from './demo-base';

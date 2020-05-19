@@ -1,14 +1,20 @@
-import { PointCloudData, WeightedPointCloudData } from '../data/point-cloud-data';
+export class BoundingCube {
+    minX: number;
+    minY: number;
+    minZ: number;
+    size: number;
+}
 
-export type BoundingBox = { minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number };
+export class BoundingBox {
 
-export type BoundingCube = { minX: number, minY: number, minZ: number, size: number };
+    minX: number;
+    minY: number;
+    minZ: number;
+    maxX: number;
+    maxY: number;
+    maxZ: number;
 
-export type BoundingSphere = { centerX: number, centerY: number, centerZ: number, radius: number };
-
-export class Geometry {
-
-    public static getBoundingBox(positions: Float32Array, sizes?: Float32Array): BoundingBox {
+    public static create(positions: Float32Array, sizes?: Float32Array): BoundingBox {
         if (positions.length === 0) {
             return {minX: 0, minY: 0, minZ: 0, maxX: 0, maxY: 0, maxZ: 0};
         }
@@ -29,10 +35,18 @@ export class Geometry {
 
         return {minX, minY, minZ, maxX, maxY, maxZ}
     }
+}
 
-    public static getBoundingSphere(positions: Float32Array, sizes?: Float32Array): BoundingSphere {
-        const {centerX, centerY, centerZ} = Geometry.boundingSphereCenterBox(positions, sizes);
-        const radius = Geometry.boundingSphereRadiusPerPointSize({centerX, centerY, centerZ}, positions, sizes);
+export class BoundingSphere {
+
+    centerX: number;
+    centerY: number;
+    centerZ: number;
+    radius: number;
+
+    public static create(positions: Float32Array, sizes?: Float32Array): BoundingSphere {
+        const {centerX, centerY, centerZ} = BoundingSphere.boundingSphereCenterBox(positions, sizes);
+        const radius = BoundingSphere.boundingSphereRadiusPerPointSize({centerX, centerY, centerZ}, positions, sizes);
         return {centerX, centerY, centerZ, radius};
     }
 
@@ -44,28 +58,11 @@ export class Geometry {
     }
 
     /**
-     * Bounding sphere center computation: use average of all point positions as center
-     */
-    private static boundingSphereCenterAveraged(positions: Float32Array) {
-        let centerX = 0, centerY = 0, centerZ = 0;
-        for (let i = 0; i < positions.length; i += 3) {
-            centerX += positions[i];
-            centerY += positions[i + 1];
-            centerZ += positions[i + 2];
-        }
-        const numPoints = positions.length / 3;
-        centerX /= numPoints;
-        centerY /= numPoints;
-        centerZ /= numPoints;
-        return {centerX, centerY, centerZ};
-    }
-
-    /**
      * Bounding sphere center computation: use bounding box center as sphere center
      * Usually better than average of all point positions as center.
      */
     private static boundingSphereCenterBox(positions: Float32Array, sizes?: Float32Array) {
-        const bb = Geometry.getBoundingBox(positions, sizes);
+        const bb = BoundingBox.create(positions, sizes);
         const sizeX = bb.maxX - bb.minX;
         const sizeY = bb.maxY - bb.minY;
         const sizeZ = bb.maxZ - bb.minZ;
@@ -73,30 +70,6 @@ export class Geometry {
         const centerY = sizeY / 2 + bb.minY;
         const centerZ = sizeZ / 2 + bb.minZ;
         return {centerX, centerY, centerZ};
-    }
-
-    /**
-     * Bounding sphere radius computation: (max of per point distance to center) + (max of point sizes).
-     */
-    private static boundingSphereRadiusMaxSize({centerX, centerY, centerZ}: {centerX, centerY, centerZ}, positions: Float32Array, sizes?: Float32Array) {
-        let maxSqrRadius = 0;
-        for (let i = 0; i < positions.length; i += 3) {
-            const dx = centerX - positions[i];
-            const dy = centerY - positions[i + 1];
-            const dz = centerZ - positions[i + 2];
-            const sqrRadius = dx * dx + dy * dy + dz * dz;
-            maxSqrRadius = Math.max(maxSqrRadius, sqrRadius);
-        }
-        let radius = Math.sqrt(maxSqrRadius);
-
-        if (sizes) {
-            let maxSize = 0;
-            for (let i = 0; i < sizes.length; i++) {
-                maxSize = Math.max(maxSize, sizes[i]);
-            }
-            radius += maxSize / 2;
-        }
-        return radius;
     }
 
     /**

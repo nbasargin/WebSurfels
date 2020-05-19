@@ -2,7 +2,7 @@ import { PointCloudData } from '../../point-cloud-data';
 import { WeightedLodNode } from '../lod-node';
 import { InnerDataNode } from './inner-data-node';
 import { OctreeDataNode } from './octree-data-node';
-import { BoundingBox } from '../../../utils/geometry';
+import { BoundingBox } from '../../../utils/bounding-geometry';
 import { Subgrid } from '../subgrid';
 
 /**
