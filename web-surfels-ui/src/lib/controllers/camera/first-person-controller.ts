@@ -15,6 +15,7 @@ export class FirstPersonController {
 
     moveRight(distance: number) {
         const right = vec3.cross(vec3.create(), this.camera.viewDirection, this.camera.up);
+        vec3.normalize(right, right);
         vec3.scaleAndAdd(this.camera.eye, this.camera.eye, right, distance);
         vec3.scaleAndAdd(this.camera.target, this.camera.target, right, distance);
         this.camera.setOrientation(this.camera.eye, this.camera.target, this.camera.up);
