@@ -1,4 +1,4 @@
-import { LodNode } from "../lib/level-of-detail/lod-node";
+import { LodNode } from '../lib/level-of-detail/lod-node';
 
 export interface LodLoader {
 

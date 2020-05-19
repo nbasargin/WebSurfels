@@ -1,9 +1,8 @@
-
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
 import { LodLoader } from './lod-loader';
-import { Renderer } from "../lib/renderer/renderer";
-import { RendererNode } from "../lib/renderer/renderer-node";
-import { LodNode } from "../lib/level-of-detail/lod-node";
+import { Renderer } from '../lib/renderer/renderer';
+import { RendererNode } from '../lib/renderer/renderer-node';
+import { LodNode } from '../lib/level-of-detail/lod-node';
 
 type UnloadConfig = {
     strategy: 'never'
@@ -29,7 +28,7 @@ export class DynamicLodTree {
         public renderer: Renderer,
         public loader: LodLoader,
         public sizeThreshold: number,
-        public unloadConfig: UnloadConfig = { strategy: 'nthFrame', unloadThreshold: 200, nthFrame: 100 }
+        public unloadConfig: UnloadConfig = {strategy: 'nthFrame', unloadThreshold: 200, nthFrame: 100}
     ) {
         this.loader.loadNode('root').then(rootLod => {
             this.root = this.addLodNode(rootLod);
@@ -145,7 +144,7 @@ export class DynamicLodTree {
         const rendererNode = this.renderer.addData(node.data);
         this.stats.loadedNodes++;
         this.stats.loadedPoints += node.data.positions.length / 3;
-        return  {
+        return {
             id: node.id,
             boundingSphere: node.boundingSphere,
             rendererNode: rendererNode,
