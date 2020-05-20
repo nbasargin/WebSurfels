@@ -229,7 +229,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.nodesDrawn = this.demos.castle.dynamicLod.stats.renderedNodes;
 
         } else if (this.demos.streetView) {
-            this.demos.streetView.controller.render();
+            const stats = this.demos.streetView.controller.render();
+            this.pointsDrawn = stats.pointsDrawn;
+            this.nodesDrawn = stats.nodesDrawn;
 
         } else {
             const stats = this.renderer.render(this.renderer.nodes);

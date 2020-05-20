@@ -23,7 +23,7 @@ export class DynamicStreetViewDemo implements DemoBase {
 
         const loader = new StreetViewLoader({
             skyDistance: -1,
-            maxNonSkySplatSize: 1,
+            maxNonSkySplatSize: 2,
             minNonSkySplatSize: 0.2,
         });
         this.controller = new DynamicStreetViewController(renderer, loader, 30, 's6A9P5A3iWvqNscixSRPsw');

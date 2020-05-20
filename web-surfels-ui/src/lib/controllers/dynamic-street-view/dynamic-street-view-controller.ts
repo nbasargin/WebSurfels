@@ -10,7 +10,7 @@ import { DynamicStreetViewNode } from './dynamic-street-view-node';
 export class DynamicStreetViewController {
 
     maxConcurrentApiRequests = 3;
-    minVisiblePanoramas = 10;
+    minVisiblePanoramas = 100;
     maxLoadedPanoramas = 1000;
 
     private requested: Set<string> = new Set();
@@ -181,7 +181,7 @@ export class DynamicStreetViewController {
     // Each Frame
     //
 
-    render() {
+    render(): {nodesDrawn: number, pointsDrawn: number} {
         const renderList: Array<RendererNode> = [];
         const cam = this.renderer.camera.eye;
         let visiblePanoramas = 0;
@@ -231,7 +231,7 @@ export class DynamicStreetViewController {
         this.visiblePanoramas = visiblePanoramas;
 
         // render
-        this.renderer.render(renderList);
+        const stats = this.renderer.render(renderList);
 
         // send loading requests
         for (const id of this.requested) {
@@ -242,6 +242,8 @@ export class DynamicStreetViewController {
                 break;
             }
         }
+
+        return stats;
     }
 
 }
