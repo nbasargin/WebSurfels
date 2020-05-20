@@ -7,11 +7,9 @@ import { DynamicStreetViewNode } from './dynamic-street-view-node';
 
 export class DynamicStreetViewController {
 
-    private toBeLoaded: Set<string> = new Set();
+    private requested: Set<string> = new Set();
     private loading: Set<string> = new Set();
 
-    // loaded data, waiting for overlap reduction and lod construction
-    private loadedWaitingForNeighbors: Map<string, StreetViewPanorama> = new Map();
     private streetViewNodes: Map<string, DynamicStreetViewNode> = new Map();
 
     // tracks centers of all panoramas (in object space) ever loaded and processed
@@ -46,15 +44,15 @@ export class DynamicStreetViewController {
      * @param id
      */
     private requestPanoramaLoading(id: string) {
-        if (this.toBeLoaded.has(id) || this.loading.has(id) || this.loadedWaitingForNeighbors.has(id) || this.streetViewNodes.has(id)) {
+        if (this.requested.has(id) || this.loading.has(id) || this.streetViewNodes.has(id)) {
             return;
         }
-        this.toBeLoaded.add(id);
+        this.requested.add(id);
     }
 
     private startPanoramaLoading(id: string) {
-        this.toBeLoaded.delete(id);
-        if (this.loading.has(id) || this.loadedWaitingForNeighbors.has(id) || this.streetViewNodes.has(id)) {
+        this.requested.delete(id);
+        if (this.loading.has(id) || this.streetViewNodes.has(id)) {
             return;
         }
         console.log('!! start loading', id);
@@ -85,12 +83,54 @@ export class DynamicStreetViewController {
             positions[i + 1] += centerPos.y;
             positions[i + 2] += centerPos.z;
         }
-        pano.boundingSphere.centerX = centerPos.x;
-        pano.boundingSphere.centerY = centerPos.y;
-        pano.boundingSphere.centerZ = centerPos.z;
 
-        // place into waiting for neighbors
-        this.loadedWaitingForNeighbors.set(pano.id, pano);
+        console.log('!! complete loading', pano.id);
+        this.streetViewNodes.set(pano.id, {
+            id: pano.id,
+            state: 'waitingForNeighbors',
+            center: centerPos,
+            links: pano.links,
+            data: pano.data,
+        });
+    }
+
+    /**
+     * Process panorama only when all neighbors are available.
+     * Processing includes:
+     *  - overlap removal (Voronoi like diagram)
+     *  - LOD generation
+     *  - creation of corresponding renderer nodes (data on GPU)
+     *  - removal of the original data from the CPU
+     * @param node
+     */
+    private processWaitingNode(node: DynamicStreetViewNode) {
+        if (node.state !== 'waitingForNeighbors') {
+            return;
+        }
+        for (const link of node.links) {
+            if (!this.panoCenters.has(link)) {
+                return; // some centers are missing, wait until they are loaded
+            }
+        }
+
+        // this panorama has all links -> do overlap reduction, lod etc.
+        // todo all optimizations
+        // for now: simply put to the GPU
+        const newNode: DynamicStreetViewNode = {
+            id: node.id,
+            state: 'rendering',
+            links: node.links,
+            center: node.center,
+            lod: {
+                original: {
+                    rendererNode: this.renderer.addData(node.data),
+                    boundingSphere: null as any
+                },
+                // todo other lods and bounding spheres
+            } as any,
+        };
+        this.streetViewNodes.set(node.id, newNode);
+
     }
 
     //
@@ -98,93 +138,61 @@ export class DynamicStreetViewController {
     //
 
     render() {
-        const toRemove: Array<string> = [];
         const renderList: Array<RendererNode> = [];
         const cam = this.renderer.camera.eye;
 
         // iterate over all loaded panoramas
-        for (const pano of this.streetViewNodes.values()) {
-            // const pos = pano.worldPosition;
-            // const dist = Math.sqrt((cam[0] - pos.x) ** 2 + (cam[1] - pos.y) ** 2 + (cam[2] - pos.z) ** 2);
+        for (const node of this.streetViewNodes.values()) {
+            const pos = node.center;
+            const dist = Math.sqrt((cam[0] - pos.x) ** 2 + (cam[1] - pos.y) ** 2 + (cam[2] - pos.z) ** 2);
 
-            // determine appropriate lod level based on qualityDist
-            // if (dist < this.qualityDist) {
-            // original quality
-            const node = pano.lod.original;
-            const s = node.boundingSphere;
-            if (this.renderer.camera.isSphereInFrustum(s.centerX, s.centerY, s.centerY, s.radius)) {
-                renderList.push(node.rendererNode);
+            // Appropriate LOD level is based on qualityDist:
+            //  0 * qualityDist to 1 * qualityDist  ->  original
+            //  1 * qualityDist to 2 * qualityDist  ->  high
+            //  2 * qualityDist to 4 * qualityDist  ->  medium
+            //  4 * qualityDist to 8 * qualityDist  ->  medium
+            //  8 * qualityDist or higher           ->  unload
+
+            if (dist > 8 * this.qualityDist) {
+                console.log('!! removing ', node.id);
+                this.streetViewNodes.delete(node.id);
+                continue;
             }
-            //}
-            // todo other qualities
 
-            // if node too far away (lod below low), remove it from renderer
-            // todo update to remove for nodes far
+            if (dist < 4 * this.qualityDist) {
+                // load missing links
+                for (const link of node.links) {
+                    this.requestPanoramaLoading(link);
+                }
+            }
 
-            // else: request loading of missing neighbors if lod level is higher than low
+            if (node.state === 'rendering') {
+
+                // todo select quality
+                const rendererNode = node.lod.original;
+                // todo frustum culling
+                //const s = rendererNode.boundingSphere;
+                //if (this.renderer.camera.isSphereInFrustum(s.centerX, s.centerY, s.centerY, s.radius)) {
+                    renderList.push(rendererNode.rendererNode);
+                //}
+
+
+            } else if (node.state === 'waitingForNeighbors') {
+                this.processWaitingNode(node);
+            }
+
         }
 
         // render
         this.renderer.render(renderList);
 
-        this.updateLoadingRequests();
-        this.updateWaitingPanoramas();
-    }
-
-    private updateLoadingRequests() {
-        for (const id of this.toBeLoaded) {
+        // send loading requests
+        for (const id of this.requested) {
             if (this.loading.size < 10) {
                 this.startPanoramaLoading(id);
             } else {
                 break;
             }
-        }
-    }
-
-    /**
-     * Iterate over all waiting panoramas, process those with neighbors available.
-     * Processing panoramas includes:
-     *  - overlap removal (Voronoi like diagram)
-     *  - LOD generation
-     *  - creation of corresponding renderer nodes (data on GPU)
-     *  - removal of the original data from the CPU
-     */
-    private updateWaitingPanoramas() {
-
-        for (const pano of this.loadedWaitingForNeighbors.values()) {
-            let allLinksAvailable = true;
-            for (const link of pano.links) {
-                if (!this.panoCenters.has(link)) {
-                    // todo: PROBLEM this will never stop loading new nodes, regardless of their distance to the camera
-                    // need to do requests based on position
-
-                    this.requestPanoramaLoading(link);
-                    allLinksAvailable = false;
-                }
-            }
-
-            if (!allLinksAvailable) {
-                continue;
-            }
-
-            // this panorama has all links -> do overlap reduction, lod etc.
-            // todo all optimizations
-            // for now: simply put to the GPU
-            const dynamicNode: DynamicStreetViewNode = {
-                id: pano.id,
-                links: pano.links,
-                center: this.panoCenters.get(pano.id)!,
-                lod: {
-                    original: {
-                        rendererNode: this.renderer.addData(pano.data),
-                        boundingSphere: null as any
-                    },
-                    // todo other lods and bounding spheres
-                } as any,
-            };
-
-            this.streetViewNodes.set(pano.id, dynamicNode);
-            this.loadedWaitingForNeighbors.delete(pano.id);
         }
     }
 
