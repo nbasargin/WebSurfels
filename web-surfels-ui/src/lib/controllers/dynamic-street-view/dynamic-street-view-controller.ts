@@ -4,6 +4,7 @@ import { StreetViewLoader } from '../../data/street-view/street-view-loader';
 import { StreetViewPanorama } from '../../data/street-view/street-view-panorama';
 import { Renderer } from '../../renderer/renderer';
 import { RendererNode } from '../../renderer/renderer-node';
+import { BoundingSphere } from '../../utils/bounding-geometry';
 import { Point3d } from '../../utils/point3d';
 import { DynamicStreetViewNode } from './dynamic-street-view-node';
 
@@ -134,7 +135,7 @@ export class DynamicStreetViewController {
             lod: {
                 original: {
                     rendererNode: this.renderer.addData(data),
-                    boundingSphere: null as any
+                    boundingSphere: BoundingSphere.create(data.positions, data.sizes)
                 },
                 // todo other lods and bounding spheres
             } as any,
@@ -216,11 +217,10 @@ export class DynamicStreetViewController {
 
                 // todo select quality
                 const rendererNode = node.lod.original;
-                // todo frustum culling
-                //const s = rendererNode.boundingSphere;
-                //if (this.renderer.camera.isSphereInFrustum(s.centerX, s.centerY, s.centerY, s.radius)) {
+                const s = rendererNode.boundingSphere;
+                if (this.renderer.camera.isSphereInFrustum(s.centerX, s.centerY, s.centerY, s.radius)) {
                     renderList.push(rendererNode.rendererNode);
-                //}
+                }
 
 
             } else if (node.state === 'waitingForNeighbors') {
