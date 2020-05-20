@@ -7,10 +7,14 @@ import { DynamicStreetViewNode } from './dynamic-street-view-node';
 
 export class DynamicStreetViewController {
 
+    maxConcurrentApiRequests = 3;
+    minVisiblePanoramas = 10;
+
     private requested: Set<string> = new Set();
     private loading: Set<string> = new Set();
 
     private streetViewNodes: Map<string, DynamicStreetViewNode> = new Map();
+    private visiblePanoramas: number = 0; // keep track how many potentially visible panoramas there are
 
     // tracks centers of all panoramas (in object space) ever loaded and processed
     private panoCenters: Map<string, {x: number, y: number, z: number}> = new Map();
@@ -140,6 +144,7 @@ export class DynamicStreetViewController {
     render() {
         const renderList: Array<RendererNode> = [];
         const cam = this.renderer.camera.eye;
+        let visiblePanoramas = 0;
 
         // iterate over all loaded panoramas
         for (const node of this.streetViewNodes.values()) {
@@ -153,7 +158,7 @@ export class DynamicStreetViewController {
             //  4 * qualityDist to 8 * qualityDist  ->  medium
             //  8 * qualityDist or higher           ->  unload
 
-            if (dist > 8 * this.qualityDist) {
+            if (dist > 8 * this.qualityDist && this.visiblePanoramas > this.minVisiblePanoramas) {
                 console.log('!! removing ', node.id);
                 this.streetViewNodes.delete(node.id);
                 continue;
@@ -167,6 +172,7 @@ export class DynamicStreetViewController {
             }
 
             if (node.state === 'rendering') {
+                visiblePanoramas++;
 
                 // todo select quality
                 const rendererNode = node.lod.original;
@@ -182,13 +188,14 @@ export class DynamicStreetViewController {
             }
 
         }
+        this.visiblePanoramas = visiblePanoramas;
 
         // render
         this.renderer.render(renderList);
 
         // send loading requests
         for (const id of this.requested) {
-            if (this.loading.size < 10) {
+            if (this.loading.size < this.maxConcurrentApiRequests) {
                 this.startPanoramaLoading(id);
             } else {
                 break;
