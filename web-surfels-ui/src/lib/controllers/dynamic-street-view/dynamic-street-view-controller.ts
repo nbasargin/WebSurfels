@@ -218,7 +218,7 @@ export class DynamicStreetViewController {
                 // todo select quality
                 const rendererNode = node.lod.original;
                 const s = rendererNode.boundingSphere;
-                if (this.renderer.camera.isSphereInFrustum(s.centerX, s.centerY, s.centerY, s.radius)) {
+                if (this.renderer.camera.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius)) {
                     renderList.push(rendererNode.rendererNode);
                 }
 
