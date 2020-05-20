@@ -6,6 +6,7 @@ import { Renderer } from '../lib/renderer/renderer';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
 import { DynamicLodLoadingDemo } from './demos/dynamic-lod-loading-demo';
+import { DynamicStreetViewDemo } from './demos/dynamic-street-view-demo';
 import { SphereDemo } from './demos/sphere-demo';
 import { StreetViewCrawlerDemo } from './demos/street-view-crawler-demo';
 import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
@@ -128,6 +129,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         crawler?: StreetViewCrawlerDemo,
         sphere?: SphereDemo,
         castle?: DynamicLodLoadingDemo,
+        streetView?: DynamicStreetViewDemo,
     };
 
     ngAfterViewInit(): void {
@@ -142,9 +144,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // select ONE here
                 // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
-                stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
+                // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
                 // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
+                streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
             };
 
             for (const demo of Object.values(this.demos)) {
@@ -225,6 +228,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.demos.castle.dynamicLod.render();
             this.pointsDrawn = this.demos.castle.dynamicLod.stats.renderedPoints;
             this.nodesDrawn = this.demos.castle.dynamicLod.stats.renderedNodes;
+
+        } else if (this.demos.streetView) {
+            this.demos.streetView.controller.render();
 
         } else {
             const stats = this.renderer.render(this.renderer.nodes);
