@@ -11,7 +11,7 @@ export interface DynamicStreetViewNode {
 
     id: string;
     links: Array<string>; // ids of neighboring panoramas
-    worldPosition: { x: number, y: number, z: number };
+    center: { x: number, y: number, z: number }; // in object space (not in world coords!)
     lod: {
         original: PanoramaLOD,
         high: PanoramaLOD,
