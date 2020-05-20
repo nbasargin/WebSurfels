@@ -1,8 +1,10 @@
 import { vec3 } from 'gl-matrix';
+import { PointCloudData } from '../../data/point-cloud-data';
 import { StreetViewLoader } from '../../data/street-view/street-view-loader';
 import { StreetViewPanorama } from '../../data/street-view/street-view-panorama';
 import { Renderer } from '../../renderer/renderer';
 import { RendererNode } from '../../renderer/renderer-node';
+import { Point3d } from '../../utils/point3d';
 import { DynamicStreetViewNode } from './dynamic-street-view-node';
 
 export class DynamicStreetViewController {
@@ -18,8 +20,8 @@ export class DynamicStreetViewController {
     private visiblePanoramas: number = 0; // keep track how many potentially visible panoramas there are
 
     // tracks centers of all panoramas (in object space) ever loaded and processed
-    private panoCenters: Map<string, {x: number, y: number, z: number}> = new Map();
-    private basePanoWorldPosition: {x: number, y: number, z: number};
+    private panoCenters: Map<string, Point3d> = new Map();
+    private basePanoWorldPosition: Point3d;
 
     constructor(
         public renderer: Renderer,
@@ -60,7 +62,7 @@ export class DynamicStreetViewController {
         if (this.loading.has(id) || this.streetViewNodes.has(id)) {
             return;
         }
-        console.log('!! start loading', id);
+        // console.log('!! start loading', id);
         this.loading.add(id);
         this.loader.loadPanorama(id).then(pano => {
             this.loading.delete(pano.id);
@@ -89,7 +91,7 @@ export class DynamicStreetViewController {
             positions[i + 2] += centerPos.z;
         }
 
-        console.log('!! complete loading', pano.id);
+        // console.log('!! complete loading', pano.id);
         this.streetViewNodes.set(pano.id, {
             id: pano.id,
             state: 'waitingForNeighbors',
@@ -118,7 +120,10 @@ export class DynamicStreetViewController {
             }
         }
 
-        // this panorama has all links -> do overlap reduction, lod etc.
+        // overlap reduction
+        const centers = node.links.map(link => this.panoCenters.get(link)!);
+        const data = this.reduceOverlaps(node.data, node.center, centers);
+
         // todo all optimizations
         // for now: simply put to the GPU
         const newNode: DynamicStreetViewNode = {
@@ -128,7 +133,7 @@ export class DynamicStreetViewController {
             center: node.center,
             lod: {
                 original: {
-                    rendererNode: this.renderer.addData(node.data),
+                    rendererNode: this.renderer.addData(data),
                     boundingSphere: null as any
                 },
                 // todo other lods and bounding spheres
@@ -136,6 +141,40 @@ export class DynamicStreetViewController {
         };
         this.streetViewNodes.set(node.id, newNode);
 
+    }
+
+    private reduceOverlaps(data: PointCloudData, center: Point3d, centers: Array<Point3d>): PointCloudData {
+        const filteredPositions: Array<number> = [];
+        const filteredSizes: Array<number> = [];
+        const filteredColors: Array<number> = [];
+        const filteredNormals: Array<number> = [];
+        const p = data.positions;
+
+        // for every point, check if the (squared) distance to panorama center is closer than to all other centers
+        for (let i = 0; i < p.length; i += 3) {
+            const d = (center.x - p[i]) ** 2 + (center.y - p[i+1]) ** 2 + (center.z - p[i+2]) ** 2;
+            let skip = false;
+            for (const c of centers) {
+                const d2 = (c.x - p[i]) ** 2 + (c.y - p[i+1]) ** 2 + (c.z - p[i+2]) ** 2;
+                if (d2 < d) {
+                    skip = true;
+                    break;
+                }
+            }
+            if (!skip) {
+                filteredPositions.push(p[i], p[i+1], p[i+2]);
+                filteredSizes.push(data.sizes[i/3]);
+                filteredColors.push(data.colors[i], data.colors[i+1], data.colors[i+2]);
+                filteredNormals.push(data.normals[i], data.normals[i+1], data.normals[i+2]);
+            }
+        }
+
+        return {
+            positions: new Float32Array(filteredPositions),
+            sizes: new Float32Array(filteredSizes),
+            colors: new Float32Array(filteredColors),
+            normals: new Float32Array(filteredNormals),
+        }
     }
 
     //
@@ -160,7 +199,7 @@ export class DynamicStreetViewController {
             //  8 * qualityDist or higher           ->  unload
 
             if (dist > 8 * this.qualityDist && this.visiblePanoramas > this.minVisiblePanoramas) {
-                console.log('!! removing ', node.id);
+                // console.log('!! removing ', node.id);
                 this.streetViewNodes.delete(node.id);
                 continue;
             }

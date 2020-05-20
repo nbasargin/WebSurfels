@@ -102,8 +102,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     fps = 0;
     pointsDrawn: number = 0;
     nodesDrawn: number = 0;
-    animate = true;
-    splattingEnabled = true;
+    animate = false;
     sizeScale = 1;
 
     movementSpeed = 10;
