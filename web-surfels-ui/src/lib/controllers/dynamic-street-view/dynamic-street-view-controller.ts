@@ -9,6 +9,7 @@ export class DynamicStreetViewController {
 
     maxConcurrentApiRequests = 3;
     minVisiblePanoramas = 10;
+    maxLoadedPanoramas = 1000;
 
     private requested: Set<string> = new Set();
     private loading: Set<string> = new Set();
@@ -48,7 +49,7 @@ export class DynamicStreetViewController {
      * @param id
      */
     private requestPanoramaLoading(id: string) {
-        if (this.requested.has(id) || this.loading.has(id) || this.streetViewNodes.has(id)) {
+        if (this.loading.has(id) || this.streetViewNodes.has(id)) {
             return;
         }
         this.requested.add(id);
@@ -195,7 +196,8 @@ export class DynamicStreetViewController {
 
         // send loading requests
         for (const id of this.requested) {
-            if (this.loading.size < this.maxConcurrentApiRequests) {
+            if (this.loading.size < this.maxConcurrentApiRequests
+                && this.requested.size + this.loading.size + this.streetViewNodes.size < this.maxLoadedPanoramas) {
                 this.startPanoramaLoading(id);
             } else {
                 break;
