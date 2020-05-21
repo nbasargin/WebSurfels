@@ -1,12 +1,13 @@
 import { vec3 } from 'gl-matrix';
-import { PointCloudData } from '../../data/point-cloud-data';
+import { Subgrid } from '../../data/level-of-detail/subgrid';
+import { PointCloudData, WeightedPointCloudData } from '../../data/point-cloud-data';
 import { StreetViewLoader } from '../../data/street-view/street-view-loader';
 import { StreetViewPanorama } from '../../data/street-view/street-view-panorama';
 import { Renderer } from '../../renderer/renderer';
 import { RendererNode } from '../../renderer/renderer-node';
-import { BoundingSphere } from '../../utils/bounding-geometry';
+import { BoundingBox, BoundingCube, BoundingSphere } from '../../utils/bounding-geometry';
 import { Point3d } from '../../utils/point3d';
-import { DynamicStreetViewNode } from './dynamic-street-view-node';
+import { DynamicStreetViewNode, PanoramaLOD } from './dynamic-street-view-node';
 
 export class DynamicStreetViewController {
 
@@ -23,6 +24,13 @@ export class DynamicStreetViewController {
     // tracks centers of all panoramas (in object space) ever loaded and processed
     private panoCenters: Map<string, Point3d> = new Map();
     private basePanoWorldPosition: Point3d;
+
+    // lod construction
+    private subgrid128 = new Subgrid(128);
+    private subgrid64 = new Subgrid(64);
+    private subgrid32 = new Subgrid(32);
+    // todo refactor subgrid to allow input without weights
+    private oneWeights = new Float32Array(512 * 256).fill(1);
 
     constructor(
         public renderer: Renderer,
@@ -125,8 +133,18 @@ export class DynamicStreetViewController {
         const centers = node.links.map(link => this.panoCenters.get(link)!);
         const data = this.reduceOverlaps(node.data, node.center, centers);
 
-        // todo all optimizations
-        // for now: simply put to the GPU
+        // LOD
+        const bb = BoundingBox.create(data.positions, data.sizes);
+        const bc = BoundingCube.fromBox(bb);
+        const weightedData: WeightedPointCloudData = {
+            ...data,
+            weights: this.oneWeights
+        };
+        const data128 = this.subgrid128.reduce(weightedData, bc);
+        const data64 = this.subgrid64.reduce(weightedData, bc);
+        const data32 = this.subgrid32.reduce(weightedData, bc);
+
+
         const newNode: DynamicStreetViewNode = {
             id: node.id,
             state: 'rendering',
@@ -137,8 +155,19 @@ export class DynamicStreetViewController {
                     rendererNode: this.renderer.addData(data),
                     boundingSphere: BoundingSphere.create(data.positions, data.sizes)
                 },
-                // todo other lods and bounding spheres
-            } as any,
+                high: {
+                    rendererNode: this.renderer.addData(data128),
+                    boundingSphere: BoundingSphere.create(data128.positions, data128.sizes)
+                },
+                medium: {
+                    rendererNode: this.renderer.addData(data64),
+                    boundingSphere: BoundingSphere.create(data64.positions, data64.sizes)
+                },
+                low: {
+                    rendererNode: this.renderer.addData(data32),
+                    boundingSphere: BoundingSphere.create(data32.positions, data32.sizes)
+                }
+            },
         };
         this.streetViewNodes.set(node.id, newNode);
 
@@ -178,6 +207,16 @@ export class DynamicStreetViewController {
         }
     }
 
+    private unloadNode(node: DynamicStreetViewNode) {
+        if (node.state === 'rendering') {
+            this.renderer.removeNode(node.lod.original.rendererNode);
+            this.renderer.removeNode(node.lod.high.rendererNode);
+            this.renderer.removeNode(node.lod.medium.rendererNode);
+            this.renderer.removeNode(node.lod.low.rendererNode);
+        }
+        this.streetViewNodes.delete(node.id);
+    }
+
     //
     // Each Frame
     //
@@ -201,7 +240,7 @@ export class DynamicStreetViewController {
 
             if (dist > 8 * this.qualityDist && this.visiblePanoramas > this.minVisiblePanoramas) {
                 // console.log('!! removing ', node.id);
-                this.streetViewNodes.delete(node.id);
+                this.unloadNode(node);
                 continue;
             }
 
@@ -215,13 +254,21 @@ export class DynamicStreetViewController {
             if (node.state === 'rendering') {
                 visiblePanoramas++;
 
-                // todo select quality
-                const rendererNode = node.lod.original;
+                let rendererNode: PanoramaLOD;
+                if (dist < this.qualityDist) {
+                    rendererNode = node.lod.original;
+                } else if (dist < 2 * this.qualityDist) {
+                    rendererNode = node.lod.high;
+                } else if (dist < 4 * this.qualityDist) {
+                    rendererNode = node.lod.medium;
+                } else {
+                    rendererNode = node.lod.low;
+                }
+
                 const s = rendererNode.boundingSphere;
                 if (this.renderer.camera.isSphereInFrustum(s.centerX, s.centerY, s.centerZ, s.radius)) {
                     renderList.push(rendererNode.rendererNode);
                 }
-
 
             } else if (node.state === 'waitingForNeighbors') {
                 this.processWaitingNode(node);

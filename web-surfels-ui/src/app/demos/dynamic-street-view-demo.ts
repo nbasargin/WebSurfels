@@ -25,7 +25,7 @@ export class DynamicStreetViewDemo implements DemoBase {
             maxSplatSize: 1.5,
             minSplatSize: 0.4,
         });
-        this.controller = new DynamicStreetViewController(renderer, loader, 30, 's6A9P5A3iWvqNscixSRPsw');
+        this.controller = new DynamicStreetViewController(renderer, loader, 100, 's6A9P5A3iWvqNscixSRPsw');
     }
 
 }
