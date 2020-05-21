@@ -137,7 +137,6 @@ export class StreetViewLoader {
         depthData: StreetViewDepthData,
         output: PointCloudOutputOutputBuffer
     ) {
-        const splatScale = 0.02;
         const w = depthData.header.width;
         const h = depthData.header.height;
         const planeID = depthData.indices[y * w + x];
@@ -146,16 +145,10 @@ export class StreetViewLoader {
             return; // point does not belong to a plane
         }
 
-        const {px, py, pz} = this.getPointDirection(x, y, w, h);
+        const direction = this.getPointDirection(x, y, w, h);
+        const plane = depthData.planes[planeID];
+        const {t, size} = this.getPointDistanceAndSize(plane, direction);
 
-        let plane: { normal: [number, number, number], distance: number } = depthData.planes[planeID];
-        let t = plane.distance / (px * plane.normal[0] + py * plane.normal[1] + pz * plane.normal[2]);
-
-        // size correction based on orientation:
-        // 1 / cos (angle between normal and ray to point) = 1 / dot product (normal, ray to point)
-        const orientationCorrection = 1 / Math.abs(px * plane.normal[0] + py * plane.normal[1] + pz * plane.normal[2]);
-        const distanceCorrection = Math.abs(t) + 0.001;
-        const size = splatScale * distanceCorrection * orientationCorrection;
         if (size > this.options.maxNonSkySplatSize) {
             return; // discard points that are too large
         }
@@ -182,18 +175,17 @@ export class StreetViewLoader {
             }
         }
 
-
         // color: map x and y to pixel position (depends on effective image size)
         const {r, g, b} = this.getPointColor(x, y, w, h, imageWidth, imageHeight, pixels);
 
-        output.positions.push(px * t, py * t, pz * t);
+        output.positions.push(direction.px * t, direction.py * t, direction.pz * t);
         output.sizes.push(size);
         output.colors.push(r, g, b);
         output.normals.push(-plane.normal[0], -plane.normal[1], -plane.normal[2]);
 
     }
 
-    private getPointDirection(x: number, y: number, w: number, h: number) {
+    private getPointDirection(x: number, y: number, w: number, h: number): {px: number, py: number, pz: number} {
         const phi = (w - x - 1) / (w - 1) * 2 * Math.PI + Math.PI / 2;
         const theta = (h - y - 1) / (h - 1) * Math.PI;
 
@@ -214,6 +206,22 @@ export class StreetViewLoader {
         const b = pixels[startIndex + 2] / 255;
 
         return {r, g, b};
+    }
+
+    getPointDistanceAndSize(plane: { normal: [number, number, number], distance: number }, direction: {px: number, py: number, pz: number}) {
+        const splatScale = 0.02;
+        const {px, py, pz} = direction;
+        const normalDotDirection = px * plane.normal[0] + py * plane.normal[1] + pz * plane.normal[2];
+
+        const t = plane.distance / normalDotDirection;
+
+        // size correction based on orientation:
+        // 1 / cos (angle between normal and ray to point) = 1 / dot product (normal, ray to point)
+        const orientationCorrection = 1 / Math.abs(normalDotDirection);
+        const distanceCorrection = Math.abs(t) + 0.001;
+        const size = splatScale * distanceCorrection * orientationCorrection;
+
+        return {t, size};
     }
 
     private lngLatToPosition(latitude: number, longitude: number) {
