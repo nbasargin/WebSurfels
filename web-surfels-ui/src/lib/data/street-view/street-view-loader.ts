@@ -145,38 +145,51 @@ export class StreetViewLoader {
             return; // point does not belong to a plane
         }
 
-        const direction = this.getPointDirection(x, y, w, h);
+        let direction = this.getPointDirection(x, y, w, h);
         const plane = depthData.planes[planeID];
-        const {t, size} = this.getPointDistanceAndSize(plane, direction);
+        let {t, size} = this.getPointDistanceAndSize(plane, direction);
 
         if (size > this.options.maxNonSkySplatSize) {
             return; // discard points that are too large
         }
 
+        // color: map x and y to pixel position (depends on effective image size)
+        let {r, g, b} = this.getPointColor(x, y, w, h, imageWidth, imageHeight, pixels);
+
         if (size < this.options.minNonSkySplatSize) {
             // try merging points
-            let maxSize = Math.ceil(this.options.minNonSkySplatSize / size);
-            maxSize = Math.min(maxSize, h - y);
-            maxSize = Math.min(maxSize, w - x);
-            for (let dx = 0; dx < maxSize; dx++) {
-                for (let dy = 0; dy < maxSize; dy++) {
+            let boxSize = Math.ceil(this.options.minNonSkySplatSize / size);
+            boxSize = Math.min(boxSize, h - y);
+            boxSize = Math.min(boxSize, w - x);
+            for (let dx = 0; dx < boxSize; dx++) {
+                for (let dy = 0; dy < boxSize; dy++) {
                     if (depthData.indices[(y+dy) * w + (x+dx)] !== planeID) {
                         // point within the box has a different plane -> reduce box
-                        maxSize = Math.min(maxSize, dx);
-                        maxSize = Math.min(maxSize, dy);
+                        boxSize = Math.min(boxSize, dx);
+                        boxSize = Math.min(boxSize, dy);
                     }
                 }
             }
-            // max size of the box now known
-            if (maxSize > 1) {
-                // merge all points within the box into a single point
 
+            if (boxSize > 1) { // merge all points within the box into a single point
+                // -> direction is the center of the box
+                // -> position results from it
+                // -> size scaled by box size
+                direction = this.getPointDirection(x + (boxSize - 1) / 2, y + (boxSize - 1) / 2, w, h);
+                const tAndSize = this.getPointDistanceAndSize(plane, direction);
+                t = tAndSize.t;
+                size = tAndSize.size * boxSize;
+
+                // todo color average
+                for (let dx = 0; dx < boxSize; dx++) {
+                    for (let dy = 0; dy < boxSize; dy++) {
+                        // mark precessed point as sky -> will not get created in further iterations
+                        depthData.indices[(y+dy) * w + (x+dx)] = 0;
+                    }
+                }
 
             }
         }
-
-        // color: map x and y to pixel position (depends on effective image size)
-        const {r, g, b} = this.getPointColor(x, y, w, h, imageWidth, imageHeight, pixels);
 
         output.positions.push(direction.px * t, direction.py * t, direction.pz * t);
         output.sizes.push(size);
