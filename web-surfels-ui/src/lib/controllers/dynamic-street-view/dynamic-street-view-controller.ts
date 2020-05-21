@@ -13,7 +13,7 @@ export class DynamicStreetViewController {
 
     maxConcurrentApiRequests = 3;
     minVisiblePanoramas = 100;
-    maxLoadedPanoramas = 1000;
+    maxLoadedPanoramas = 3000;
 
     private requested: Set<string> = new Set();
     private loading: Set<string> = new Set();
