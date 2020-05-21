@@ -3,6 +3,20 @@ export class BoundingCube {
     minY: number;
     minZ: number;
     size: number;
+
+    public static fromBox(bb: BoundingBox): BoundingCube {
+        const size = Math.max(bb.maxX - bb.minX, bb.maxY - bb.minY, bb.maxZ - bb.minZ);
+        const centerX = bb.minX + (bb.maxX - bb.minX) / 2;
+        const centerY = bb.minY + (bb.maxY - bb.minY) / 2;
+        const centerZ = bb.minZ + (bb.maxZ - bb.minZ) / 2;
+
+        return {
+            minX: centerX - size / 2,
+            minY: centerY - size / 2,
+            minZ: centerZ - size / 2,
+            size: size
+        }
+    }
 }
 
 export class BoundingBox {
