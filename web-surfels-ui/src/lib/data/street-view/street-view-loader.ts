@@ -96,7 +96,7 @@ export class StreetViewLoader {
         const splatScale = 0.02;
 
         this.ctx.drawImage(colorData, 0, 0);
-        const pixels = this.ctx.getImageData(0, 0, 512, 256).data;
+        const pixels: Uint8ClampedArray = this.ctx.getImageData(0, 0, 512, 256).data;
 
         const positions: Array<number> = [];
         const sizes: Array<number> = [];
@@ -114,12 +114,7 @@ export class StreetViewLoader {
                     continue; // point does not belong to a plane & sky should be discarded
                 }
 
-                const phi = (w - x - 1) / (w - 1) * 2 * Math.PI + Math.PI / 2;
-                const theta = (h - y - 1) / (h - 1) * Math.PI;
-
-                const px = Math.sin(theta) * Math.cos(phi);
-                const py = Math.sin(theta) * Math.sin(phi);
-                const pz = Math.cos(theta);
+                const {px, py, pz} = this.getPointDirection(x, y, w, h);
 
                 let t: number;
                 let plane: { normal: [number, number, number], distance: number };
@@ -141,12 +136,7 @@ export class StreetViewLoader {
                 }
 
                 // color: map x and y to pixel position (depends on effective image size)
-                const pixelX = Math.floor(x * (imageHeight - 1) / (h - 1));
-                const pixelY = Math.floor(y * (imageWidth - 1) / (w - 1));
-
-                const r = pixels[4 * (pixelY * w + pixelX)] / 255;
-                const g = pixels[4 * (pixelY * w + pixelX) + 1] / 255;
-                const b = pixels[4 * (pixelY * w + pixelX) + 2] / 255;
+                const {r, g, b} = this.getPointColor(x, y, w, h, imageWidth, imageHeight, pixels);
 
                 positions.push(px * t, py * t, pz * t);
                 sizes.push(size);
@@ -162,6 +152,29 @@ export class StreetViewLoader {
             normals: new Float32Array(normals),
         }
 
+    }
+
+    private getPointDirection(x: number, y: number, w: number, h: number) {
+        const phi = (w - x - 1) / (w - 1) * 2 * Math.PI + Math.PI / 2;
+        const theta = (h - y - 1) / (h - 1) * Math.PI;
+
+        const px = Math.sin(theta) * Math.cos(phi);
+        const py = Math.sin(theta) * Math.sin(phi);
+        const pz = Math.cos(theta);
+
+        return {px, py, pz};
+    }
+
+    private getPointColor(x: number, y: number, w: number, h: number, imageWidth: number, imageHeight: number, pixels: Uint8ClampedArray) {
+        const pixelX = Math.floor(x * (imageHeight - 1) / (h - 1));
+        const pixelY = Math.floor(y * (imageWidth - 1) / (w - 1));
+        const startIndex = 4 * (pixelY * w + pixelX);
+
+        const r = pixels[startIndex] / 255;
+        const g = pixels[startIndex + 1] / 255;
+        const b = pixels[startIndex + 2] / 255;
+
+        return {r, g, b};
     }
 
     private lngLatToPosition(latitude: number, longitude: number) {
