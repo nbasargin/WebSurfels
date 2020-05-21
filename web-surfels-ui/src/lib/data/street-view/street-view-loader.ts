@@ -5,9 +5,8 @@ import { StreetViewApi } from './street-view-api';
 import { StreetViewPanorama } from './street-view-panorama';
 
 export interface StreetViewLoaderOptions {
-    skyDistance: number;
-    minNonSkySplatSize: number;
-    maxNonSkySplatSize: number;
+    minSplatSize: number;
+    maxSplatSize: number;
 }
 
 type PointCloudOutputOutputBuffer = {
@@ -26,9 +25,8 @@ export class StreetViewLoader {
     /**
      * Converts street view panoramas to point clouds.
      *
-     * @param options .skyDistance distance for sky splats (= splats not assigned to a plane), if below 0 sky splats are dropped
-     *        options .minNonSkySplatSize  minimal size for non-sky splats, non-sky splats smaller than this are dropped
-     *        options .maxNonSkySplatSize  maximal size for non-sky splats, non-sky splats larger than this are dropped
+     * @param options .minSplatSize  splats below this size will be merged when possible
+     *        options .maxSplatSize  splats larger than this are dropped
      */
     constructor(options: StreetViewLoaderOptions | object = {}) {
         this.canvas = document.createElement('canvas');
@@ -37,9 +35,8 @@ export class StreetViewLoader {
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
 
         this.options = {
-            skyDistance: -1,
-            minNonSkySplatSize: 0,
-            maxNonSkySplatSize: 5,
+            minSplatSize: 0,
+            maxSplatSize: 5,
             ... options
         };
     }
@@ -149,16 +146,16 @@ export class StreetViewLoader {
         const plane = depthData.planes[planeID];
         let {t, size} = this.getPointDistanceAndSize(plane, direction);
 
-        if (size > this.options.maxNonSkySplatSize) {
+        if (size > this.options.maxSplatSize) {
             return; // discard points that are too large
         }
 
         // color: map x and y to pixel position (depends on effective image size)
         let {r, g, b} = this.getPointColor(x, y, w, h, imageWidth, imageHeight, pixels);
 
-        if (size < this.options.minNonSkySplatSize) {
+        if (size < this.options.minSplatSize) {
             // try merging points
-            let boxSize = Math.ceil(this.options.minNonSkySplatSize / size);
+            let boxSize = Math.ceil(this.options.minSplatSize / size);
             boxSize = Math.min(boxSize, h - y);
             boxSize = Math.min(boxSize, w - x);
             for (let dx = 0; dx < boxSize; dx++) {
@@ -180,13 +177,23 @@ export class StreetViewLoader {
                 t = tAndSize.t;
                 size = tAndSize.size * boxSize;
 
-                // todo color average
+                // color average
+                r = 0;
+                g = 0;
+                b = 0;
                 for (let dx = 0; dx < boxSize; dx++) {
                     for (let dy = 0; dy < boxSize; dy++) {
                         // mark precessed point as sky -> will not get created in further iterations
                         depthData.indices[(y+dy) * w + (x+dx)] = 0;
+                        const color = this.getPointColor(x + dx, y + dy, w, h, imageWidth, imageHeight, pixels);
+                        r += color.r;
+                        g += color.g;
+                        b += color.b;
                     }
                 }
+                r /= boxSize * boxSize;
+                g /= boxSize * boxSize;
+                b /= boxSize * boxSize;
 
             }
         }

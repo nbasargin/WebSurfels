@@ -22,9 +22,8 @@ export class DynamicStreetViewDemo implements DemoBase {
         this.orbitAnimation.animate(0);
 
         const loader = new StreetViewLoader({
-            skyDistance: -1,
-            maxNonSkySplatSize: 2,
-            minNonSkySplatSize: 0.2,
+            maxSplatSize: 1.5,
+            minSplatSize: 0.4,
         });
         this.controller = new DynamicStreetViewController(renderer, loader, 30, 's6A9P5A3iWvqNscixSRPsw');
     }
