@@ -1,6 +1,7 @@
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { DynamicStreetViewController } from '../../lib/controllers/dynamic-street-view/dynamic-street-view-controller';
 import { GoogleStreetViewApi } from '../../lib/data/street-view/api/google-street-view-api';
+import { LocalStreetViewApi } from '../../lib/data/street-view/api/local-street-view-api';
 import { StreetViewLoader } from '../../lib/data/street-view/street-view-loader';
 import { Renderer } from '../../lib/renderer/renderer';
 import { DemoBase } from './demo-base';
@@ -22,7 +23,8 @@ export class DynamicStreetViewDemo implements DemoBase {
 
         this.orbitAnimation.animate(0);
 
-        const api = new GoogleStreetViewApi();
+        // const api = new GoogleStreetViewApi();
+        const api = new LocalStreetViewApi('http://localhost:5000/test-crawl');
         const loader = new StreetViewLoader(api, 0.4, 1.5);
         this.controller = new DynamicStreetViewController(renderer, loader, 100, 's6A9P5A3iWvqNscixSRPsw');
     }
