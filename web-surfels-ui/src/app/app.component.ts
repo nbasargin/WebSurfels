@@ -84,6 +84,12 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 (higher threshold = lower quality)
             </ng-container>
 
+            <ng-container *ngIf="demos?.streetView as demo">
+                <h1>Dynamic Street View Demo</h1>
+                <div>Original Points on GPU: {{demo.controller.totalOriginalPointsOnGPU.toLocaleString('en-us')}}</div>
+                <div>(after overlap reduction & small splat merging; not including LOD levels)</div>
+            </ng-container>
+
         </app-main-overlay>
 
         <div #wrapper class="full-size">
