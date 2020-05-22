@@ -2,7 +2,7 @@
   "name": "web-surfels-ui",
   "version": "0.0.0",
   "scripts": {
-    "gen-lod": "tsc -p tsconfig.server.json  &&  node --max-old-space-size=8192 ./server-dist/server/server.js",
+    "gen-lod": "tsc -p tsconfig.server.json  &&  node --max-old-space-size=8192 ./server-dist/server/server-lod-generator.js",
     "serve-lod": "serve ../lod --cors",
     "build": "ng build --prod",
     "test": "jest"
