@@ -15,7 +15,7 @@ export class DynamicStreetViewController {
     minVisiblePanoramas = 100;
     maxLoadedPanoramas = 3000;
 
-    private requested: Set<string> = new Set();
+    private requested: Map<string, Point3d> = new Map();
     private loading: Set<string> = new Set();
 
     private streetViewNodes: Map<string, DynamicStreetViewNode> = new Map();
@@ -58,12 +58,17 @@ export class DynamicStreetViewController {
      *  - it is already loaded and waiting
      *  - it is already processed and transferred to the GPU
      * @param id
+     * @param requesterCenter   center of some neighboring panorama, used to prioritize the loading order
      */
-    private requestPanoramaLoading(id: string) {
+    private requestPanoramaLoading(id: string, requesterCenter: Point3d) {
         if (this.loading.has(id) || this.streetViewNodes.has(id)) {
             return;
         }
-        this.requested.add(id);
+        if (this.panoCenters.has(id)) {
+            // if panorama was already loaded before, use its center instead of the neighbor
+            requesterCenter = this.panoCenters.get(id)!;
+        }
+        this.requested.set(id, requesterCenter);
     }
 
     private startPanoramaLoading(id: string) {
@@ -247,7 +252,7 @@ export class DynamicStreetViewController {
             if (dist < 4 * this.qualityDist) {
                 // load missing links
                 for (const link of node.links) {
-                    this.requestPanoramaLoading(link);
+                    this.requestPanoramaLoading(link, node.center);
                 }
             }
 
@@ -280,14 +285,23 @@ export class DynamicStreetViewController {
         // render
         const stats = this.renderer.render(renderList);
 
-        // send loading requests
-        for (const id of this.requested) {
-            if (this.loading.size < this.maxConcurrentApiRequests
-                && this.requested.size + this.loading.size + this.streetViewNodes.size < this.maxLoadedPanoramas) {
-                this.startPanoramaLoading(id);
-            } else {
-                break;
+        // send loading requests: prioritize panoramas close to the camera
+        while (
+            this.requested.size > 0 &&
+            this.loading.size < this.maxConcurrentApiRequests &&
+            this.requested.size + this.loading.size + this.streetViewNodes.size < this.maxLoadedPanoramas
+        ) {
+            let minDist = Number.POSITIVE_INFINITY;
+            let minID = '';
+
+            for (const [id, center] of this.requested.entries()) {
+                const dist = Math.sqrt((cam[0] - center.x) ** 2 + (cam[1] - center.y) ** 2 + (cam[2] - center.z) ** 2);
+                if (dist < minDist) {
+                    minDist = dist;
+                    minID = id;
+                }
             }
+            this.startPanoramaLoading(minID);
         }
 
         return stats;
