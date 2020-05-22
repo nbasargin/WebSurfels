@@ -19,7 +19,7 @@ export class Camera {
     private fovRadians: number = Math.PI / 3;
     private aspectRatio: number = 1;
     private nearDist: number = 0.1;
-    private farDist: number = 1000;
+    private farDist: number = 10000;
 
     private frustumPlanes = {
         near: new Plane(),

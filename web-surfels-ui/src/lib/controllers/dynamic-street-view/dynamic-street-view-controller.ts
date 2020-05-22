@@ -64,7 +64,7 @@ export class DynamicStreetViewController {
      * @param requesterCenter   center of some neighboring panorama, used to prioritize the loading order
      */
     private requestPanoramaLoading(id: string, requesterCenter: Point3d) {
-        if (this.loading.has(id) || this.streetViewNodes.has(id)) {
+        if (this.requested.has(id) || this.loading.has(id) || this.streetViewNodes.has(id)) {
             return;
         }
         if ((this.errors.get(id) || 0) > 3) {
@@ -244,20 +244,19 @@ export class DynamicStreetViewController {
             const pos = node.center;
             const dist = Math.sqrt((cam[0] - pos.x) ** 2 + (cam[1] - pos.y) ** 2 + (cam[2] - pos.z) ** 2);
 
-            // Appropriate LOD level is based on qualityDist:
-            //  0 * qualityDist to 1 * qualityDist  ->  original
-            //  1 * qualityDist to 2 * qualityDist  ->  high
-            //  2 * qualityDist to 4 * qualityDist  ->  medium
-            //  4 * qualityDist to 8 * qualityDist  ->  medium
-            // 16 * qualityDist or higher           ->  unload
+            // Appropriate LOD level, link resolution and unloading is based on qualityDist times the threshold
+            const originalThreshold = 1;
+            const highThreshold = 4;
+            const mediumThreshold = 8;
+            const lowThreshold = 32;
 
-            if (dist > 16 * this.qualityDist && this.visiblePanoramas > this.minVisiblePanoramas) {
+            if (dist > lowThreshold * this.qualityDist && this.visiblePanoramas > this.minVisiblePanoramas) {
                 // console.log('!! removing ', node.id);
                 this.unloadNode(node);
                 continue;
             }
 
-            if (dist < 4 * this.qualityDist) {
+            if (dist < mediumThreshold * this.qualityDist) {
                 // load missing links
                 for (const link of node.links) {
                     this.requestPanoramaLoading(link, node.center);
@@ -268,11 +267,11 @@ export class DynamicStreetViewController {
                 visiblePanoramas++;
 
                 let rendererNode: PanoramaLOD;
-                if (dist < this.qualityDist) {
+                if (dist < originalThreshold * this.qualityDist) {
                     rendererNode = node.lod.original;
-                } else if (dist < 2 * this.qualityDist) {
+                } else if (dist < highThreshold * this.qualityDist) {
                     rendererNode = node.lod.high;
-                } else if (dist < 4 * this.qualityDist) {
+                } else if (dist < mediumThreshold * this.qualityDist) {
                     rendererNode = node.lod.medium;
                 } else {
                     rendererNode = node.lod.low;

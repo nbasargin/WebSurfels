@@ -26,7 +26,7 @@ export class DynamicStreetViewDemo implements DemoBase {
         // const api = new GoogleStreetViewApi();
         const api = new LocalStreetViewApi('http://localhost:5000/test-crawl');
         const loader = new StreetViewLoader(api, 0.4, 1.5);
-        this.controller = new DynamicStreetViewController(renderer, loader, 100, 's6A9P5A3iWvqNscixSRPsw');
+        this.controller = new DynamicStreetViewController(renderer, loader, 50, 's6A9P5A3iWvqNscixSRPsw');
     }
 
 }
