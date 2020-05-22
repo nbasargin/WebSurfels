@@ -12,6 +12,9 @@ export class LocalStreetViewApi implements StreetViewApi {
     async loadDataById(panoID: string): Promise<StreetViewApiResponse> {
         const url = this.baseUrl + panoID + '.json';
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Loading failed for panorama data ' + panoID + '! Status code ' + response.status);
+        }
         return response.json();
     }
 
@@ -22,6 +25,9 @@ export class LocalStreetViewApi implements StreetViewApi {
     async loadImage(panoID: string, zoom: number, x: number, y: number): Promise<ImageBitmap> {
         const url = this.baseUrl + panoID + '.jpg';
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Loading failed for panorama image ' + panoID + '! Status code ' + response.status);
+        }
         const blob = await response.blob();
         return createImageBitmap(blob);
     }

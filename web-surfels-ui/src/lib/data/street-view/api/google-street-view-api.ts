@@ -7,6 +7,9 @@ export class GoogleStreetViewApi implements StreetViewApi {
     async loadDataById(panoID: string): Promise<StreetViewApiResponse> {
         const url = `https://maps.google.com/cbk?output=json&panoid=${panoID}&dm=1`;
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Loading failed for panorama data ' + panoID + '! Status code ' + response.status);
+        }
         return response.json();
     }
 
@@ -20,6 +23,9 @@ export class GoogleStreetViewApi implements StreetViewApi {
     async loadImage(panoID: string, zoom: number, x: number, y: number): Promise<ImageBitmap> {
         const url = `https://maps.google.com/cbk?output=tile&panoid=${panoID}&zoom=${zoom}&x=${x}&y=${y}`;
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Loading failed for panorama image ' + panoID + '! Status code ' + response.status);
+        }
         const blob = await response.blob();
         return createImageBitmap(blob);
     }
