@@ -13,7 +13,9 @@ export class DynamicStreetViewController {
 
     maxConcurrentApiRequests = 3;
     minVisiblePanoramas = 100;
-    maxLoadedPanoramas = 3000;
+    maxLoadedPanoramas = 6000;
+
+    loadedOriginalPoints = 0; // original points on the GPU (after overlap reduction)
 
     private requested: Map<string, Point3d> = new Map();
     private loading: Set<string> = new Set();
@@ -145,6 +147,7 @@ export class DynamicStreetViewController {
         // overlap reduction
         const centers = node.links.map(link => this.panoCenters.get(link)!);
         const data = this.reduceOverlaps(node.data, node.center, centers);
+        this.loadedOriginalPoints += data.sizes.length;
 
         // LOD
         const bb = BoundingBox.create(data.positions, data.sizes);
@@ -222,6 +225,7 @@ export class DynamicStreetViewController {
 
     private unloadNode(node: DynamicStreetViewNode) {
         if (node.state === 'rendering') {
+            this.loadedOriginalPoints -= node.lod.original.rendererNode.numPoints;
             this.renderer.removeNode(node.lod.original.rendererNode);
             this.renderer.removeNode(node.lod.high.rendererNode);
             this.renderer.removeNode(node.lod.medium.rendererNode);
