@@ -7,9 +7,9 @@ Later, three packages might be created: library, ui and server.
 This structure is currently not available
 
 There are three npm packages in this repository:
-- `web-surfels-lib` contains the main codebase
-- `web-surfels-ui` is an angular project demonstrating how to use the lib in the browser
-- `web-surfels-server` is a node.js project showing how to use the lib on the server
+- `web-surfels` contains the main codebase
+- `examples/web-surfels-ui` is an angular project demonstrating how to use the lib in the browser
+- `examples/web-surfels-server` is a node.js project showing how to use the lib on the server
 
 Development setup:
 - in `web-surfels-lib` run

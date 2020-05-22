@@ -4,6 +4,7 @@
   "scripts": {
     "gen-lod": "tsc -p tsconfig.server.json  &&  node --max-old-space-size=8192 ./server-dist/server/server-lod-generator.js",
     "serve-lod": "serve ../lod --cors",
+    "crawl-gsv": "tsc -p tsconfig.server.json  &&  node ./server-dist/server/server-street-view-crawler.js",
     "build": "ng build --prod",
     "test": "jest"
   },
@@ -17,14 +18,15 @@
     "@angular/platform-browser": "~8.2.14",
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
-    "rxjs": "~6.4.0",
-    "tslib": "^1.10.0",
-    "zone.js": "~0.9.1",
-    "pako": "^1.0.11",
     "@loaders.gl/core": "^2.0.2",
     "@loaders.gl/ply": "^2.0.2",
     "gl-matrix": "^3.1.0",
-    "serve": "^11.3.0"
+    "node-fetch": "^2.6.0",
+    "pako": "^1.0.11",
+    "rxjs": "~6.4.0",
+    "serve": "^11.3.0",
+    "tslib": "^1.10.0",
+    "zone.js": "~0.9.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.803.20",
