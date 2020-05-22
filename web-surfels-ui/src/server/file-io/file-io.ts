@@ -1,4 +1,5 @@
 import { promises as fs} from 'fs';
+import * as path from 'path';
 
 export class FileIO {
 
@@ -16,6 +17,10 @@ export class FileIO {
             const view = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.length);
             return view.slice(0, buffer.length).buffer;
         });
+    }
+
+    static pathJoin(...paths: Array<string>): string {
+        return path.join(...paths);
     }
 
 }
