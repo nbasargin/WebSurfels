@@ -1,7 +1,8 @@
-import { StreetViewApiResponse } from '../lib/data/street-view/api/street-view-api-response';
-import { FileIO } from './file-io/file-io';
 import * as fs from 'fs';
 import * as https from 'https';
+
+import { StreetViewApiResponse } from '../lib/data/street-view/api/street-view-api-response';
+import { FileIO } from './file-io/file-io';
 
 /**
  * Get data from the URL and write it to a local file.
@@ -27,11 +28,12 @@ function httpToFile(url, localPath): Promise<Buffer> {
 
 /**
  * Crawl the street view API and save data to disk.
- * @param startID first panorama ID
- * @param maxPanoramas maximal number of panoramas
- * @param destination output folder
+ * @param startID       first panorama ID
+ * @param maxPanoramas  maximal number of panoramas
+ * @param destination   output folder
+ * @param verbose       print progress to console (default true)
  */
-async function crawl(startID: string, maxPanoramas: number, destination: string = '../gsv/crawl'): Promise<Array<string>> {
+async function crawl(startID: string, maxPanoramas: number, destination: string, verbose = true): Promise<Array<string>> {
     const knownIDs: Set<string> = new Set([startID]);
     const loadingQueue: Array<string> = [startID];
     let loadedPanoramas = 0;
@@ -59,10 +61,13 @@ async function crawl(startID: string, maxPanoramas: number, destination: string 
             }
         }
 
-        console.log(`${loadedPanoramas} / ${maxPanoramas}: processed ${data.Location.panoId}, remaining in queue: ${loadingQueue.length - loadedPanoramas}`);
+        if (verbose) {
+            const toLoad = loadingQueue.length - loadedPanoramas;
+            console.log(`${loadedPanoramas} / ${maxPanoramas}: processed ${id}, remaining in queue: ${toLoad}`);
+        }
     }
 
-    return loadingQueue.slice(0, loadedPanoramas); // return a lost of loaded ids
+    return loadingQueue.slice(0, loadedPanoramas); // return a list of loaded ids
 }
 
 
