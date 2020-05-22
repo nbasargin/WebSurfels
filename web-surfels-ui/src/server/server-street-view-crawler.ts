@@ -73,7 +73,7 @@ async function crawl(startID: string, maxPanoramas: number, destination: string,
 
 (async function main() {
     const panoID = 'h--IJXCoiMfBaHbDmPPKKg';
-    const processedIDs = await crawl(panoID, 5, '../gsv/test-crawl');
+    const processedIDs = await crawl(panoID, 5000, '../gsv/test-crawl');
     console.log(`crawl complete, ${processedIDs.length} panoramas saved`);
 })();
 
