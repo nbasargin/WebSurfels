@@ -17,6 +17,7 @@ export class DynamicStreetViewController {
 
     private requested: Map<string, Point3d> = new Map();
     private loading: Set<string> = new Set();
+    private errors: Map<string, number> = new Map();
 
     private streetViewNodes: Map<string, DynamicStreetViewNode> = new Map();
     private visiblePanoramas: number = 0; // keep track how many potentially visible panoramas there are
@@ -46,6 +47,8 @@ export class DynamicStreetViewController {
             vec3.normalize(up, up);
             this.renderer.camera.setUpVector(up);
             this.completePanoramaLoading(basePanorama);
+        }).catch(error => {
+            console.error(error);
         });
     }
 
@@ -63,6 +66,9 @@ export class DynamicStreetViewController {
     private requestPanoramaLoading(id: string, requesterCenter: Point3d) {
         if (this.loading.has(id) || this.streetViewNodes.has(id)) {
             return;
+        }
+        if ((this.errors.get(id) || 0) > 3) {
+            return; // ignore requests for panoramas that have to many errors
         }
         if (this.panoCenters.has(id)) {
             // if panorama was already loaded before, use its center instead of the neighbor
@@ -83,6 +89,8 @@ export class DynamicStreetViewController {
             this.completePanoramaLoading(pano);
         }).catch(error => {
             this.loading.delete(id);
+            const errorCount = this.errors.has(id) ? this.errors.get(id)! : 0;
+            this.errors.set(id, errorCount + 1);
             console.error(error);
         });
     }
@@ -241,9 +249,9 @@ export class DynamicStreetViewController {
             //  1 * qualityDist to 2 * qualityDist  ->  high
             //  2 * qualityDist to 4 * qualityDist  ->  medium
             //  4 * qualityDist to 8 * qualityDist  ->  medium
-            //  8 * qualityDist or higher           ->  unload
+            // 16 * qualityDist or higher           ->  unload
 
-            if (dist > 8 * this.qualityDist && this.visiblePanoramas > this.minVisiblePanoramas) {
+            if (dist > 16 * this.qualityDist && this.visiblePanoramas > this.minVisiblePanoramas) {
                 // console.log('!! removing ', node.id);
                 this.unloadNode(node);
                 continue;
