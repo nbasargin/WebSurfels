@@ -1,4 +1,4 @@
-import { StreetViewApi } from './street-view-api';
+import { GoogleStreetViewApi } from './api/google-street-view-api';
 
 export class StreetViewCrawler {
 
@@ -8,12 +8,13 @@ export class StreetViewCrawler {
         let queuePos = 0;
         ids.add(startID);
         queue.push({id: startID, remDepth: bfsLimit});
+        const api = new GoogleStreetViewApi();
 
         while (queuePos < queue.length) {
             const {id, remDepth} = queue[queuePos];
             queuePos++;
 
-            const response = await StreetViewApi.loadDataById(id);
+            const response = await api.loadDataById(id);
             for (const link of response.Links) {
                 if (!ids.has(link.panoId)) {
                     ids.add(link.panoId);

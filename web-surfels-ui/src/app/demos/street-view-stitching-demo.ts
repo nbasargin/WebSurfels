@@ -1,7 +1,8 @@
 import { vec3 } from 'gl-matrix';
 import { Subgrid } from '../../lib/data/level-of-detail/subgrid';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
-import { StreetViewLoader, StreetViewLoaderOptions } from '../../lib/data/street-view/street-view-loader';
+import { GoogleStreetViewApi } from '../../lib/data/street-view/api/google-street-view-api';
+import { StreetViewLoader } from '../../lib/data/street-view/street-view-loader';
 import { Renderer } from '../../lib/renderer/renderer';
 import { StreetViewCrawler } from '../../lib/data/street-view/street-view-crawler';
 import { BoundingCube } from '../../lib/utils/bounding-geometry';
@@ -50,12 +51,8 @@ export class StreetViewStitchingDemo implements DemoBase {
     async run(panoIDs: Iterable<string>) {
         this.renderer.removeAllNodes();
 
-        const options: StreetViewLoaderOptions = {
-            maxSplatSize: 1,
-            minSplatSize: 0.2,
-        };
-
-        const loader = new StreetViewLoader(options);
+        const api = new GoogleStreetViewApi();
+        const loader = new StreetViewLoader(api, 0.2, 1);
 
         // set up camera and coordinate system based on first panorama
         const basePanorama = await loader.loadPanorama(panoIDs[0]);

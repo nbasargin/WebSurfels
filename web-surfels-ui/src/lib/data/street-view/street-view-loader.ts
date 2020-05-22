@@ -1,13 +1,8 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { PointCloudData } from '../point-cloud-data';
+import { StreetViewApi } from './api/street-view-api';
 import { StreetViewDepthData } from './street-view-depth-data';
-import { StreetViewApi } from './street-view-api';
 import { StreetViewPanorama } from './street-view-panorama';
-
-export interface StreetViewLoaderOptions {
-    minSplatSize: number;
-    maxSplatSize: number;
-}
 
 type PointCloudOutputOutputBuffer = {
     positions: Array<number>;
@@ -20,33 +15,27 @@ export class StreetViewLoader {
 
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
-    private options: StreetViewLoaderOptions;
 
     /**
      * Converts street view panoramas to point clouds.
      *
-     * @param options .minSplatSize  splats below this size will be merged when possible
-     *        options .maxSplatSize  splats larger than this are dropped
+     * @param api
+     * @param minSplatSize  splats below this size will be merged when possible
+     * @param maxSplatSize  splats below this size will be merged when possible
      */
-    constructor(options: StreetViewLoaderOptions | object = {}) {
+    constructor(public api: StreetViewApi, public minSplatSize: number = 0, public maxSplatSize: number = 5) {
         this.canvas = document.createElement('canvas');
         this.canvas.width = 512;
         this.canvas.height = 256;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-
-        this.options = {
-            minSplatSize: 0,
-            maxSplatSize: 5,
-            ... options
-        };
     }
 
     async loadPanorama(id: string): Promise<StreetViewPanorama> {
 
         // load panorama data & bitmap from google
         const [panoramaData, colorData] = await Promise.all([
-            StreetViewApi.loadDataById(id),
-            StreetViewApi.loadImage(id, 0, 0, 0),
+            this.api.loadDataById(id),
+            this.api.loadImage(id, 0, 0, 0),
         ]);
 
         // construct depth data
@@ -146,16 +135,16 @@ export class StreetViewLoader {
         const plane = depthData.planes[planeID];
         let {t, size} = this.getPointDistanceAndSize(plane, direction);
 
-        if (size > this.options.maxSplatSize) {
+        if (size > this.maxSplatSize) {
             return; // discard points that are too large
         }
 
         // color: map x and y to pixel position (depends on effective image size)
         let {r, g, b} = this.getPointColor(x, y, w, h, imageWidth, imageHeight, pixels);
 
-        if (size < this.options.minSplatSize) {
+        if (size < this.minSplatSize) {
             // try merging points
-            let boxSize = Math.ceil(this.options.minSplatSize / size);
+            let boxSize = Math.ceil(this.minSplatSize / size);
             boxSize = Math.min(boxSize, h - y);
             boxSize = Math.min(boxSize, w - x);
             for (let dx = 0; dx < boxSize; dx++) {
