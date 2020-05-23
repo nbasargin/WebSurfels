@@ -77,7 +77,9 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <button (click)="demo.nearCam()">near</button>
                 <br>
                 <span style="width: 100px; display: inline-block">FPS:</span>
-                {{this.frozenFPS.toLocaleString('en-us')}} <button (click)="this.frozenFPS = this.fps">Update</button>              
+                {{this.frozenFPS.toLocaleString('en-us')}} <button (click)="this.frozenFPS = this.fps">Update</button>   
+                <br>
+                <span style="width: 100px; display: inline-block">Resolution:</span> {{canvas.width}} x {{canvas.height}}
             </ng-container>
 
             <ng-container *ngIf="demos?.castle as demo">
