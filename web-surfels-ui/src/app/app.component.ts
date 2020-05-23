@@ -67,9 +67,17 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
             </ng-container>
 
             <ng-container *ngIf="demos?.sphere as demo">
-                <h1>Sphere Demo</h1>
+                <h1>Sphere Benchmark</h1>
+                <span style="width: 100px; display: inline-block">Points:</span>
                 <button *ngFor="let preset of demo.presets"
-                        (click)="demo.addSphere(preset)">{{preset.points + ' points'}}</button>
+                        (click)="demo.addSphere(preset)">{{preset.points.toLocaleString('en-us')}}</button>
+                <br>
+                <span style="width: 100px; display: inline-block">Camera:</span>
+                <button (click)="demo.farCam()">far</button>
+                <button (click)="demo.nearCam()">near</button>
+                <br>
+                <span style="width: 100px; display: inline-block">FPS:</span>
+                {{this.frozenFPS.toLocaleString('en-us')}} <button (click)="this.frozenFPS = this.fps">Update</button>              
             </ng-container>
 
             <ng-container *ngIf="demos?.castle as demo">
@@ -109,6 +117,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     pointsDrawn: number = 0;
     nodesDrawn: number = 0;
     animate = false;
+    frozenFPS = 0;
     sizeScale = 1;
 
     movementSpeed = 10;
@@ -116,7 +125,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     renderer: Renderer;
 
     // render loop
-    private fpsCounter: FpsCounter = new FpsCounter(20);
+    private fpsCounter: FpsCounter = new FpsCounter(100);
     private animationRequest;
     private lastTimestamp = 0;
 
@@ -150,9 +159,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
-                // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
+                sphere: new SphereDemo(this.renderer, this.orbitAnimation),
                 // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
-                streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
+                // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
             };
 
             for (const demo of Object.values(this.demos)) {
