@@ -92,6 +92,12 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                     {{demo.dynamicLod.sizeThreshold}}
                 </div>
                 (higher threshold = lower quality)
+                <div>
+                    Benchmark:
+                    <button *ngIf="!demo.benchmark" (click)="demo.startBenchmark()">Start</button>
+                    <button *ngIf="demo.benchmark" (click)="demo.stopBenchmark()">Stop</button>
+                    
+                </div>
             </ng-container>
 
             <ng-container *ngIf="demos?.streetView as demo">
@@ -161,8 +167,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
-                sphere: new SphereDemo(this.renderer, this.orbitAnimation),
-                // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
+                // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
+                castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
                 // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
             };
 
@@ -244,6 +250,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.demos.castle.dynamicLod.render();
             this.pointsDrawn = this.demos.castle.dynamicLod.stats.renderedPoints;
             this.nodesDrawn = this.demos.castle.dynamicLod.stats.renderedNodes;
+            this.demos.castle.record(duration);
 
         } else if (this.demos.streetView) {
             const stats = this.demos.streetView.controller.render();
