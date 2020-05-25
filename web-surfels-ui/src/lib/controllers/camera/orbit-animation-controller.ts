@@ -9,7 +9,8 @@ export class OrbitAnimationController {
         public camera: Camera,
         public minDistance: number,
         public maxDistance: number,
-        public elevation: number,
+        public cameraElevation: number,
+        public targetElevation: number,
         public rotationDuration: number
     ) {
     }
@@ -17,11 +18,13 @@ export class OrbitAnimationController {
     animate(msPassed: number) {
         this.time += msPassed;
 
-        // center is at (0, 0, 0)
-        // camera moves through the plane with normal = up, going through point = center + up * elevation
+        // target = (0, 0, 0) + up * targetElevation
+        // camera moves through the plane with normal = up, going through point = target + up * cameraElevation
         const up = this.camera.up;
+        const targetCenter = vec3.clone(up);
+        vec3.scale(targetCenter, targetCenter, this.targetElevation);
         const camOrbitCenter = vec3.clone(up);
-        vec3.scale(camOrbitCenter, camOrbitCenter, this.elevation);
+        vec3.scale(camOrbitCenter, camOrbitCenter, this.cameraElevation);
 
         const frontReference = this.camera.isZAxisUp() ? vec3.fromValues(0, 1, 0) : vec3.fromValues(0, 0, 1);
         const right = vec3.cross(vec3.create(), frontReference, up);
@@ -35,7 +38,7 @@ export class OrbitAnimationController {
         vec3.scaleAndAdd(eye, eye, right, Math.cos(phase) * currentDist);
 
         // look at origin from current position
-        this.camera.setOrientation(eye, vec3.create(), up);
+        this.camera.setOrientation(eye, targetCenter, up);
     }
 
 }

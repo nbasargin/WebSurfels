@@ -22,7 +22,7 @@ export class SphereDemo implements DemoBase {
     ) {
         this.orbitAnimation.minDistance = 2;
         this.orbitAnimation.maxDistance = 3;
-        this.orbitAnimation.elevation = 0;
+        this.orbitAnimation.cameraElevation = 0;
         this.orbitAnimation.rotationDuration = 25000 * this.preferredMovementSpeed;
         this.orbitAnimation.animate(12000);
 

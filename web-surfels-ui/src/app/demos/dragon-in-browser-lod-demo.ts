@@ -13,7 +13,7 @@ import { parse } from '@loaders.gl/core';
 
 export class DragonInBrowserLodDemo implements DemoBase {
 
-    preferredMovementSpeed = 1;
+    preferredMovementSpeed = 0.1;
 
     private lodRoot: WeightedLodNode;
     private lodRootJitter: WeightedLodNode;
@@ -33,11 +33,13 @@ export class DragonInBrowserLodDemo implements DemoBase {
     ) {
         this.renderer.camera.setOrientation(vec3.fromValues(3, 3, 3), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
 
-        this.orbitAnimation.minDistance = 2;
-        this.orbitAnimation.maxDistance = 4;
-        this.orbitAnimation.elevation = 2;
+        this.orbitAnimation.minDistance = 0.25;
+        this.orbitAnimation.maxDistance = 0.3;
+        this.orbitAnimation.targetElevation = 0.1;
+        this.orbitAnimation.cameraElevation = 0.2;
         this.orbitAnimation.rotationDuration = 25000 * this.preferredMovementSpeed;
         this.orbitAnimation.animate(3000);
+        this.renderer.camera.setClippingDist(0.001, 1000);
 
         Timing.measure();
         const url = 'https://www.dl.dropboxusercontent.com/s/9inx5f1n5sm2cp8/stanford_dragon.ply?dl=1';
@@ -48,16 +50,10 @@ export class DragonInBrowserLodDemo implements DemoBase {
 
             const data: PointCloudData = {
                 positions: rawData.attributes.POSITION.value,
-                sizes: new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3)).fill(0.03),
+                sizes: new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3)).fill(0.003),
                 normals: rawData.attributes.NORMAL.value,
                 colors: new Float32Array(rawData.attributes.COLOR_0.value).map(c => c / 255),
             };
-            for (let i = 0; i < data.positions.length; i++) {
-                data.positions[i] *= 20.0;
-            }
-            for (let i = 1; i < data.positions.length; i += 3) {
-                data.positions[i] -= 2.5;
-            }
             console.log(Timing.measure(), 'data preprocessed');
 
             const bb = BoundingBox.create(data.positions);
@@ -68,13 +64,13 @@ export class DragonInBrowserLodDemo implements DemoBase {
             const treeDepth = octree.root.getDepth();
             this.lodRoot = octree.buildLod(0);
             console.log(Timing.measure(), 'lod computed');
-            this.showLodLevel(0);
 
             // now with jitter
             octree.addData(data);
             this.lodRootJitter = octree.buildLod(1);
             console.log(Timing.measure(), 'octree + lod  with jitter');
 
+            this.showLodLevel(3);
             this.loading = false;
 
             this.levels = [];

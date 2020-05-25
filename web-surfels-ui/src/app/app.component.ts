@@ -163,7 +163,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     ngAfterViewInit(): void {
         this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
         this.fpController = new FirstPersonController(this.renderer.camera);
-        this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 15000);
+        this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 0, 15000);
 
         this.headlight = new HeadlightController(this.renderer.light, this.renderer.camera);
 
