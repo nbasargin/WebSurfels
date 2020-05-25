@@ -55,6 +55,9 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <input #depthSizeRatioSlider type="range" min="0.1" max="2" step="0.1"
                        (input)="renderer['uniforms'].splatDepthSizeRatio = +depthSizeRatioSlider.value"
                        [value]="renderer['uniforms'].splatDepthSizeRatio">
+                <div>
+                    <button (click)=logCameraPosition()>Log camera position</button>
+                </div>
             </div>
 
             <ng-container *ngIf="demos?.dragon as demo">
@@ -62,7 +65,7 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <span *ngIf="demo.loading">LOADING...</span>
                 <ng-container *ngIf="!demo.loading">
                     Show LOD level:<br>
-                    <span style="width:100px; display: inline-block">No Jitter:</span> 
+                    <span style="width:100px; display: inline-block">No Jitter:</span>
                     <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i, false)">{{i}}</button>
                     <br>
                     <span style="width:100px; display: inline-block">With Jitter:</span>
@@ -98,12 +101,17 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                     {{demo.dynamicLod.sizeThreshold}}
                 </div>
                 (higher threshold = lower quality)
-                <div>
-                    Benchmark:
-                    <button *ngIf="!demo.benchmark" (click)="demo.startBenchmark()">Start</button>
-                    <button *ngIf="demo.benchmark" (click)="demo.stopBenchmark()">Stop</button>
-                    
-                </div>
+
+                <h1>Benchmark</h1>
+                Camera positions:
+                <button *ngFor="let p of demo.cameraPoints; let i = index"
+                        (click)="demo.setCameraPosition(i)">{{i}}</button>
+                <br>
+                Benchmark:
+                <button *ngIf="!demo.benchmarkRunning" (click)="demo.startBenchmark()">Start</button>
+                <span *ngIf="demo.benchmarkRunning">running... frame {{demo.benchmarkResults!.frameDurations.length}}</span>
+                <button *ngIf="demo.benchmarkResults && !demo.benchmarkRunning" (click)="demo.exportBenchmarkResults()">Export results</button>
+
             </ng-container>
 
             <ng-container *ngIf="demos?.streetView as demo">
@@ -170,11 +178,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             this.demos = {
                 // select ONE here
-                dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
+                // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
-                // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
+                castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
                 // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
             };
 
@@ -305,6 +313,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.renderer.setCanvasSize(width, height);
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
+    }
+
+    logCameraPosition() {
+        console.log('Camera eye:', this.renderer.camera.eye);
+        console.log('Camera view direction:', this.renderer.camera.viewDirection);
+
     }
 
 }
