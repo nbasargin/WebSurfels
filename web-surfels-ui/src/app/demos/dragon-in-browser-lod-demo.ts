@@ -50,7 +50,7 @@ export class DragonInBrowserLodDemo implements DemoBase {
 
             const data: PointCloudData = {
                 positions: rawData.attributes.POSITION.value,
-                sizes: new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3)).fill(0.003),
+                sizes: new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3)).fill(0.0015),
                 normals: rawData.attributes.NORMAL.value,
                 colors: new Float32Array(rawData.attributes.COLOR_0.value).map(c => c / 255),
             };
