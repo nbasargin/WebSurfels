@@ -52,7 +52,7 @@ async function generateLod() {
     const numNodes = octree.root.getNumberOfNodes();
     console.log(Timing.measure(), 'octree created');
 
-    const lod = octree.buildLod();
+    const lod = octree.buildLod(1);
     console.log(Timing.measure(), 'lod computed, start writing to disk');
 
     const folderPath = '../lod/';
