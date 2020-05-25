@@ -125,7 +125,7 @@ export class Subgrid {
             const radius = Math.sqrt(dx * dx + dy * dy + dz * dz) + input.sizes[i] / 2;
             maxRadius = Math.max(maxRadius, radius);
         }
-        const size = Math.max(minSize, Math.min(constAreaSize, 2 * maxRadius, cellSize * Math.sqrt(3)));
+        const size = Math.max(minSize, Math.min(constAreaSize, 2 * maxRadius, 1.5 * cellSize * Math.sqrt(3)));
 
         // append to output
         outputBuffer.positions.push(x, y, z);
