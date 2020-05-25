@@ -61,8 +61,12 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <h1>In-Browser LOD Construction Demo</h1>
                 <span *ngIf="demo.loading">LOADING...</span>
                 <ng-container *ngIf="!demo.loading">
-                    Show LOD level:
-                    <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i)">{{i}}</button>
+                    Show LOD level:<br>
+                    <span style="width:100px; display: inline-block">No Jitter:</span> 
+                    <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i, false)">{{i}}</button>
+                    <br>
+                    <span style="width:100px; display: inline-block">With Jitter:</span>
+                    <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i, true)">{{i}}</button>
                 </ng-container>
             </ng-container>
 

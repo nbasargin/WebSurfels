@@ -16,6 +16,7 @@ export class DragonInBrowserLodDemo implements DemoBase {
     preferredMovementSpeed = 1;
 
     private lodRoot: WeightedLodNode;
+    private lodRootJitter: WeightedLodNode;
 
     levels: Array<number>;
     loading: boolean = true;
@@ -23,7 +24,7 @@ export class DragonInBrowserLodDemo implements DemoBase {
     constructor(
         public renderer: Renderer,
         private orbitAnimation: OrbitAnimationController,
-        resolution: number = 32,
+        resolution: number = 16,
         maxDepth: number = 10,
     ) {
         this.renderer.camera.setOrientation(vec3.fromValues(3, 3, 3), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
@@ -61,9 +62,15 @@ export class DragonInBrowserLodDemo implements DemoBase {
             console.log(Timing.measure(), 'octree created');
 
             const treeDepth = octree.root.getDepth();
-            this.lodRoot = octree.buildLod();
+            this.lodRoot = octree.buildLod(0);
             console.log(Timing.measure(), 'lod computed');
             this.showLodLevel(0);
+
+            // now with jitter
+            octree.addData(data);
+            this.lodRootJitter = octree.buildLod(1);
+            console.log(Timing.measure(), 'octree + lod  with jitter');
+
             this.loading = false;
 
             this.levels = [];
@@ -73,9 +80,9 @@ export class DragonInBrowserLodDemo implements DemoBase {
         });
     }
 
-    showLodLevel(level: number) {
+    showLodLevel(level: number, jitter = false) {
         this.renderer.removeAllNodes();
-        const nodes = this.getNodesAtSpecificDepth(this.lodRoot, level);
+        const nodes = this.getNodesAtSpecificDepth(jitter ? this.lodRootJitter : this.lodRoot, level);
         for (const node of nodes) {
             this.renderer.addData(node.data);
         }
