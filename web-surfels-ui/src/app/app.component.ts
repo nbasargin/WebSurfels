@@ -212,6 +212,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     @HostListener('document:keyup', ['$event'])
     keyUp(e: KeyboardEvent) {
         this.pressedKeys.delete(e.code);
+        if (e.key == ' ') {
+            this.showOverlay = !this.showOverlay;
+        }
     }
 
     @HostListener('mousemove', ['$event'])
