@@ -67,6 +67,8 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                     <br>
                     <span style="width:100px; display: inline-block">With Jitter:</span>
                     <button *ngFor="let i of demo.levels" (click)="demo.showLodLevel(i, true)">{{i}}</button>
+                    <br>
+                    Currently shown: LOD {{demo.lodLevel}}, {{demo.jitter ? 'with' : 'no'}} jitter
                 </ng-container>
             </ng-container>
 

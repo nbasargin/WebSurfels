@@ -21,6 +21,10 @@ export class DragonInBrowserLodDemo implements DemoBase {
     levels: Array<number>;
     loading: boolean = true;
 
+    // shown
+    jitter: boolean = false;
+    lodLevel: number = 0;
+
     constructor(
         public renderer: Renderer,
         private orbitAnimation: OrbitAnimationController,
@@ -81,6 +85,8 @@ export class DragonInBrowserLodDemo implements DemoBase {
     }
 
     showLodLevel(level: number, jitter = false) {
+        this.lodLevel = level;
+        this.jitter = jitter;
         this.renderer.removeAllNodes();
         const nodes = this.getNodesAtSpecificDepth(jitter ? this.lodRootJitter : this.lodRoot, level);
         for (const node of nodes) {
