@@ -15,8 +15,6 @@ import { OctreeDataNode, OctreeNodeInfo } from './octree-data-node';
  */
 export class InnerDataNode implements OctreeDataNode {
 
-    public static readonly LOD_RANDOMNESS = 1;
-
     private children: Array<OctreeDataNode>;
 
     constructor(

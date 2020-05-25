@@ -26,8 +26,8 @@ export class OctreeLodBuilder {
         console.log(`Added data to octree. The tree now has ${this.root.getNumberOfNodes()} nodes and a total depth of ${this.root.getDepth()}.`);
     }
 
-    buildLod(): WeightedLodNode {
-        const lod = this.root.computeLOD(new Subgrid(this.resolution, InnerDataNode.LOD_RANDOMNESS));
+    buildLod(jitter: number = 0): WeightedLodNode {
+        const lod = this.root.computeLOD(new Subgrid(this.resolution, jitter));
         this.root = this.constructInitialRoot();
         return lod;
     }

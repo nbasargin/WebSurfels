@@ -65,7 +65,7 @@ export class Subgrid {
                 nextPointIndex = indexChains[nextPointIndex];
             }
             if (pointIndices.length > 0) {
-                Subgrid.reduceCell(data, pointIndices, cellSize, outputBuffer);
+                this.reduceCell(data, pointIndices, cellSize, outputBuffer);
             }
         }
 
@@ -81,7 +81,7 @@ export class Subgrid {
     /**
      * Reduce all points assigned to a cell. Output is appended to the outputBuffer.
      */
-    private static reduceCell(input: WeightedPointCloudData, inputIndices: Array<number>, cellSize: number, outputBuffer: SubgridOutputBuffer) {
+    private reduceCell(input: WeightedPointCloudData, inputIndices: Array<number>, cellSize: number, outputBuffer: SubgridOutputBuffer) {
         let x = 0, y = 0, z = 0;
         let r = 0, g = 0, b = 0;
         let nx = 0, ny = 0, nz = 0;
@@ -125,7 +125,7 @@ export class Subgrid {
             const radius = Math.sqrt(dx * dx + dy * dy + dz * dz) + input.sizes[i] / 2;
             maxRadius = Math.max(maxRadius, radius);
         }
-        const size = Math.max(minSize, Math.min(constAreaSize, 2 * maxRadius, 1.5 * cellSize * Math.sqrt(3)));
+        const size = Math.max(minSize, Math.min(constAreaSize, 2 * maxRadius, (1 + this.jitter) * cellSize * Math.sqrt(3)));
 
         // append to output
         outputBuffer.positions.push(x, y, z);
