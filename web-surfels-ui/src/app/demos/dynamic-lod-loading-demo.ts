@@ -7,6 +7,7 @@ import { DemoBase } from './demo-base';
 
 export interface DynamicLodBenchmarkData {
     frameDurations: Array<number>;
+    avgFPS: Array<number>;
     pointsRendered: Array<number>;
     pointsLoaded: Array<number>;
     nodesRendered: Array<number>;
@@ -62,7 +63,7 @@ export class DynamicLodLoadingDemo implements DemoBase {
         this.orbitAnimation.animate(0);
 
         const loader = new XhrLodLoader('http://localhost:5000/');
-        this.dynamicLod = new DynamicLodController(this.renderer, loader, this.initialSizeThreshold, {strategy: 'nthFrame', unloadThreshold: 50, nthFrame: 10});
+        this.dynamicLod = new DynamicLodController(this.renderer, loader, this.initialSizeThreshold, {strategy: 'nthFrame', unloadThreshold: 100, nthFrame: 50});
     }
 
     setCameraPosition(startPointID: number, progress: number = 0) {
@@ -89,6 +90,7 @@ export class DynamicLodLoadingDemo implements DemoBase {
         this.benchmarkRunning = true;
         this.benchmarkResults = {
             frameDurations: [],
+            avgFPS: [],
             pointsRendered: [],
             pointsLoaded: [],
             nodesRendered: [],
@@ -101,10 +103,10 @@ export class DynamicLodLoadingDemo implements DemoBase {
             return;
         }
 
-        const csvRows: Array<string> = ['frameDurations, pointsRendered, nodesRendered, pointsLoaded, nodesLoaded'];
+        const csvRows: Array<string> = ['frameDurations, avgFPS, pointsRendered, nodesRendered, pointsLoaded, nodesLoaded'];
         const b = this.benchmarkResults;
         for (let i = 0; i < b.frameDurations.length; i++) {
-            csvRows.push(b.frameDurations[i] + ', ' + b.pointsRendered[i] + ', '
+            csvRows.push(b.frameDurations[i] + ', ' + b.avgFPS[i] + ', ' + b.pointsRendered[i] + ', '
                 + b.nodesRendered[i] + ', ' + b.pointsLoaded[i] + ', ' + b.nodesLoaded[i]);
         }
         this.benchmarkResults = null;
@@ -123,6 +125,14 @@ export class DynamicLodLoadingDemo implements DemoBase {
         this.benchmarkResults.pointsLoaded.push(stats.loadedPoints);
         this.benchmarkResults.nodesRendered.push(stats.renderedNodes);
         this.benchmarkResults.nodesLoaded.push(stats.loadedNodes);
+
+        const durations = this.benchmarkResults.frameDurations;
+        const windowSize = Math.min(5, durations.length);
+        let summedDurations = 0;
+        for (let i = 0; i < windowSize; i++) {
+            summedDurations += durations[durations.length - 1 - i];
+        }
+        this.benchmarkResults.avgFPS.push(1000 / (summedDurations / windowSize));
 
         const framesBetweenTwoCamPoints = 200;
 
