@@ -39,8 +39,8 @@ export class DynamicStreetViewDemo implements DemoBase {
         const api = new LocalStreetViewApi(`http://localhost:5000/${data.path}`);
         const loader = new StreetViewLoader(api, 0.4, 1.5);
         this.controller = new DynamicStreetViewController(renderer, loader, 50, 300, {
-            softMinimum: 10_000_000,
-            softMaximum: 50_000_000
+            softMinimum: 100_000_000,
+            softMaximum: 120_000_000
         }, data.startID);
     }
 
