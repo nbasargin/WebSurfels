@@ -7,6 +7,7 @@ import { FpsCounter } from '../lib/utils/fps-counter';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
 import { DynamicLodLoadingDemo } from './demos/dynamic-lod-loading-demo';
 import { DynamicStreetViewDemo } from './demos/dynamic-street-view-demo';
+import { MemoryLimitsDemo } from './demos/memory-limits-demo';
 import { SphereDemo } from './demos/sphere-demo';
 import { StreetViewCrawlerDemo } from './demos/street-view-crawler-demo';
 import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
@@ -120,6 +121,16 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <div>(after overlap reduction & small splat merging; not including LOD levels)</div>
             </ng-container>
 
+            <ng-container *ngIf="demos?.memory as demo">
+                <h1>Memory limits demo</h1>
+                <span>Test memory capacity for 100 million points.</span><br>
+                <button *ngIf="!demo.testRunning && !demo.done" (click)="demo.test()">TEST</button>
+                <span *ngIf="demo.testRunning && !demo.done">Test running...</span>
+                <span *ngIf="demo.done">DONE!</span>
+                <br>
+                <span>{{demo.points.toLocaleString('en-us')}} points on the GPU</span>
+            </ng-container>
+
         </app-main-overlay>
 
         <div #wrapper class="full-size">
@@ -166,6 +177,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         sphere?: SphereDemo,
         castle?: DynamicLodLoadingDemo,
         streetView?: DynamicStreetViewDemo,
+        memory?: MemoryLimitsDemo,
     };
 
     ngAfterViewInit(): void {
@@ -182,8 +194,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
-                castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
+                // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
                 // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
+                memory: new MemoryLimitsDemo(this.renderer),
             };
 
             for (const demo of Object.values(this.demos)) {
@@ -273,6 +286,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             const stats = this.demos.streetView.controller.render();
             this.pointsDrawn = stats.pointsDrawn;
             this.nodesDrawn = stats.nodesDrawn;
+        } else if (this.demos.memory) {
+            this.demos.memory.render();
 
         } else {
             const stats = this.renderer.render(this.renderer.nodes);
