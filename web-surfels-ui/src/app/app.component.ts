@@ -117,7 +117,6 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <button *ngIf="demo.benchmark.data && !demo.benchmark.running"
                         (click)="demo.benchmark.exportBenchmarkResults()">Export results
                 </button>
-
             </ng-container>
 
             <ng-container *ngIf="demos?.streetView as demo">
@@ -132,7 +131,17 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                     There are network errors! Is the server connection fine and all required data available?
                     <button (click)="demo.controller.forgetPreviousNetworkErrors()">Forget previous errors</button>
                 </div>
-
+                <h1>Benchmark</h1>
+                Camera positions:
+                <button *ngFor="let p of demo.benchmark.cameraPath.points; let i = index"
+                        (click)="demo.benchmark.cameraPath.setCameraPosition(i)">{{i}}</button>
+                <br>
+                Benchmark:
+                <button *ngIf="!demo.benchmark.running" (click)="demo.benchmark.startBenchmark()">Start</button>
+                <span *ngIf="demo.benchmark.running">running... frame {{demo.benchmark.data!.frameDurations.length}}</span>
+                <button *ngIf="demo.benchmark.data && !demo.benchmark.running"
+                        (click)="demo.benchmark.exportBenchmarkResults()">Export results
+                </button>
             </ng-container>
 
             <ng-container *ngIf="demos?.memory as demo">
@@ -212,8 +221,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
-                castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
-                // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
+                // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
+                streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
                 // memory: new MemoryLimitsDemo(this.renderer),
             };
 
@@ -301,6 +310,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         } else if (this.demos.streetView) {
             this.renderingStats = this.demos.streetView.controller.render();
+            this.demos.streetView.benchmark.record(duration, this.renderingStats);
+
         } else if (this.demos.memory) {
             this.demos.memory.render();
 
