@@ -9,12 +9,13 @@ import { BoundingBox, BoundingCube, BoundingSphere } from '../../utils/bounding-
 import { Point3d } from '../../utils/point3d';
 import { DynamicStreetViewNode, PanoramaLOD } from './dynamic-street-view-node';
 
+export interface PointBudgets {
+    softMinimum: number;
+    softMaximum: number;
+}
+
 export class DynamicStreetViewController {
 
-    loadedPointBudgets = {
-        softMinimum: 10_000_000,
-        softMaximum: 50_000_000
-    };
     maxConcurrentApiRequests = 3;
 
     pointsInMemory = 0;
@@ -42,6 +43,7 @@ export class DynamicStreetViewController {
         public loader: StreetViewLoader,
         public qualityDist: number, // distance within highest quality will be used
         public loadingDist: number, // distance within all panoramas must be loaded
+        public pointLoadingBudgets: PointBudgets,
         startPanoramaID: string,
     ) {
         // asynchronously load base panorama and set camera orientation
@@ -57,6 +59,17 @@ export class DynamicStreetViewController {
         });
     }
 
+    /**
+     * Forget about all previous network errors.
+     * Use to resume loading after a lost connection to the server.
+     */
+    forgetPreviousNetworkErrors() {
+        this.errors.clear();
+    }
+
+    hasNetworkErrors(): boolean {
+        return this.errors.size > 0;
+    }
 
     /**
      * Request panorama loading.
@@ -269,7 +282,7 @@ export class DynamicStreetViewController {
             const mediumThreshold = 8;
 
             // NEW
-            if (dist < this.loadingDist || this.pointsInMemory < this.loadedPointBudgets.softMinimum) {
+            if (dist < this.loadingDist || this.pointsInMemory < this.pointLoadingBudgets.softMinimum) {
                 // load missing links // todo optimize this (with allLinksLoaded flag)
                 for (const link of node.links) {
                     this.requestPanoramaLoading(link, node.center);
@@ -324,12 +337,12 @@ export class DynamicStreetViewController {
         }
 
         // check if there are too many points
-        if (this.pointsInMemory > this.loadedPointBudgets.softMaximum) {
-            console.log('!!! cleanup, in memory:', this.pointsInMemory, 'max:', this.loadedPointBudgets.softMaximum);
+        if (this.pointsInMemory > this.pointLoadingBudgets.softMaximum) {
+            console.log('!!! cleanup, in memory:', this.pointsInMemory, 'max:', this.pointLoadingBudgets.softMaximum);
             // do a serious cleanup: remove all nodes outside minLoadDist so that
             // remaining points are below unload threshold
-            const min = this.loadedPointBudgets.softMinimum;
-            const max = this.loadedPointBudgets.softMaximum;
+            const min = this.pointLoadingBudgets.softMinimum;
+            const max = this.pointLoadingBudgets.softMaximum;
             const unloadThreshold = min + (max - min) / 2;
 
             // get all distances

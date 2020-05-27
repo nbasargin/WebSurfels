@@ -118,6 +118,11 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
             <ng-container *ngIf="demos?.streetView as demo">
                 <h1>Dynamic Street View Demo</h1>
                 <div>Points in memory: {{demo.controller.pointsInMemory.toLocaleString('en-us')}}</div>
+                <div *ngIf="demo.controller.hasNetworkErrors()">
+                    There are network errors! Is the server connection fine and all required data available?
+                    <button (click)="demo.controller.forgetPreviousNetworkErrors()">Forget previous errors</button>    
+                </div>
+                
             </ng-container>
 
             <ng-container *ngIf="demos?.memory as demo">
