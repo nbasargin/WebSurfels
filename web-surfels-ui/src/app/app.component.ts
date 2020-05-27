@@ -106,8 +106,8 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
                 <h1>Benchmark</h1>
                 Camera positions:
-                <button *ngFor="let p of demo.cameraPoints; let i = index"
-                        (click)="demo.setCameraPosition(i)">{{i}}</button>
+                <button *ngFor="let p of demo.cameraPath.points; let i = index"
+                        (click)="demo.cameraPath.setCameraPosition(i)">{{i}}</button>
                 <br>
                 Benchmark:
                 <button *ngIf="!demo.benchmarkRunning" (click)="demo.startBenchmark()">Start</button>
@@ -208,8 +208,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
-                // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
-                streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
+                castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
+                // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
                 // memory: new MemoryLimitsDemo(this.renderer),
             };
 
