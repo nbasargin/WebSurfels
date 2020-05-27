@@ -11,11 +11,13 @@ import { DynamicStreetViewNode, PanoramaLOD } from './dynamic-street-view-node';
 
 export class DynamicStreetViewController {
 
+    loadedPointBudgets = {
+        softMinimum: 10_000_000,
+        softMaximum: 50_000_000
+    };
     maxConcurrentApiRequests = 3;
-    minVisiblePanoramas = 100;
-    maxLoadedPanoramas = 6000;
 
-    totalOriginalPointsOnGPU = 0; // original points on the GPU (does not include LOD representations)
+    pointsInMemory = 0;
 
     private requested: Map<string, Point3d> = new Map();
     private loading: Set<string> = new Set();
@@ -39,6 +41,7 @@ export class DynamicStreetViewController {
         public renderer: Renderer,
         public loader: StreetViewLoader,
         public qualityDist: number, // distance within highest quality will be used
+        public loadingDist: number, // distance within all panoramas must be loaded
         startPanoramaID: string,
     ) {
         // asynchronously load base panorama and set camera orientation
@@ -115,7 +118,6 @@ export class DynamicStreetViewController {
             positions[i + 2] += centerPos.z;
         }
 
-        // console.log('!! complete loading', pano.id);
         this.streetViewNodes.set(pano.id, {
             id: pano.id,
             state: 'waitingForNeighbors',
@@ -147,7 +149,6 @@ export class DynamicStreetViewController {
         // overlap reduction
         const centers = node.links.map(link => this.panoCenters.get(link)!);
         const data = this.reduceOverlaps(node.data, node.center, centers);
-        this.totalOriginalPointsOnGPU += data.sizes.length;
 
         // LOD
         const bb = BoundingBox.create(data.positions, data.sizes);
@@ -160,7 +161,7 @@ export class DynamicStreetViewController {
         const data64 = this.subgrid64.reduce(weightedData, bc);
         const data32 = this.subgrid32.reduce(weightedData, bc);
 
-
+        // add the node to the renderer
         const newNode: DynamicStreetViewNode = {
             id: node.id,
             state: 'rendering',
@@ -185,8 +186,13 @@ export class DynamicStreetViewController {
                 }
             },
         };
-        this.streetViewNodes.set(node.id, newNode);
 
+        this.pointsInMemory += newNode.lod.original.rendererNode.numPoints;
+        this.pointsInMemory += newNode.lod.high.rendererNode.numPoints;
+        this.pointsInMemory += newNode.lod.medium.rendererNode.numPoints;
+        this.pointsInMemory += newNode.lod.low.rendererNode.numPoints;
+
+        this.streetViewNodes.set(node.id, newNode);
     }
 
     private reduceOverlaps(data: PointCloudData, center: Point3d, centers: Array<Point3d>): PointCloudData {
@@ -225,13 +231,23 @@ export class DynamicStreetViewController {
 
     private unloadNode(node: DynamicStreetViewNode) {
         if (node.state === 'rendering') {
-            this.totalOriginalPointsOnGPU -= node.lod.original.rendererNode.numPoints;
+            this.pointsInMemory -= node.lod.original.rendererNode.numPoints;
+            this.pointsInMemory -= node.lod.high.rendererNode.numPoints;
+            this.pointsInMemory -= node.lod.medium.rendererNode.numPoints;
+            this.pointsInMemory -= node.lod.low.rendererNode.numPoints;
+
             this.renderer.removeNode(node.lod.original.rendererNode);
             this.renderer.removeNode(node.lod.high.rendererNode);
             this.renderer.removeNode(node.lod.medium.rendererNode);
             this.renderer.removeNode(node.lod.low.rendererNode);
         }
         this.streetViewNodes.delete(node.id);
+    }
+
+    private nodeCameraDistance(node: DynamicStreetViewNode) {
+        const cam = this.renderer.camera.eye;
+        const pos = node.center;
+        return Math.sqrt((cam[0] - pos.x) ** 2 + (cam[1] - pos.y) ** 2 + (cam[2] - pos.z) ** 2);
     }
 
     //
@@ -245,23 +261,16 @@ export class DynamicStreetViewController {
 
         // iterate over all loaded panoramas
         for (const node of this.streetViewNodes.values()) {
-            const pos = node.center;
-            const dist = Math.sqrt((cam[0] - pos.x) ** 2 + (cam[1] - pos.y) ** 2 + (cam[2] - pos.z) ** 2);
+            const dist = this.nodeCameraDistance(node);
 
             // Appropriate LOD level, link resolution and unloading is based on qualityDist times the threshold
             const originalThreshold = 1;
             const highThreshold = 4;
             const mediumThreshold = 8;
-            const lowThreshold = 32;
 
-            if (dist > lowThreshold * this.qualityDist && this.visiblePanoramas > this.minVisiblePanoramas) {
-                // console.log('!! removing ', node.id);
-                this.unloadNode(node);
-                continue;
-            }
-
-            if (dist < mediumThreshold * this.qualityDist) {
-                // load missing links
+            // NEW
+            if (dist < this.loadingDist || this.pointsInMemory < this.loadedPointBudgets.softMinimum) {
+                // load missing links // todo optimize this (with allLinksLoaded flag)
                 for (const link of node.links) {
                     this.requestPanoramaLoading(link, node.center);
                 }
@@ -299,8 +308,7 @@ export class DynamicStreetViewController {
         // send loading requests: prioritize panoramas close to the camera
         while (
             this.requested.size > 0 &&
-            this.loading.size < this.maxConcurrentApiRequests &&
-            this.requested.size + this.loading.size + this.streetViewNodes.size < this.maxLoadedPanoramas
+            this.loading.size < this.maxConcurrentApiRequests
         ) {
             let minDist = Number.POSITIVE_INFINITY;
             let minID = '';
@@ -313,6 +321,34 @@ export class DynamicStreetViewController {
                 }
             }
             this.startPanoramaLoading(minID);
+        }
+
+        // check if there are too many points
+        if (this.pointsInMemory > this.loadedPointBudgets.softMaximum) {
+            console.log('!!! cleanup, in memory:', this.pointsInMemory, 'max:', this.loadedPointBudgets.softMaximum);
+            // do a serious cleanup: remove all nodes outside minLoadDist so that
+            // remaining points are below unload threshold
+            const min = this.loadedPointBudgets.softMinimum;
+            const max = this.loadedPointBudgets.softMaximum;
+            const unloadThreshold = min + (max - min) / 2;
+
+            // get all distances
+            const dists: Array<[DynamicStreetViewNode, number]>
+                = [...this.streetViewNodes.values()].map(node => [node, this.nodeCameraDistance(node)]);
+            // sort them
+            dists.sort((a, b) => b[1] - a[1]);
+
+            if (dists[0][1] <= this.loadingDist) {
+                console.warn('Points are over max memory budget! Cannot free memory since all nodes are within minimal loading distance!');
+            } else {
+                // remove nodes starting with the most distant ones until there are not too many points or all nodes are within distance
+                for (const [node, dist] of dists) {
+                    if (dist <= this.loadingDist || this.pointsInMemory < unloadThreshold) {
+                        break;
+                    }
+                    this.unloadNode(node);
+                }
+            }
         }
 
         return stats;

@@ -1,6 +1,5 @@
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { DynamicStreetViewController } from '../../lib/controllers/dynamic-street-view/dynamic-street-view-controller';
-import { GoogleStreetViewApi } from '../../lib/data/street-view/api/google-street-view-api';
 import { LocalStreetViewApi } from '../../lib/data/street-view/api/local-street-view-api';
 import { StreetViewLoader } from '../../lib/data/street-view/street-view-loader';
 import { Renderer } from '../../lib/renderer/renderer';
@@ -11,6 +10,17 @@ export class DynamicStreetViewDemo implements DemoBase {
     preferredMovementSpeed: number = 10;
 
     controller: DynamicStreetViewController;
+
+    datasets = {
+        paris25k: {
+            path: 'paris25k',
+            startID: 'PxH7e1kCSV7p728tziDR_w'
+        },
+        manhattan5k: {
+            path: 'manhattan5k',
+            startID: 'h--IJXCoiMfBaHbDmPPKKg',
+        }
+    };
 
     constructor(
         public renderer: Renderer,
@@ -23,10 +33,12 @@ export class DynamicStreetViewDemo implements DemoBase {
 
         this.orbitAnimation.animate(0);
 
+        const data = this.datasets.paris25k;
+
         // const api = new GoogleStreetViewApi();
-        const api = new LocalStreetViewApi('http://localhost:5000/test-crawl');
+        const api = new LocalStreetViewApi(`http://localhost:5000/${data.path}`);
         const loader = new StreetViewLoader(api, 0.4, 1.5);
-        this.controller = new DynamicStreetViewController(renderer, loader, 50, 's6A9P5A3iWvqNscixSRPsw');
+        this.controller = new DynamicStreetViewController(renderer, loader, 50, 300, data.startID);
     }
 
 }

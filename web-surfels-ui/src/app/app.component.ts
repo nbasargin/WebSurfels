@@ -117,8 +117,7 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
             <ng-container *ngIf="demos?.streetView as demo">
                 <h1>Dynamic Street View Demo</h1>
-                <div>Original Points on GPU: {{demo.controller.totalOriginalPointsOnGPU.toLocaleString('en-us')}}</div>
-                <div>(after overlap reduction & small splat merging; not including LOD levels)</div>
+                <div>Points in memory: {{demo.controller.pointsInMemory.toLocaleString('en-us')}}</div>
             </ng-container>
 
             <ng-container *ngIf="demos?.memory as demo">
@@ -195,8 +194,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
                 // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
-                // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
-                memory: new MemoryLimitsDemo(this.renderer),
+                streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
+                // memory: new MemoryLimitsDemo(this.renderer),
             };
 
             for (const demo of Object.values(this.demos)) {
