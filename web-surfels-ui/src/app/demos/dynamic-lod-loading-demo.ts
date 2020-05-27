@@ -3,7 +3,7 @@ import { DynamicLodController } from '../../lib/controllers/dynamic-lod/dynamic-
 import { XhrLodLoader } from '../../lib/data/level-of-detail/xhr-lod-loader';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
-import { BenchmarkData } from '../benchmarks/benchmark-data';
+import { Benchmark } from '../benchmarks/benchmark';
 import { CameraPath } from '../benchmarks/camera-path';
 import { DemoBase } from './demo-base';
 
@@ -14,10 +14,7 @@ export class DynamicLodLoadingDemo implements DemoBase {
     dynamicLod: DynamicLodController;
     initialSizeThreshold = 1.4;
 
-    benchmarkResults: BenchmarkData | null = null;
-    benchmarkRunning: boolean = false;
-
-    cameraPath: CameraPath;
+    benchmark: Benchmark;
 
     constructor(
         public renderer: Renderer,
@@ -36,7 +33,7 @@ export class DynamicLodLoadingDemo implements DemoBase {
         const loader = new XhrLodLoader('http://localhost:5000/');
         this.dynamicLod = new DynamicLodController(this.renderer, loader, this.initialSizeThreshold, {strategy: 'nthFrame', unloadThreshold: 100, nthFrame: 50});
 
-        this.cameraPath = new CameraPath(renderer.camera, [
+        const cameraPath = new CameraPath(renderer.camera, [
             {
                 pos: vec3.fromValues(-123.87712097167969, 40.665348052978516, 130.97201538085938),
                 viewDirection: vec3.fromValues(0.5519500970840454, -0.29570692777633667, -0.779684841632843)
@@ -58,40 +55,8 @@ export class DynamicLodLoadingDemo implements DemoBase {
                 viewDirection: vec3.fromValues(-0.6645565032958984, -0.5060217976570129, 0.5498241186141968)
             },
         ]);
+
+        this.benchmark = new Benchmark(cameraPath);
     }
-
-    startBenchmark() {
-        this.benchmarkRunning = true;
-        this.benchmarkResults = new BenchmarkData();
-    }
-
-    exportBenchmarkResults() {
-        if (!this.benchmarkResults) {
-            return;
-        }
-        this.benchmarkResults.exportData();
-        this.benchmarkResults = null;
-    }
-
-    record(msPassed: number) {
-        if (!this.benchmarkRunning || !this.benchmarkResults) {
-            return;
-        }
-        const stats = this.dynamicLod.stats;
-        this.benchmarkResults.record(msPassed, stats);
-
-        const framesBetweenTwoCamPoints = 200;
-        const frame = this.benchmarkResults.frameDurations.length;
-        if (frame >= this.cameraPath.points.length * framesBetweenTwoCamPoints) {
-            this.benchmarkRunning = false;
-            return;
-        }
-
-        // next cam position
-        const pointID = Math.floor(frame / framesBetweenTwoCamPoints);
-        const progress = (frame - pointID * framesBetweenTwoCamPoints) / framesBetweenTwoCamPoints;
-        this.cameraPath.setCameraPosition(pointID, progress);
-    }
-
 
 }

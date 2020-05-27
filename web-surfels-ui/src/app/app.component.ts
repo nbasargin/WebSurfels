@@ -88,9 +88,11 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <button (click)="demo.nearCam()">near</button>
                 <br>
                 <span style="width: 100px; display: inline-block">FPS:</span>
-                {{this.frozenFPS.toLocaleString('en-us')}} <button (click)="this.frozenFPS = this.fps">Update</button>   
+                {{this.frozenFPS.toLocaleString('en-us')}}
+                <button (click)="this.frozenFPS = this.fps">Update</button>
                 <br>
-                <span style="width: 100px; display: inline-block">Resolution:</span> {{canvas.width}} x {{canvas.height}}
+                <span style="width: 100px; display: inline-block">Resolution:</span> {{canvas.width}}
+                x {{canvas.height}}
             </ng-container>
 
             <ng-container *ngIf="demos?.castle as demo">
@@ -106,13 +108,15 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
                 <h1>Benchmark</h1>
                 Camera positions:
-                <button *ngFor="let p of demo.cameraPath.points; let i = index"
-                        (click)="demo.cameraPath.setCameraPosition(i)">{{i}}</button>
+                <button *ngFor="let p of demo.benchmark.cameraPath.points; let i = index"
+                        (click)="demo.benchmark.cameraPath.setCameraPosition(i)">{{i}}</button>
                 <br>
                 Benchmark:
-                <button *ngIf="!demo.benchmarkRunning" (click)="demo.startBenchmark()">Start</button>
-                <span *ngIf="demo.benchmarkRunning">running... frame {{demo.benchmarkResults!.frameDurations.length}}</span>
-                <button *ngIf="demo.benchmarkResults && !demo.benchmarkRunning" (click)="demo.exportBenchmarkResults()">Export results</button>
+                <button *ngIf="!demo.benchmark.running" (click)="demo.benchmark.startBenchmark()">Start</button>
+                <span *ngIf="demo.benchmark.running">running... frame {{demo.benchmark.data!.frameDurations.length}}</span>
+                <button *ngIf="demo.benchmark.data && !demo.benchmark.running"
+                        (click)="demo.benchmark.exportBenchmarkResults()">Export results
+                </button>
 
             </ng-container>
 
@@ -120,15 +124,15 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <h1>Dynamic Street View Demo</h1>
                 <div>Points in memory: {{demo.controller.pointsInMemory.toLocaleString('en-us')}}</div>
                 <div>
-                    Soft limits: 
+                    Soft limits:
                     {{demo.controller.pointLoadingBudgets.softMinimum.toLocaleString('en-us')}} -
                     {{demo.controller.pointLoadingBudgets.softMaximum.toLocaleString('en-us')}}
                 </div>
                 <div *ngIf="demo.controller.hasNetworkErrors()">
                     There are network errors! Is the server connection fine and all required data available?
-                    <button (click)="demo.controller.forgetPreviousNetworkErrors()">Forget previous errors</button>    
+                    <button (click)="demo.controller.forgetPreviousNetworkErrors()">Forget previous errors</button>
                 </div>
-                
+
             </ng-container>
 
             <ng-container *ngIf="demos?.memory as demo">
@@ -293,7 +297,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         if (this.demos.castle) {
             this.demos.castle.dynamicLod.render();
             this.renderingStats = this.demos.castle.dynamicLod.stats;
-            this.demos.castle.record(duration);
+            this.demos.castle.benchmark.record(duration, this.renderingStats);
 
         } else if (this.demos.streetView) {
             this.renderingStats = this.demos.streetView.controller.render();
