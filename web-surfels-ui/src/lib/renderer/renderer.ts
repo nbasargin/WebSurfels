@@ -2,6 +2,7 @@ import { PointCloudData } from '../data/point-cloud-data';
 import { Camera } from './camera';
 import { DirectionalLight } from './directional-light';
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
+import { RenderingStats } from './rendering-stats';
 import { NormShader } from './shader/norm-shader';
 import { RendererNode } from './renderer-node';
 import { SplatShader } from './shader/splat-shader';
@@ -21,11 +22,14 @@ export class Renderer {
     private readonly splatShader: SplatShader;
     private readonly normShader: NormShader;
 
+    private pointsInMemory: number = 0;
+
     private readonly uniforms: {
         sizeScale: number,
         splatDepthSizeRatio: number,
         splatDepthEpsilon: number,
     };
+
     constructor(public readonly canvas: HTMLCanvasElement, initialWidth: number, initialHeight: number) {
         const context = canvas.getContext('webgl2');
         if (!context || !(context instanceof WebGL2RenderingContext)) {
@@ -77,10 +81,12 @@ export class Renderer {
             }
         };
         this.nodes.add(node);
+        this.pointsInMemory += node.numPoints;
         return node;
     }
 
     removeNode(node: RendererNode) {
+        this.pointsInMemory -= node.numPoints;
         this.gl.deleteBuffer(node.buffers.positions);
         this.gl.deleteBuffer(node.buffers.sizes);
         this.gl.deleteBuffer(node.buffers.colors);
@@ -115,7 +121,7 @@ export class Renderer {
         this.uniforms.splatDepthEpsilon = depthEpsilon;
     }
 
-    render(nodes: Iterable<RendererNode> = this.nodes): {nodesDrawn: number, pointsDrawn: number} {
+    render(nodes: Iterable<RendererNode> = this.nodes): RenderingStats {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.ONE, this.gl.ONE);
@@ -194,7 +200,7 @@ export class Renderer {
         if (drawStats.nodesDrawn > 0) {
             this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
         }
-        return drawStats;
+        return {...drawStats, pointsLoaded: this.pointsInMemory, nodesLoaded: this.nodes.size};
     }
 
     private drawNodes(nodes: Iterable<RendererNode>): {nodesDrawn: number, pointsDrawn: number} {

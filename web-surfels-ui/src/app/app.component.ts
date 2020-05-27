@@ -3,6 +3,7 @@ import { FirstPersonController } from '../lib/controllers/camera/first-person-co
 import { OrbitAnimationController } from '../lib/controllers/camera/orbit-animation-controller';
 import { HeadlightController } from '../lib/controllers/light/headlight-controller';
 import { Renderer } from '../lib/renderer/renderer';
+import { RenderingStats } from '../lib/renderer/rendering-stats';
 import { FpsCounter } from '../lib/utils/fps-counter';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
 import { DynamicLodLoadingDemo } from './demos/dynamic-lod-loading-demo';
@@ -18,8 +19,8 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
         <app-main-overlay *ngIf="showOverlay"
                           class="main-overlay-2"
                           [fps]="fps"
-                          [nodes]="nodesDrawn"
-                          [points]="pointsDrawn"
+                          [nodes]="renderingStats.nodesDrawn"
+                          [points]="renderingStats.pointsDrawn"
                           [animate]="animate"
                           [hqSplats]="renderer.highQuality"
                           [scale]="sizeScale"
@@ -94,8 +95,8 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
             <ng-container *ngIf="demos?.castle as demo">
                 <h1>Dynamic LOD Loading Demo</h1>
-                <div>Points loaded: {{demo.dynamicLod.stats.loadedPoints.toLocaleString('en-us')}}</div>
-                <div>Nodes loaded: {{demo.dynamicLod.stats.loadedNodes.toLocaleString('en-us')}}</div>
+                <div>Points loaded: {{demo.dynamicLod.stats.pointsLoaded.toLocaleString('en-us')}}</div>
+                <div>Nodes loaded: {{demo.dynamicLod.stats.nodesLoaded.toLocaleString('en-us')}}</div>
                 <div>Size threshold:
                     <input #sizeThresholdSlider (input)="demo.dynamicLod.sizeThreshold = +sizeThresholdSlider.value"
                            type="range" min="0.4" max="2.4" step="0.1" [value]="demo.initialSizeThreshold">
@@ -156,8 +157,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     showOverlay = false;
 
     fps = 0;
-    pointsDrawn: number = 0;
-    nodesDrawn: number = 0;
+    renderingStats: RenderingStats = {
+        nodesDrawn: 0,
+        nodesLoaded: 0,
+        pointsDrawn: 0,
+        pointsLoaded: 0,
+    };
     animate = false;
     frozenFPS = 0;
     sizeScale = 1;
@@ -287,21 +292,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
         if (this.demos.castle) {
             this.demos.castle.dynamicLod.render();
-            this.pointsDrawn = this.demos.castle.dynamicLod.stats.renderedPoints;
-            this.nodesDrawn = this.demos.castle.dynamicLod.stats.renderedNodes;
+            this.renderingStats = this.demos.castle.dynamicLod.stats;
             this.demos.castle.record(duration);
 
         } else if (this.demos.streetView) {
-            const stats = this.demos.streetView.controller.render();
-            this.pointsDrawn = stats.pointsDrawn;
-            this.nodesDrawn = stats.nodesDrawn;
+            this.renderingStats = this.demos.streetView.controller.render();
         } else if (this.demos.memory) {
             this.demos.memory.render();
 
         } else {
-            const stats = this.renderer.render(this.renderer.nodes);
-            this.pointsDrawn = stats.pointsDrawn;
-            this.nodesDrawn = stats.nodesDrawn;
+            this.renderingStats = this.renderer.render(this.renderer.nodes);
         }
     }
 

@@ -1,3 +1,4 @@
+import { RenderingStats } from '../../renderer/rendering-stats';
 import { DynamicLodNode, DynamicLodNodeState } from './dynamic-lod-node';
 import { LodLoader } from '../../data/level-of-detail/lod-loader';
 import { Renderer } from '../../renderer/renderer';
@@ -14,11 +15,11 @@ type UnloadConfig = {
 
 export class DynamicLodController {
 
-    readonly stats = {
-        loadedNodes: 0,
-        loadedPoints: 0,
-        renderedNodes: 0,
-        renderedPoints: 0,
+    stats: RenderingStats  = {
+        pointsLoaded: 0,
+        pointsDrawn: 0,
+        nodesLoaded: 0,
+        nodesDrawn: 0,
     };
 
     private root: DynamicLodNode;
@@ -80,9 +81,7 @@ export class DynamicLodController {
             }
         }
 
-        const {nodesDrawn, pointsDrawn} = this.renderer.render(renderList);
-        this.stats.renderedNodes = nodesDrawn;
-        this.stats.renderedPoints = pointsDrawn;
+        this.stats = this.renderer.render(renderList);
 
         // unloading of frames
         this.frameCounter++;
@@ -142,8 +141,6 @@ export class DynamicLodController {
     // does not care about children
     private addLodNode(node: LodNode): DynamicLodNode {
         const rendererNode = this.renderer.addData(node.data);
-        this.stats.loadedNodes++;
-        this.stats.loadedPoints += node.data.positions.length / 3;
         return {
             id: node.id,
             boundingSphere: node.boundingSphere,
@@ -157,8 +154,6 @@ export class DynamicLodController {
 
     // does not care about children
     private removeLodNode(node: DynamicLodNode) {
-        this.stats.loadedNodes--;
-        this.stats.loadedPoints -= node.rendererNode.numPoints;
         this.renderer.removeNode(node.rendererNode);
     }
 

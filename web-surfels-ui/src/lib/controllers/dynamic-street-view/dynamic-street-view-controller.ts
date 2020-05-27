@@ -5,6 +5,7 @@ import { StreetViewLoader } from '../../data/street-view/street-view-loader';
 import { StreetViewPanorama } from '../../data/street-view/street-view-panorama';
 import { Renderer } from '../../renderer/renderer';
 import { RendererNode } from '../../renderer/renderer-node';
+import { RenderingStats } from '../../renderer/rendering-stats';
 import { BoundingBox, BoundingCube, BoundingSphere } from '../../utils/bounding-geometry';
 import { Point3d } from '../../utils/point3d';
 import { DynamicStreetViewNode, PanoramaLOD } from './dynamic-street-view-node';
@@ -267,7 +268,7 @@ export class DynamicStreetViewController {
     // Each Frame
     //
 
-    render(): {nodesDrawn: number, pointsDrawn: number} {
+    render(): RenderingStats {
         const renderList: Array<RendererNode> = [];
         const cam = this.renderer.camera.eye;
         let visiblePanoramas = 0;

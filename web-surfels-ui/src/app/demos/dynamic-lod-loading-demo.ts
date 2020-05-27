@@ -121,10 +121,10 @@ export class DynamicLodLoadingDemo implements DemoBase {
         }
         const stats = this.dynamicLod.stats;
         this.benchmarkResults.frameDurations.push(msPassed);
-        this.benchmarkResults.pointsRendered.push(stats.renderedPoints);
-        this.benchmarkResults.pointsLoaded.push(stats.loadedPoints);
-        this.benchmarkResults.nodesRendered.push(stats.renderedNodes);
-        this.benchmarkResults.nodesLoaded.push(stats.loadedNodes);
+        this.benchmarkResults.pointsRendered.push(stats.pointsDrawn);
+        this.benchmarkResults.pointsLoaded.push(stats.pointsLoaded);
+        this.benchmarkResults.nodesRendered.push(stats.nodesDrawn);
+        this.benchmarkResults.nodesLoaded.push(stats.nodesLoaded);
 
         const durations = this.benchmarkResults.frameDurations;
         const windowSize = Math.min(5, durations.length);
