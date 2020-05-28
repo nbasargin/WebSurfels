@@ -74,7 +74,8 @@ async function crawl(startID: string, maxPanoramas: number, destination: string,
 (async function main() {
     const manhattanTimesSquare = 'jdYd3nY9wyIGeb8l_zAYBA';
     const parisIleDeLaCite = 'PxH7e1kCSV7p728tziDR_w';
-    const processedIDs = await crawl(manhattanTimesSquare, 25000, '../gsv/manhattan');
+    const munichHbf = '92II9-zwofQNOu_3uN-yAg';
+    const processedIDs = await crawl(munichHbf, 25000, '../gsv/munich');
     console.log(`crawl complete, ${processedIDs.length} panoramas saved`);
 })();
 

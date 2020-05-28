@@ -235,9 +235,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
                 // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
-                // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
+                streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
                 // memory: new MemoryLimitsDemo(this.renderer),
-                pointMerging: new StreetViewPointMergingDemo(this.renderer, this.orbitAnimation),
+                // pointMerging: new StreetViewPointMergingDemo(this.renderer, this.orbitAnimation),
             };
 
             for (const demo of Object.values(this.demos)) {
