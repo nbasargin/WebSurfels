@@ -19,9 +19,9 @@ export class DynamicStreetViewDemo implements DemoBase {
             path: 'paris25k',
             startID: 'PxH7e1kCSV7p728tziDR_w'
         },
-        manhattan5k: {
-            path: 'manhattan5k',
-            startID: 'h--IJXCoiMfBaHbDmPPKKg',
+        manhattan25k: {
+            path: 'manhattan25k',
+            startID: 'jdYd3nY9wyIGeb8l_zAYBA',
         }
     };
 
@@ -38,7 +38,7 @@ export class DynamicStreetViewDemo implements DemoBase {
 
         this.orbitAnimation.animate(0);
 
-        const data = this.datasets.paris25k;
+        const data = this.datasets.manhattan25k;
 
         // const api = new GoogleStreetViewApi();
         const api = new LocalStreetViewApi(`http://localhost:5000/${data.path}`);
