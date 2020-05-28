@@ -11,6 +11,7 @@ import { DynamicStreetViewDemo } from './demos/dynamic-street-view-demo';
 import { MemoryLimitsDemo } from './demos/memory-limits-demo';
 import { SphereDemo } from './demos/sphere-demo';
 import { StreetViewCrawlerDemo } from './demos/street-view-crawler-demo';
+import { StreetViewPointMergingDemo } from './demos/street-view-point-merging-demo';
 import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
 @Component({
@@ -154,6 +155,17 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <span>{{demo.points.toLocaleString('en-us')}} points on the GPU</span>
             </ng-container>
 
+            <ng-container *ngIf="demos?.pointMerging as demo">
+                <h1>Street View Small Point Merging Demo</h1>
+                <ng-container *ngIf="demo.nodeRaw && demo.nodeOptimized">
+                    <button (click)="demo.showOptimized()">Show optimized</button>
+                    <button (click)="demo.showRaw()">Show raw</button>                    
+                </ng-container>
+                <ng-container *ngIf="!demo.nodeRaw || !demo.nodeOptimized">
+                    Loading...
+                </ng-container>
+            </ng-container>
+
         </app-main-overlay>
 
         <div #wrapper class="full-size">
@@ -205,6 +217,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         castle?: DynamicLodLoadingDemo,
         streetView?: DynamicStreetViewDemo,
         memory?: MemoryLimitsDemo,
+        pointMerging?: StreetViewPointMergingDemo,
     };
 
     ngAfterViewInit(): void {
@@ -222,8 +235,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
                 // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
                 // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
-                streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
+                // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
                 // memory: new MemoryLimitsDemo(this.renderer),
+                pointMerging: new StreetViewPointMergingDemo(this.renderer, this.orbitAnimation),
             };
 
             for (const demo of Object.values(this.demos)) {
