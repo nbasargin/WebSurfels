@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { FirstPersonController } from 'web-surfels/lib/src/controllers/camera/first-person-controller';
-import { OrbitAnimationController } from 'web-surfels/lib/src/controllers/camera/orbit-animation-controller';
-import { HeadlightController } from 'web-surfels/lib/src/controllers/light/headlight-controller';
-import { Renderer } from 'web-surfels/lib/src/renderer/renderer';
-import { RenderingStats } from 'web-surfels/lib/src/renderer/rendering-stats';
-import { FpsCounter } from 'web-surfels/lib/src/utils/fps-counter';
+import { FirstPersonController } from 'web-surfels/lib/controllers/camera/first-person-controller';
+import { OrbitAnimationController } from 'web-surfels/lib/controllers/camera/orbit-animation-controller';
+import { HeadlightController } from 'web-surfels/lib/controllers/light/headlight-controller';
+import { Renderer } from 'web-surfels/lib/renderer/renderer';
+import { RenderingStats } from 'web-surfels/lib/renderer/rendering-stats';
+import { FpsCounter } from 'web-surfels/lib/utils/fps-counter';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
 import { DynamicLodLoadingDemo } from './demos/dynamic-lod-loading-demo';
 import { DynamicStreetViewDemo } from './demos/dynamic-street-view-demo';

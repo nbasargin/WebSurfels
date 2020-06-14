@@ -1,9 +1,9 @@
 import { vec3 } from 'web-surfels';
-import { OrbitAnimationController } from 'web-surfels/lib/src/controllers/camera/orbit-animation-controller';
-import { GoogleStreetViewApi } from 'web-surfels/lib/src/data/street-view/api/google-street-view-api';
-import { StreetViewLoader } from 'web-surfels/lib/src/data/street-view/street-view-loader';
-import { StreetViewPanorama } from 'web-surfels/lib/src/data/street-view/street-view-panorama';
-import { Renderer } from 'web-surfels/lib/src/renderer/renderer';
+import { OrbitAnimationController } from 'web-surfels/lib/controllers/camera/orbit-animation-controller';
+import { GoogleStreetViewApi } from 'web-surfels/lib/data/street-view/api/google-street-view-api';
+import { StreetViewLoader } from 'web-surfels/lib/data/street-view/street-view-loader';
+import { StreetViewPanorama } from 'web-surfels/lib/data/street-view/street-view-panorama';
+import { Renderer } from 'web-surfels/lib/renderer/renderer';
 import { DemoBase } from './demo-base';
 
 export class StreetViewPointMergingDemo implements DemoBase {
