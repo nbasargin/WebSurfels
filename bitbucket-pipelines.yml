@@ -10,7 +10,7 @@ pipelines:
           script:
             - apt-get update
             - apt-get install --yes zip
-            - cd web-surfels-ui
+            - cd example-ui
             - npm install
             - npm run build
             - cd ./dist/point-cloud-rendering/
