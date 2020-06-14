@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
 import { PointCloudData } from '../../lib/data/point-cloud-data';
 import { LodNode, WeightedLodNode } from '../../lib/data/level-of-detail/lod-node';
-import { OctreeLodBuilder } from '../../lib/data/level-of-detail/octree-lod-buider/octree-lod-builder';
+import { OctreeLodBuilder } from '../../lib/data/level-of-detail/octree-lod-builder/octree-lod-builder';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
 import { BinaryXHR } from '../../lib/utils/binary-xhr';

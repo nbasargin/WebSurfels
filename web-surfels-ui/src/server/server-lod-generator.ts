@@ -5,7 +5,7 @@ import { LodNode } from '../lib/data/level-of-detail/lod-node';
 import { LodBinary } from '../lib/data/level-of-detail/lod-binary';
 import { Timing } from '../lib/utils/timing';
 import { BoundingBox } from '../lib/utils/bounding-geometry';
-import { OctreeLodBuilder } from '../lib/data/level-of-detail/octree-lod-buider/octree-lod-builder';
+import { OctreeLodBuilder } from '../lib/data/level-of-detail/octree-lod-builder/octree-lod-builder';
 
 let filesWritten = 0;
 

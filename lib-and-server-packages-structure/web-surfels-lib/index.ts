@@ -19,7 +19,7 @@ export * from './src/utils/binary-xhr';
 export * from './src/level-of-detail/lod-builder';
 export * from './src/level-of-detail/lod-node';
 export * from './src/level-of-detail/lod-binary';
-export * from './src/level-of-detail/octree-lod-buider/octree-lod-builder';
+export * from './src/level-of-detail/octree-lod-builder/octree-lod-builder';
 
 export * from './src/data/point-cloud-data';
 export * from './src/data/point-cloud-data-generator';
