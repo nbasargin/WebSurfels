@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as https from 'https';
 
-import { StreetViewApiResponse } from 'web-surfels/lib/data/street-view/api/street-view-api-response';
+import { StreetViewApiResponse } from 'web-surfels';
 
 import { FileIO } from './file-io/file-io';
 

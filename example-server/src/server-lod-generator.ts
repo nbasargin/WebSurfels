@@ -1,11 +1,11 @@
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
 
-import { LodNode } from 'web-surfels/lib/data/level-of-detail/lod-node';
-import { LodBinary } from 'web-surfels/lib/data/level-of-detail/lod-binary';
-import { Timing } from 'web-surfels/lib/utils/timing';
-import { BoundingBox } from 'web-surfels/lib/utils/bounding-geometry';
-import { OctreeLodBuilder } from 'web-surfels/lib/data/level-of-detail/octree-lod-builder/octree-lod-builder';
+import { LodNode } from 'web-surfels';
+import { LodBinary } from 'web-surfels';
+import { Timing } from 'web-surfels';
+import { BoundingBox } from 'web-surfels';
+import { OctreeLodBuilder } from 'web-surfels';
 
 import { FileIO } from './file-io/file-io';
 
