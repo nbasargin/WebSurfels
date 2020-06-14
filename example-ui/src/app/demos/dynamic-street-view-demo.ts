@@ -1,9 +1,9 @@
 import { vec3 } from 'web-surfels';
-import { OrbitAnimationController } from 'web-surfels/lib/controllers/camera/orbit-animation-controller';
-import { DynamicStreetViewController } from 'web-surfels/lib/controllers/dynamic-street-view/dynamic-street-view-controller';
-import { LocalStreetViewApi } from 'web-surfels/lib/data/street-view/api/local-street-view-api';
-import { StreetViewLoader } from 'web-surfels/lib/data/street-view/street-view-loader';
-import { Renderer } from 'web-surfels/lib/renderer/renderer';
+import { OrbitAnimationController } from 'web-surfels';
+import { DynamicStreetViewController } from 'web-surfels';
+import { LocalStreetViewApi } from 'web-surfels';
+import { StreetViewLoader } from 'web-surfels';
+import { Renderer } from 'web-surfels';
 import { Benchmark } from '../benchmarks/benchmark';
 import { CameraPath } from '../benchmarks/camera-path';
 import { DemoBase } from './demo-base';

@@ -1,4 +1,4 @@
-import { RenderingStats } from 'web-surfels/lib/renderer/rendering-stats';
+import { RenderingStats } from 'web-surfels';
 
 export class BenchmarkData {
 

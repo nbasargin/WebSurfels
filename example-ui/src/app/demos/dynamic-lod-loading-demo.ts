@@ -1,8 +1,8 @@
 import { vec3 } from 'web-surfels';
-import { DynamicLodController } from 'web-surfels/lib/controllers/dynamic-lod/dynamic-lod-controller';
-import { XhrLodLoader } from 'web-surfels/lib/data/level-of-detail/xhr-lod-loader';
-import { OrbitAnimationController } from 'web-surfels/lib/controllers/camera/orbit-animation-controller';
-import { Renderer } from 'web-surfels/lib/renderer/renderer';
+import { DynamicLodController } from 'web-surfels';
+import { XhrLodLoader } from 'web-surfels';
+import { OrbitAnimationController } from 'web-surfels';
+import { Renderer } from 'web-surfels';
 import { Benchmark } from '../benchmarks/benchmark';
 import { CameraPath } from '../benchmarks/camera-path';
 import { DemoBase } from './demo-base';

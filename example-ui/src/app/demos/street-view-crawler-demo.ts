@@ -1,4 +1,4 @@
-import { StreetViewCrawler } from 'web-surfels/lib/data/street-view/street-view-crawler';
+import { StreetViewCrawler } from 'web-surfels';
 import { DemoBase } from './demo-base';
 
 export class StreetViewCrawlerDemo implements DemoBase {

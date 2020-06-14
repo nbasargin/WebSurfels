@@ -1,5 +1,5 @@
 import { vec3 } from 'web-surfels';
-import { Camera } from 'web-surfels/lib/renderer/camera';
+import { Camera } from 'web-surfels';
 
 export class CameraPath {
 

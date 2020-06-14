@@ -1,11 +1,11 @@
 import { vec3 } from 'web-surfels';
-import { Subgrid } from 'web-surfels/lib/data/level-of-detail/subgrid';
-import { OrbitAnimationController } from 'web-surfels/lib/controllers/camera/orbit-animation-controller';
-import { GoogleStreetViewApi } from 'web-surfels/lib/data/street-view/api/google-street-view-api';
-import { StreetViewLoader } from 'web-surfels/lib/data/street-view/street-view-loader';
-import { Renderer } from 'web-surfels/lib/renderer/renderer';
-import { StreetViewCrawler } from 'web-surfels/lib/data/street-view/street-view-crawler';
-import { BoundingCube } from 'web-surfels/lib/utils/bounding-geometry';
+import { Subgrid } from 'web-surfels';
+import { OrbitAnimationController } from 'web-surfels';
+import { GoogleStreetViewApi } from 'web-surfels';
+import { StreetViewLoader } from 'web-surfels';
+import { Renderer } from 'web-surfels';
+import { StreetViewCrawler } from 'web-surfels';
+import { BoundingCube } from 'web-surfels';
 import { DemoBase } from './demo-base';
 
 export type PanoramaInput = {
