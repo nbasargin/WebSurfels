@@ -1,5 +1,5 @@
-import { Renderer } from '../../lib/renderer/renderer';
-import { DummyData } from '../../lib/utils/dummy-data';
+import { Renderer } from 'web-surfels/lib/src/renderer/renderer';
+import { DummyData } from 'web-surfels/lib/src/utils/dummy-data';
 import { DemoBase } from './demo-base';
 
 export class MemoryLimitsDemo implements DemoBase {

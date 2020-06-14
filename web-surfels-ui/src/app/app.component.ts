@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { FirstPersonController } from '../lib/controllers/camera/first-person-controller';
-import { OrbitAnimationController } from '../lib/controllers/camera/orbit-animation-controller';
-import { HeadlightController } from '../lib/controllers/light/headlight-controller';
-import { Renderer } from '../lib/renderer/renderer';
-import { RenderingStats } from '../lib/renderer/rendering-stats';
-import { FpsCounter } from '../lib/utils/fps-counter';
+import { FirstPersonController } from 'web-surfels/lib/src/controllers/camera/first-person-controller';
+import { OrbitAnimationController } from 'web-surfels/lib/src/controllers/camera/orbit-animation-controller';
+import { HeadlightController } from 'web-surfels/lib/src/controllers/light/headlight-controller';
+import { Renderer } from 'web-surfels/lib/src/renderer/renderer';
+import { RenderingStats } from 'web-surfels/lib/src/renderer/rendering-stats';
+import { FpsCounter } from 'web-surfels/lib/src/utils/fps-counter';
 import { DragonInBrowserLodDemo } from './demos/dragon-in-browser-lod-demo';
 import { DynamicLodLoadingDemo } from './demos/dynamic-lod-loading-demo';
 import { DynamicStreetViewDemo } from './demos/dynamic-street-view-demo';
@@ -233,9 +233,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
                 // dragon: new DragonInBrowserLodDemo(this.renderer, this.orbitAnimation),
                 // crawler: new StreetViewCrawlerDemo(),
                 // stitching: new StreetViewStitchingDemo(this.renderer, this.orbitAnimation),
-                // sphere: new SphereDemo(this.renderer, this.orbitAnimation),
+                sphere: new SphereDemo(this.renderer, this.orbitAnimation),
                 // castle: new DynamicLodLoadingDemo(this.renderer, this.orbitAnimation),
-                streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
+                // streetView: new DynamicStreetViewDemo(this.renderer, this.orbitAnimation),
                 // memory: new MemoryLimitsDemo(this.renderer),
                 // pointMerging: new StreetViewPointMergingDemo(this.renderer, this.orbitAnimation),
             };

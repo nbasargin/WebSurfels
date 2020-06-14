@@ -7,6 +7,9 @@
     "test": "jest"
   },
   "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js"
+  },
   "types": "./lib/index.d.ts",
   "dependencies": {
     "pako": "^1.0.11",

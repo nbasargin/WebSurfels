@@ -1,5 +1,5 @@
-import { vec3 } from 'gl-matrix';
-import { Camera } from '../../lib/renderer/camera';
+import { vec3 } from 'web-surfels';
+import { Camera } from 'web-surfels/lib/src/renderer/camera';
 
 export class CameraPath {
 

@@ -1,11 +1,11 @@
-import { vec3 } from 'gl-matrix';
-import { Subgrid } from '../../lib/data/level-of-detail/subgrid';
-import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
-import { GoogleStreetViewApi } from '../../lib/data/street-view/api/google-street-view-api';
-import { StreetViewLoader } from '../../lib/data/street-view/street-view-loader';
-import { Renderer } from '../../lib/renderer/renderer';
-import { StreetViewCrawler } from '../../lib/data/street-view/street-view-crawler';
-import { BoundingCube } from '../../lib/utils/bounding-geometry';
+import { vec3 } from 'web-surfels';
+import { Subgrid } from 'web-surfels/lib/src/data/level-of-detail/subgrid';
+import { OrbitAnimationController } from 'web-surfels/lib/src/controllers/camera/orbit-animation-controller';
+import { GoogleStreetViewApi } from 'web-surfels/lib/src/data/street-view/api/google-street-view-api';
+import { StreetViewLoader } from 'web-surfels/lib/src/data/street-view/street-view-loader';
+import { Renderer } from 'web-surfels/lib/src/renderer/renderer';
+import { StreetViewCrawler } from 'web-surfels/lib/src/data/street-view/street-view-crawler';
+import { BoundingCube } from 'web-surfels/lib/src/utils/bounding-geometry';
 import { DemoBase } from './demo-base';
 
 export type PanoramaInput = {

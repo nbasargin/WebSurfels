@@ -1,6 +1,6 @@
-import { DummyData } from '../../lib/utils/dummy-data';
-import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
-import { Renderer } from '../../lib/renderer/renderer';
+import { DummyData } from 'web-surfels/lib/src/utils/dummy-data';
+import { OrbitAnimationController } from 'web-surfels/lib/src/controllers/camera/orbit-animation-controller';
+import { Renderer } from 'web-surfels/lib/src/renderer/renderer';
 import { DemoBase } from './demo-base';
 
 export class SphereDemo implements DemoBase {

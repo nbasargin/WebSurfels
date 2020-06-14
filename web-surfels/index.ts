@@ -28,4 +28,4 @@ export * from './src/data/stanford-dragon-loader';
 export * from './src/culling-tree/culling-tree';
 */
 
-export const test = 42;
+export * from 'gl-matrix';
