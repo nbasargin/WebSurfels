@@ -10,8 +10,6 @@
   "types": "./lib/index.d.ts",
   "dependencies": {
     "pako": "^1.0.11",
-    "@loaders.gl/core": "^2.0.2",
-    "@loaders.gl/ply": "^2.0.2",
     "gl-matrix": "^3.1.0"
   },
   "devDependencies": {
