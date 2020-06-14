@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as https from 'https';
 
 import { StreetViewApiResponse } from 'web-surfels/lib/data/street-view/api/street-view-api-response';
+
 import { FileIO } from './file-io/file-io';
 
 /**
@@ -75,7 +76,7 @@ async function crawl(startID: string, maxPanoramas: number, destination: string,
     const manhattanTimesSquare = 'jdYd3nY9wyIGeb8l_zAYBA';
     const parisIleDeLaCite = 'PxH7e1kCSV7p728tziDR_w';
     const munichHbf = '92II9-zwofQNOu_3uN-yAg';
-    const processedIDs = await crawl(munichHbf, 25000, '../gsv/munich');
+    const processedIDs = await crawl(munichHbf, 25000, '../data/gsv/munich25k');
     console.log(`crawl complete, ${processedIDs.length} panoramas saved`);
 })();
 

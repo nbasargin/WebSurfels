@@ -6,9 +6,8 @@
     "start": "tsc && node --max-old-space-size=8192 dist/server.js",
     "test": "jest",
     "gen-lod": "tsc -p tsconfig.json  &&  node --max-old-space-size=8192 ./dist/server-lod-generator.js",
-    "serve-lod": "serve ../lod --cors",
     "crawl-gsv": "tsc -p tsconfig.json  &&  node ./dist/server-street-view-crawler.js",
-    "serve-gsv": "serve ../gsv --cors"
+    "serve-data": "serve ../data --cors"
   },
   "devDependencies": {
     "@types/jest": "^25.1.3",

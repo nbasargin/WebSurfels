@@ -42,10 +42,10 @@ export class DynamicStreetViewDemo implements DemoBase {
 
         this.orbitAnimation.animate(0);
 
-        const data = this.datasets.munich25k;
+        const data = this.datasets.paris25k;
 
         // const api = new GoogleStreetViewApi();
-        const api = new LocalStreetViewApi(`http://localhost:5000/${data.path}`);
+        const api = new LocalStreetViewApi(`http://localhost:5000/gsv/${data.path}`);
         const loader = new StreetViewLoader(api, 0.4, 1.5);
         this.controller = new DynamicStreetViewController(renderer, loader, 50, 100, {
             softMinimum: 100_000_000,

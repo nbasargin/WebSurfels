@@ -30,7 +30,7 @@ export class DynamicLodLoadingDemo implements DemoBase {
 
         this.orbitAnimation.animate(0);
 
-        const loader = new XhrLodLoader('http://localhost:5000/');
+        const loader = new XhrLodLoader('http://localhost:5000/lod/');
         this.dynamicLod = new DynamicLodController(this.renderer, loader, this.initialSizeThreshold, {strategy: 'nthFrame', unloadThreshold: 100, nthFrame: 50});
 
         const cameraPath = new CameraPath(renderer.camera, [

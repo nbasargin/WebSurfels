@@ -1,11 +1,13 @@
-import { FileIO } from './file-io/file-io';
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
+
 import { LodNode } from 'web-surfels/lib/data/level-of-detail/lod-node';
 import { LodBinary } from 'web-surfels/lib/data/level-of-detail/lod-binary';
 import { Timing } from 'web-surfels/lib/utils/timing';
 import { BoundingBox } from 'web-surfels/lib/utils/bounding-geometry';
 import { OctreeLodBuilder } from 'web-surfels/lib/data/level-of-detail/octree-lod-builder/octree-lod-builder';
+
+import { FileIO } from './file-io/file-io';
 
 let filesWritten = 0;
 
@@ -30,7 +32,7 @@ async function writeLodNode(node: LodNode, folderPath: string, isRootNode: boole
 async function generateLod() {
     console.log(Timing.measure(), 'starting');
 
-    const castleFile = await FileIO.readFile('../point-clouds/3drm_neuschwanstein.ply');
+    const castleFile = await FileIO.readFile('../data/point-clouds/3drm_neuschwanstein.ply');
     console.log(Timing.measure(), 'file was loaded');
 
     const rawData = await parse(castleFile, PLYLoader);
@@ -55,7 +57,7 @@ async function generateLod() {
     const lod = octree.buildLod(1);
     console.log(Timing.measure(), 'lod computed, start writing to disk');
 
-    const folderPath = '../lod/';
+    const folderPath = '../data/lod/';
     writeLodTreeToFiles(lod, folderPath, Math.floor(numNodes / 20)).then(() => {
         console.log(Timing.measure(), 'done writing lod');
     }).catch(err => {
