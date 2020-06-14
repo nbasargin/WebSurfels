@@ -1,4 +1,3 @@
-import { vec3 } from 'gl-matrix';
 import { DummyData } from '../../lib/utils/dummy-data';
 import { OrbitAnimationController } from '../../lib/controllers/camera/orbit-animation-controller';
 import { Renderer } from '../../lib/renderer/renderer';
@@ -37,11 +36,11 @@ export class SphereDemo implements DemoBase {
 
     nearCam() {
         const cam = this.renderer.camera;
-        cam.setOrientation(vec3.fromValues(-1.25, 0, 0), cam.target, cam.up);
+        cam.setEyePosition([-1.25, 0, 0]);
     }
 
     farCam() {
         const cam = this.renderer.camera;
-        cam.setOrientation(vec3.fromValues(-2.1, 0, 0), cam.target, cam.up);
+        cam.setEyePosition([-2.1, 0, 0]);
     }
 }

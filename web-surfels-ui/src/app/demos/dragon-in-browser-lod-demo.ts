@@ -1,4 +1,3 @@
-import { vec3 } from 'gl-matrix';
 import { PointCloudData } from '../../lib/data/point-cloud-data';
 import { LodNode, WeightedLodNode } from '../../lib/data/level-of-detail/lod-node';
 import { OctreeLodBuilder } from '../../lib/data/level-of-detail/octree-lod-builder/octree-lod-builder';
@@ -31,7 +30,7 @@ export class DragonInBrowserLodDemo implements DemoBase {
         resolution: number = 16,
         maxDepth: number = 10,
     ) {
-        this.renderer.camera.setOrientation(vec3.fromValues(3, 3, 3), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+        this.renderer.camera.setOrientation([3, 3, 3], [0, 0, 0], [0, 1, 0]);
 
         this.orbitAnimation.minDistance = 0.25;
         this.orbitAnimation.maxDistance = 0.3;

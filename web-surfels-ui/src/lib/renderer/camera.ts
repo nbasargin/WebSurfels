@@ -12,7 +12,7 @@ export class Camera {
 
     eye: vec3 = vec3.fromValues(0, 0, 0);
     target: vec3 = vec3.fromValues(0, 1, 0);
-    up: vec3 =  vec3.fromValues(0, 0, 1); // should be normalized
+    up: vec3 = vec3.fromValues(0, 0, 1); // should be normalized
 
     viewDirection: vec3 = vec3.create(); // should be normalized (see constructor)
 
@@ -39,25 +39,33 @@ export class Camera {
         this.updateFrustum();
     }
 
-    setOrientation(eye: vec3, target: vec3, up: vec3) {
-        vec3.copy(this.eye, eye);
-        vec3.copy(this.target, target);
-        vec3.copy(this.up, up);
+    setOrientation(eye: Float32Array | number[], target: Float32Array | number[], up: Float32Array | number[]) {
+        vec3.set(this.eye, eye[0], eye[1], eye[2]);
+        vec3.set(this.target, target[0], target[1], target[2]);
+        vec3.set(this.up, up[0], up[1], up[2]);
         vec3.subtract(this.viewDirection, this.target, this.eye);
         vec3.normalize(this.viewDirection, this.viewDirection);
         this.updateModelView();
         this.updateFrustum();
     }
 
-    setUpVector(up: vec3) {
-        vec3.copy(this.up, up);
+    setEyePosition(eye: Float32Array | number[]) {
+        vec3.set(this.eye, eye[0], eye[1], eye[2]);
+        vec3.subtract(this.viewDirection, this.target, this.eye);
+        vec3.normalize(this.viewDirection, this.viewDirection);
+        this.updateModelView();
+        this.updateFrustum();
+    }
+
+    setUpVector(up: Float32Array | number[]) {
+        vec3.set(this.up, up[0], up[1], up[2]);
         vec3.normalize(this.up, this.up);
         this.updateModelView();
         this.updateFrustum();
     }
 
-    setViewDirection(direction: vec3) {
-        vec3.copy(this.viewDirection, direction);
+    setViewDirection(direction: Float32Array | number[]) {
+        vec3.set(this.viewDirection, direction[0], direction[1], direction[2]);
         vec3.normalize(this.viewDirection, this.viewDirection);
         vec3.add(this.target, this.eye, this.viewDirection);
         this.updateModelView();
@@ -102,7 +110,7 @@ export class Camera {
         const dx = this.eye[0] - x;
         const dy = this.eye[1] - y;
         const dz = this.eye[2] - z;
-        return  Math.sqrt(dx * dx + dy * dy + dz * dz);
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     getProjectedSphereSize(cx: number, cy: number, cz: number, r: number) {

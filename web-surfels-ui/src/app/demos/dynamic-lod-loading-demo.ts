@@ -21,7 +21,7 @@ export class DynamicLodLoadingDemo implements DemoBase {
         private orbitAnimation: OrbitAnimationController,
 
     ) {
-        this.renderer.camera.setUpVector(vec3.fromValues(0, 1, 0));
+        this.renderer.camera.setUpVector([0, 1, 0]);
 
         this.orbitAnimation.minDistance = 30;
         this.orbitAnimation.maxDistance = 100;
