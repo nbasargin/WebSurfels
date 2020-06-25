@@ -21,6 +21,8 @@ export class DynamicStreetViewController {
 
     pointsInMemory = 0;
 
+    pauseLoading = false;
+
     private requested: Map<string, Point3d> = new Map();
     private loading: Set<string> = new Set();
     private errors: Map<string, number> = new Map();
@@ -321,6 +323,7 @@ export class DynamicStreetViewController {
 
         // send loading requests: prioritize panoramas close to the camera
         while (
+            !this.pauseLoading &&
             this.requested.size > 0 &&
             this.loading.size < this.maxConcurrentApiRequests
         ) {
