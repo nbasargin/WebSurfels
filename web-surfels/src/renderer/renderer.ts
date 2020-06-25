@@ -60,12 +60,9 @@ export class Renderer {
         this.gl.clearColor(0, 0, 0, 0);
         this.gl.clearDepth(1.0);
 
-        // enable backface culling, could be an optional setting
-        this.gl.enable(this.gl.CULL_FACE);
-        this.gl.cullFace(this.gl.BACK);
-
         this.gl.depthFunc(this.gl.LEQUAL);
 
+        this.enableBackfaceCulling(true);
         this.setCanvasSize(initialWidth, initialHeight);
     }
 
@@ -119,6 +116,15 @@ export class Renderer {
     setSplatDepthParams(depthSizeRatio: number, depthEpsilon: number) {
         this.uniforms.splatDepthSizeRatio = depthSizeRatio;
         this.uniforms.splatDepthEpsilon = depthEpsilon;
+    }
+
+    enableBackfaceCulling(enabled: boolean) {
+        if (enabled) {
+            this.gl.enable(this.gl.CULL_FACE);
+            this.gl.cullFace(this.gl.BACK);
+        } else {
+            this.gl.disable(this.gl.CULL_FACE);
+        }
     }
 
     render(nodes: Iterable<RendererNode> = this.nodes): RenderingStats {
