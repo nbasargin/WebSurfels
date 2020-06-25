@@ -61,6 +61,11 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                 <div>
                     <button (click)=logCameraPosition()>Log camera position</button>
                 </div>
+                <div style="grid-column: span 2">
+                    Backface culling:
+                    <button (click)="renderer.enableBackfaceCulling(true)">Enable</button>
+                    <button (click)="renderer.enableBackfaceCulling(false)">Disable</button>
+                </div>
             </div>
 
             <ng-container *ngIf="demos?.dragon as demo">
