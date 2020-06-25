@@ -132,6 +132,20 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                     There are network errors! Is the server connection fine and all required data available?
                     <button (click)="demo.controller.forgetPreviousNetworkErrors()">Forget previous errors</button>
                 </div>
+                <div *ngIf="!demo.controller.pauseLoading">
+                    loading enabled
+                    <button (click)="demo.controller.pauseLoading = true">Pause</button>
+                </div>
+                <div *ngIf="demo.controller.pauseLoading">
+                    loading paused
+                    <button (click)="demo.controller.pauseLoading = false">Resume</button>
+                </div>
+                <div>
+                    Quality dist: {{demo.controller.qualityDist}}
+                    <button *ngFor="let dist of [50, 100, 200, 100000]"
+                            (click)="demo.controller.qualityDist = dist">{{dist}}</button>
+                </div>
+                
                 <h1>Benchmark</h1>
                 Camera positions:
                 <button *ngFor="let p of demo.benchmark.cameraPath.points; let i = index"
