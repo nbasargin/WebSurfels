@@ -9,6 +9,7 @@ import { SectionLabelComponent } from './components/section-label/section-label.
 import { AppRoutingModule } from './app-routing.module';
 import { MainComponent } from './components/main/main.component';
 import { SubpageComponent } from './components/subpage/subpage.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
     declarations: [
@@ -22,7 +23,8 @@ import { SubpageComponent } from './components/subpage/subpage.component';
     imports: [
         BrowserModule,
         ReactiveFormsModule,
-        AppRoutingModule
+        AppRoutingModule,
+        BrowserAnimationsModule
     ],
     providers: [],
     bootstrap: [MainComponent]
