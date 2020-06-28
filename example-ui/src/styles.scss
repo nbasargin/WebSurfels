@@ -10,6 +10,7 @@ body {
   margin: 0;
   // color: white;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: black;
 }
 
 h1 {
@@ -32,13 +33,14 @@ h1 {
   font-size: 30px;
   width: 30px !important;
   height: 30px !important;
-  color: gray;
+  color: #b4b4b4;
   cursor: pointer;
   user-select: none;
   transition: all 200ms;
+  -webkit-text-stroke: 1px black;
 
   &:hover {
-    color: lightgray;
+    color: #dcdcdc;
   }
   &:active {
     color: white;
