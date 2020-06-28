@@ -1,0 +1,35 @@
+.main-settings {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 200px;
+}
+
+.settings-icon-wrapper {
+  text-align: right;
+}
+
+.settings-icon {
+  font-size: 30px;
+  color: gray;
+  cursor: pointer;
+  user-select: none;
+  transition: all 200ms;
+
+  &:hover {
+    color: lightgray;
+  }
+  &:active {
+    color: white;
+  }
+}
+
+mat-expansion-panel:not(:last-child) {
+  margin-bottom: 3px;
+}
+
+.main-info-table {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  grid-auto-rows: 32px;
+}
