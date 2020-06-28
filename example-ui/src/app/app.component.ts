@@ -24,11 +24,11 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                           [points]="renderingStats.pointsDrawn"
                           [animate]="animate"
                           [hqSplats]="renderer.highQuality"
-                          [scale]="sizeScale"
+                          [scale]="renderer.options.sizeScale"
                           [speed]="movementSpeed"
                           (animateChange)="animate = $event"
                           (hqSplatsChange)="renderer.highQuality = $event"
-                          (scaleChange)="sizeScale = $event; renderer.setSplatSizeScale($event)">
+                          (scaleChange)="renderer.options.sizeScale = $event">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr;">
                 <h1 style="grid-column: span 2">Lighting</h1>
@@ -54,17 +54,17 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
 
             <div style="display: grid; grid-template-columns: 1fr 1fr;">
                 <h1 style="grid-column: span 2">Splatting Depth</h1>
-                <span>Depth-Size Ratio: {{renderer['uniforms'].splatDepthSizeRatio}}</span>
+                <span>Depth-Size Ratio: {{renderer.options.splatDepthSizeRatio}}</span>
                 <input #depthSizeRatioSlider type="range" min="0.1" max="2" step="0.1"
-                       (input)="renderer['uniforms'].splatDepthSizeRatio = +depthSizeRatioSlider.value"
-                       [value]="renderer['uniforms'].splatDepthSizeRatio">
+                       (input)="renderer.options.splatDepthSizeRatio = +depthSizeRatioSlider.value"
+                       [value]="renderer.options.splatDepthSizeRatio">
                 <div>
                     <button (click)=logCameraPosition()>Log camera position</button>
                 </div>
                 <div style="grid-column: span 2">
                     Backface culling:
-                    <button (click)="renderer.enableBackfaceCulling(true)">Enable</button>
-                    <button (click)="renderer.enableBackfaceCulling(false)">Disable</button>
+                    <button (click)="renderer.options.backfaceCulling = true">Enable</button>
+                    <button (click)="renderer.options.backfaceCulling = false">Disable</button>
                 </div>
             </div>
 
@@ -209,7 +209,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     };
     animate = false;
     frozenFPS = 0;
-    sizeScale = 1;
 
     movementSpeed = 10;
 
@@ -240,7 +239,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     };
 
     ngAfterViewInit(): void {
-        this.renderer = new Renderer(this.canvasRef.nativeElement, 1, 1);
+        this.renderer = new Renderer(this.canvasRef.nativeElement);
         this.fpController = new FirstPersonController(this.renderer.camera);
         this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 0, 15000);
 

@@ -2,6 +2,7 @@ import { PointCloudData } from '../data/point-cloud-data';
 import { Camera } from './camera';
 import { DirectionalLight } from './directional-light';
 import { OffscreenFramebuffer } from './offscreen-framebuffer';
+import { RendererOptions } from './renderer-options';
 import { RenderingStats } from './rendering-stats';
 import { NormShader } from './shader/norm-shader';
 import { RendererNode } from './renderer-node';
@@ -10,9 +11,7 @@ import { WebGLUtils } from './web-gl-utils';
 
 export class Renderer {
 
-    // options
-    public highQuality = true;
-
+    // rendering stats from the latest render() call
     public stats: RenderingStats = {
         nodesLoaded: 0,
         nodesDrawn: 0,
@@ -23,6 +22,7 @@ export class Renderer {
     public readonly nodes: Set<RendererNode> = new Set();
     public readonly camera: Camera;
     public readonly light: DirectionalLight;
+    public readonly options: RendererOptions;
 
     private readonly gl: WebGL2RenderingContext;
     private readonly offscreenFramebuffer: OffscreenFramebuffer;
@@ -31,13 +31,7 @@ export class Renderer {
 
     private pointsInMemory: number = 0;
 
-    private readonly uniforms: {
-        sizeScale: number,
-        splatDepthSizeRatio: number,
-        splatDepthEpsilon: number,
-    };
-
-    constructor(public readonly canvas: HTMLCanvasElement, initialWidth: number, initialHeight: number) {
+    constructor(public readonly canvas: HTMLCanvasElement) {
         const context = canvas.getContext('webgl2');
         if (!context || !(context instanceof WebGL2RenderingContext)) {
             throw new Error('Could not initialize WebGL2 context!');
@@ -46,6 +40,7 @@ export class Renderer {
         this.offscreenFramebuffer = new OffscreenFramebuffer(this.gl);
         this.camera = new Camera();
         this.light = new DirectionalLight();
+        this.options = new RendererOptions(this.gl);
 
         // ext check
         const extensions = ['EXT_color_buffer_float', 'EXT_float_blend'];
@@ -58,19 +53,13 @@ export class Renderer {
         this.splatShader = new SplatShader(this.gl);
         this.normShader = new NormShader(this.gl);
 
-        this.uniforms = {
-            sizeScale: 1,
-            splatDepthSizeRatio: 0.5,
-            splatDepthEpsilon: 0.0001,
-        };
-
         this.gl.clearColor(0, 0, 0, 0);
         this.gl.clearDepth(1.0);
 
         this.gl.depthFunc(this.gl.LEQUAL);
 
-        this.enableBackfaceCulling(true);
-        this.setCanvasSize(initialWidth, initialHeight);
+        const bb = canvas.getBoundingClientRect();
+        this.setCanvasSize(bb.width, bb.height);
     }
 
     addData({positions, sizes, colors, normals}: PointCloudData): RendererNode {
@@ -116,24 +105,6 @@ export class Renderer {
         this.camera.setAspectRatio(aspect);
     }
 
-    setSplatSizeScale(sizeScale: number) {
-        this.uniforms.sizeScale = sizeScale;
-    }
-
-    setSplatDepthParams(depthSizeRatio: number, depthEpsilon: number) {
-        this.uniforms.splatDepthSizeRatio = depthSizeRatio;
-        this.uniforms.splatDepthEpsilon = depthEpsilon;
-    }
-
-    enableBackfaceCulling(enabled: boolean) {
-        if (enabled) {
-            this.gl.enable(this.gl.CULL_FACE);
-            this.gl.cullFace(this.gl.BACK);
-        } else {
-            this.gl.disable(this.gl.CULL_FACE);
-        }
-    }
-
     render(nodes: Iterable<RendererNode> = this.nodes): RenderingStats {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
@@ -159,9 +130,9 @@ export class Renderer {
         this.gl.uniformMatrix4fv(uniforms.modelViewMatrix, false, this.camera.modelViewMatrix);
         this.gl.uniformMatrix4fv(uniforms.modelViewMatrixIT, false, this.camera.modelViewMatrixIT);
 
-        this.gl.uniform1f(uniforms.sizeScale, this.uniforms.sizeScale);
-        this.gl.uniform1f(uniforms.splatDepthSizeRatio, this.uniforms.splatDepthSizeRatio);
-        this.gl.uniform1f(uniforms.splatDepthEpsilon, this.uniforms.splatDepthEpsilon);
+        this.gl.uniform1f(uniforms.sizeScale, this.options.sizeScale);
+        this.gl.uniform1f(uniforms.splatDepthSizeRatio, this.options.splatDepthSizeRatio);
+        this.gl.uniform1f(uniforms.splatDepthEpsilon, this.options.splatDepthEpsilon);
 
         this.gl.uniform1i(uniforms.enableLighting, this.light.enabled ? 1 : 0);
         this.gl.uniform3fv(uniforms.lightDirection, this.light.direction);
@@ -178,7 +149,7 @@ export class Renderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
         let drawStats: {nodesDrawn: number, pointsDrawn: number};
-        if (this.highQuality) {
+        if (this.options.highQuality) {
             // depth pass
             this.gl.depthMask(true);
             this.gl.colorMask(false, false, false, false);
