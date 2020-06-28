@@ -13,6 +13,13 @@ export class Renderer {
     // options
     public highQuality = true;
 
+    public stats: RenderingStats = {
+        nodesLoaded: 0,
+        nodesDrawn: 0,
+        pointsLoaded: 0,
+        pointsDrawn: 0,
+    };
+
     public readonly nodes: Set<RendererNode> = new Set();
     public readonly camera: Camera;
     public readonly light: DirectionalLight;
@@ -206,7 +213,9 @@ export class Renderer {
         if (drawStats.nodesDrawn > 0) {
             this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
         }
-        return {...drawStats, pointsLoaded: this.pointsInMemory, nodesLoaded: this.nodes.size};
+
+        this.stats = {...drawStats, pointsLoaded: this.pointsInMemory, nodesLoaded: this.nodes.size};
+        return this.stats;
     }
 
     private drawNodes(nodes: Iterable<RendererNode>): {nodesDrawn: number, pointsDrawn: number} {
