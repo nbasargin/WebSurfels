@@ -73,8 +73,6 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
             {text: 'Near', pos: [-1.25, 0, 0]},
             {text: 'Far', pos: [-2.1, 0, 0]},
         ];
-
-        this.rendererService.setFpsAveragingWindow(100);
     }
 
     ngAfterViewInit(): void {
@@ -89,9 +87,13 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
             this.pointNumberControl.patchValue(selectedPoints.points);
         }, 0);
 
+        this.rendererService.setFpsAveragingWindow(100);
+        this.rendererService.setControlMode('first-person');
+        this.rendererService.setMovementSpeed(0.05);
+
         this.rendererService.nextFrame.pipe(takeUntil(this.destroyed$)).subscribe(() => {
             this.renderer.render();
-        })
+        });
     }
 
     ngOnDestroy(): void {
@@ -108,7 +110,6 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
 
     setCam(pos: Array<number>) {
         this.renderer.camera.setOrientation(pos, [0,0,0], [0,0,-1]);
-
     }
 
     pointNumberChange(e: MatSelectChange) {

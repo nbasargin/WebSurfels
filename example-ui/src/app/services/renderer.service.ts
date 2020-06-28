@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { FpsCounter, Renderer } from 'web-surfels';
+import { FirstPersonController, FpsCounter, Renderer } from 'web-surfels';
+
+type ControlMode = 'disabled' | 'first-person' | 'orbit-animation';
 
 /**
  * This service is responsible for:
@@ -20,7 +22,13 @@ export class RendererService {
     private lastTimestamp = 0;
 
     private renderer: Renderer | null = null;
-    private resizeTo: HTMLElement | null = null;
+    private resizeTo: HTMLElement;
+
+    private pressedKeys: Set<string> = new Set();
+    private fpController: FirstPersonController;
+    // private orbitAnimation: OrbitAnimationController;
+    private controlMode: ControlMode = 'first-person';
+    private movementSpeed: number = 0.5;
 
     nextFrame: Subject<void> = new Subject();
     fps = 0;
@@ -32,6 +40,7 @@ export class RendererService {
         }
         this.renderer = new Renderer(canvas, 1, 1);
         this.resizeTo = resizeTo;
+        this.fpController = new FirstPersonController(this.renderer.camera);
 
         setTimeout(() => {
             this.renderLoop(0);
@@ -43,7 +52,6 @@ export class RendererService {
             this.renderer.removeAllNodes();
             cancelAnimationFrame(this.animationRequest);
             this.renderer = null;
-            this.resizeTo = null;
         }
     }
 
@@ -56,6 +64,52 @@ export class RendererService {
 
     setFpsAveragingWindow(numFrames) {
         this.fpsCounter = new FpsCounter(numFrames);
+    }
+
+    setControlMode(mode: ControlMode) {
+        this.controlMode = mode;
+    }
+
+    setMovementSpeed(speed: number) {
+        this.movementSpeed = speed;
+    }
+
+    // event processing
+
+    eventMouseMove(e: MouseEvent) {
+        if (
+            this.controlMode !== 'first-person' ||
+            (e.buttons & 1) !== 1 ||   // left mouse button not pressed
+            !this.renderer ||
+            e.target !== this.renderer.canvas
+        ) {
+            return;
+        }
+
+        this.fpController.addPitch(-e.movementY * 0.1);
+        this.fpController.addYaw(-e.movementX * 0.1);
+    }
+
+    eventKeyDown(e: KeyboardEvent) {
+        this.pressedKeys.add(e.code);
+    }
+
+    eventKeyUp(e: KeyboardEvent) {
+        this.pressedKeys.delete(e.code);
+    }
+
+    eventMouseLeave() {
+        this.pressedKeys.clear();
+    }
+
+    eventMouseWheel(e: WheelEvent) {
+        const factor = 1.1;
+        if (e.deltaY < 0) {
+            this.movementSpeed *= factor;
+        } else {
+            this.movementSpeed /= factor;
+        }
+        this.movementSpeed = Math.max(0.01, Math.min(100, this.movementSpeed));
     }
 
     private renderLoop(timestamp) {
@@ -81,8 +135,28 @@ export class RendererService {
             console.debug(`resizing canvas to ${width} x ${height}`);
         }
 
+        // control
+        if (this.controlMode === 'first-person') {
+            this.updateFirstPersonCam();
+        }
+
         // inform listeners
         this.nextFrame.next();
+    }
+
+    updateFirstPersonCam() {
+        if (this.pressedKeys.has('KeyW')) {
+            this.fpController.moveForward(this.movementSpeed);
+        }
+        if (this.pressedKeys.has('KeyA')) {
+            this.fpController.moveRight(-this.movementSpeed);
+        }
+        if (this.pressedKeys.has('KeyS')) {
+            this.fpController.moveForward(-this.movementSpeed);
+        }
+        if (this.pressedKeys.has('KeyD')) {
+            this.fpController.moveRight(this.movementSpeed);
+        }
     }
 
 }
