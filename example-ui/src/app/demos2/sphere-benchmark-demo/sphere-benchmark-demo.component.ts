@@ -12,10 +12,10 @@ import { DummyData, Renderer } from 'web-surfels';
     template: `
         <mat-expansion-panel>
             <mat-expansion-panel-header>
-                <mat-panel-title>About this demo</mat-panel-title>
+                <mat-panel-title>About Sphere Benchmark</mat-panel-title>
             </mat-expansion-panel-header>
             <div>
-                Sphere Benchmark
+                Use this benchmark to evaluate the limits of rendering performance.
             </div>
         </mat-expansion-panel>
 

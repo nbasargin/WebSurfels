@@ -2,7 +2,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 200px;
+  width: 250px;
   pointer-events: auto;
 }
 
@@ -13,5 +13,11 @@
 .main-info-table {
   display: grid;
   grid-template-columns: 2fr 3fr;
-  grid-auto-rows: 32px;
+  grid-auto-rows: 24px;
+}
+
+.more-less-perf {
+  color: blue;
+  cursor: pointer;
+  user-select: none;
 }
