@@ -121,7 +121,7 @@ export class RendererService {
         const duration = this.lastTimestamp > 0 ? timestamp - this.lastTimestamp : 0;
         this.lastTimestamp = timestamp;
         this.fpsCounter.addDuration(duration);
-        this.fps = (1000 / this.fpsCounter.getAvgDuration());
+        this.fps = Math.round((1000 / this.fpsCounter.getAvgDuration()) * 100) / 100;
         this.animationRequest = requestAnimationFrame(timestamp => this.renderLoop(timestamp));
 
         // canvas size

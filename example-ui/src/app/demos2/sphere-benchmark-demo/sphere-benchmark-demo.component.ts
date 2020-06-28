@@ -64,7 +64,7 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
         // N * pi * (splat size / 2)^2 = 4 * 4 pi
         // N * splat size^2 / 4 = 4 * 4
         // splat size = sqrt(4 * 4 * 4 / N) = 8 sqrt (1 / N)
-        this.pointPresets = [10_000, 100_000, 1_000_000, 10_000_000].map(n => ({
+        this.pointPresets = [10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000, 10_000_000].map(n => ({
             points: n,
             size: 8 * Math.sqrt(1 / n)
         }));
@@ -78,7 +78,7 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
     ngAfterViewInit(): void {
         this.renderer = this.rendererService.getRenderer();
         const selectedPos = this.camPositions[1];
-        const selectedPoints = this.pointPresets[1];
+        const selectedPoints = this.pointPresets[2];
         this.setCam(selectedPos.pos);
         this.addSphere(selectedPoints);
 
@@ -87,7 +87,7 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
             this.pointNumberControl.patchValue(selectedPoints.points);
         }, 0);
 
-        this.rendererService.setFpsAveragingWindow(100);
+        this.rendererService.setFpsAveragingWindow(20);
         this.rendererService.setControlMode('first-person');
         this.rendererService.setMovementSpeed(0.05);
 
