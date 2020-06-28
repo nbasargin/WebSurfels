@@ -1,4 +1,6 @@
 import { NgModule } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -41,6 +43,8 @@ import { SphereBenchmarkDemoComponent } from './demos2/sphere-benchmark-demo/sph
         BrowserAnimationsModule,
         MatExpansionModule,
         MatIconModule,
+        MatButtonModule,
+        MatSelectModule,
     ],
     providers: [],
     bootstrap: [MainComponent]
