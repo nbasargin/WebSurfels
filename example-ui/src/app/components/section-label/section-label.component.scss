@@ -1,0 +1,14 @@
+.section-label {
+
+  display: flex;
+
+  .text {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  .line {
+    flex-grow: 1;
+  }
+
+}
