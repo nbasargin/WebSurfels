@@ -38,7 +38,7 @@ export class RendererService {
             console.warn('Recreating renderer!');
             this.destroyRenderer();
         }
-        this.renderer = new Renderer(canvas, 1, 1);
+        this.renderer = new Renderer(canvas);
         this.resizeTo = resizeTo;
         this.fpController = new FirstPersonController(this.renderer.camera);
 

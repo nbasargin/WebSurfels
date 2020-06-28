@@ -23,11 +23,11 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                           [nodes]="renderingStats.nodesDrawn"
                           [points]="renderingStats.pointsDrawn"
                           [animate]="animate"
-                          [hqSplats]="renderer.highQuality"
+                          [hqSplats]="renderer.options.highQuality"
                           [scale]="renderer.options.sizeScale"
                           [speed]="movementSpeed"
                           (animateChange)="animate = $event"
-                          (hqSplatsChange)="renderer.highQuality = $event"
+                          (hqSplatsChange)="renderer.options.highQuality = $event"
                           (scaleChange)="renderer.options.sizeScale = $event">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr;">
