@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Renderer } from 'web-surfels';
+import { RendererService } from '../../../../services/renderer.service';
 
 @Component({
     selector: 'app-main-settings',
@@ -15,11 +17,11 @@ import { Component } from '@angular/core';
                     </mat-expansion-panel-header>
                     <div class="main-info-table">
                         <span>FPS</span>
-                        <span></span>
+                        <span>{{rendererService.fps.toLocaleString('en-us')}}</span>
                         <span>Points</span>
-                        <span>45,125,456</span>
+                        <span>{{renderer.stats.pointsDrawn.toLocaleString('en-us')}}</span>
                         <span>Nodes</span>
-                        <span></span>
+                        <span>{{renderer.stats.nodesDrawn.toLocaleString('en-us')}}</span>
                     </div>
                 </mat-expansion-panel>
 
@@ -46,5 +48,10 @@ import { Component } from '@angular/core';
 export class MainSettingsComponent {
 
     settingsVisible = false;
+    renderer: Renderer;
+
+    constructor(public rendererService: RendererService) {
+        this.renderer = rendererService.getRenderer();
+    }
 
 }
