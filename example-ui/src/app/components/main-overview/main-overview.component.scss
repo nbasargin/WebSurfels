@@ -6,3 +6,32 @@
   bottom: 0;
   right: 0;
 }
+
+.main-overview-header {
+  grid-template-columns: 1fr;
+  display: grid;
+  height: 40%;
+  color: white;
+  font-size: 50px;
+
+  align-items: center;
+  justify-items: center;
+}
+
+.main-overview-demos {
+  display: grid;
+  height: 30%;
+  grid-template-columns: repeat(2, 1fr);
+  justify-items: center;
+
+  a {
+    color: mediumseagreen;
+    font-size: 25px;
+    text-decoration: none;
+    transition: all 200ms;
+  }
+
+  a:hover {
+    text-shadow: 0 0 5px mediumseagreen, 0 0 5px mediumseagreen;
+  }
+}

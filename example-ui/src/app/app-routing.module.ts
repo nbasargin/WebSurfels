@@ -14,8 +14,8 @@ const routes: Routes = [
         path: 'demo',
         component: DemoBaseComponent,
         children: [
-            {path: 'subpage', component: SubpageComponent},
-            {path: '**', redirectTo: 'subpage'}
+            {path: 'lod-tree', component: SubpageComponent},
+            {path: '**', redirectTo: 'lod-tree'}
         ]
     },
 ];
