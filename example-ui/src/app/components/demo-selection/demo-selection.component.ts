@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-    selector: 'app-main-overview',
+    selector: 'app-demo-selection',
     template: `
         <div class="main-overview-header">
             WebSurfels Demo
@@ -21,8 +21,8 @@ import { Component } from '@angular/core';
             </span>
         </div>
     `,
-    styleUrls: ['./main-overview.component.scss']
+    styleUrls: ['./demo-selection.component.scss']
 })
-export class MainOverviewComponent {
+export class DemoSelectionComponent {
 
 }

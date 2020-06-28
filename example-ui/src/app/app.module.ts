@@ -4,18 +4,20 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterModule } from '@angular/router';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { DemoSelectionComponent } from './components/demo-selection/demo-selection.component';
 import { MainOverlayComponent } from './main-overlay/main-overlay.component';
-import { MainSettingsComponent } from './components/settings/main-settings/main-settings.component';
-import { SectionLabelComponent } from './components/settings/section-label/section-label.component';
+import { MainSettingsComponent } from './components/demo-base/settings/main-settings/main-settings.component';
+import { SectionLabelComponent } from './components/demo-base/settings/section-label/section-label.component';
 import { MainComponent } from './components/main/main.component';
-import { SubpageComponent } from './components/subpage/subpage.component';
-import { DemoSettingsComponent } from './components/settings/demo-settings/demo-settings.component';
+import { LodTreeDemoComponent } from './demos2/lod-tree-demo/lod-tree-demo.component';
+import { DemoSettingsComponent } from './components/demo-base/settings/demo-settings/demo-settings.component';
 import { DemoBaseComponent } from './components/demo-base/demo-base.component';
-import { MainOverviewComponent } from './components/main-overview/main-overview.component';
+import { LodConstructionDemoComponent } from './demos2/lod-construction-demo/lod-construction-demo.component';
+import { StreetViewDemoComponent } from './demos2/street-view-demo/street-view-demo.component';
+import { SphereBenchmarkDemoComponent } from './demos2/sphere-benchmark-demo/sphere-benchmark-demo.component';
 
 @NgModule({
     declarations: [
@@ -24,10 +26,13 @@ import { MainOverviewComponent } from './components/main-overview/main-overview.
         MainSettingsComponent,
         SectionLabelComponent,
         MainComponent,
-        SubpageComponent,
+        LodTreeDemoComponent,
         DemoSettingsComponent,
         DemoBaseComponent,
-        MainOverviewComponent
+        DemoSelectionComponent,
+        LodConstructionDemoComponent,
+        StreetViewDemoComponent,
+        SphereBenchmarkDemoComponent
     ],
     imports: [
         BrowserModule,
