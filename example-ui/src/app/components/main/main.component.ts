@@ -6,10 +6,7 @@ import { Component } from '@angular/core';
         <div #wrapper class="full-size">
             <canvas #canvas oncontextmenu="return false"></canvas>
         </div>
-        <div class="full-size">
-            <app-main-settings></app-main-settings>
-            <router-outlet></router-outlet>            
-        </div>
+        <router-outlet></router-outlet>        
     `,
     styleUrls: ['./main.component.scss']
 })

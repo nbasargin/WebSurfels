@@ -19,3 +19,32 @@ h1 {
   font-size: 20px;
 
 }
+
+.full-size {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.main-icon {
+  font-size: 30px;
+  width: 30px !important;
+  height: 30px !important;
+  color: gray;
+  cursor: pointer;
+  user-select: none;
+  transition: all 200ms;
+
+  &:hover {
+    color: lightgray;
+  }
+  &:active {
+    color: white;
+  }
+}
+
+mat-expansion-panel:not(:last-child) {
+  margin-bottom: 3px;
+}

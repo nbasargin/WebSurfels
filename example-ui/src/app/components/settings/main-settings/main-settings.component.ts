@@ -4,9 +4,9 @@ import { Component } from '@angular/core';
     selector: 'app-main-settings',
     template: `
         <div class="main-settings">
-            <div class="settings-icon-wrapper">
-                <mat-icon class="settings-icon" (click)="settingsVisible = !settingsVisible">settings</mat-icon>
-            </div>          
+            <div class="main-settings-icon-wrapper">
+                <mat-icon class="main-icon" (click)="settingsVisible = !settingsVisible">settings</mat-icon>
+            </div>
 
             <ng-container *ngIf="settingsVisible">
                 <mat-expansion-panel>
@@ -38,7 +38,7 @@ import { Component } from '@angular/core';
                 </mat-expansion-panel>
 
             </ng-container>
-                  
+
         </div>
     `,
     styleUrls: ['./main-settings.component.scss']
