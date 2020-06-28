@@ -20,7 +20,7 @@ export class MainComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.rendererService.createRenderer(this.canvasRef.nativeElement);
+        this.rendererService.createRenderer(this.canvasRef.nativeElement, this.wrapperRef.nativeElement);
     }
 
 }

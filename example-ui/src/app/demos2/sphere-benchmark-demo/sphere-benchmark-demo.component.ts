@@ -1,6 +1,8 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { RendererService } from '../../services/renderer.service';
 
 import { DummyData, Renderer } from 'web-surfels';
@@ -48,9 +50,10 @@ import { DummyData, Renderer } from 'web-surfels';
 export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
 
     private renderer: Renderer;
+    private destroyed$: Subject<void> = new Subject();
 
     pointPresets: Array<{ points: number, size: number }>;
-    camPositions: Array<{pos: Array<number>, text: string}>;
+    camPositions: Array<{ pos: Array<number>, text: string }>;
 
     camPositionControl = new FormControl();
     pointNumberControl = new FormControl();
@@ -61,12 +64,17 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
         // N * pi * (splat size / 2)^2 = 4 * 4 pi
         // N * splat size^2 / 4 = 4 * 4
         // splat size = sqrt(4 * 4 * 4 / N) = 8 sqrt (1 / N)
-        this.pointPresets = [10_000, 100_000, 1_000_000, 10_000_000].map(n => ({points: n, size: 8 * Math.sqrt(1 / n)}));
+        this.pointPresets = [10_000, 100_000, 1_000_000, 10_000_000].map(n => ({
+            points: n,
+            size: 8 * Math.sqrt(1 / n)
+        }));
 
         this.camPositions = [
             {text: 'Near', pos: [-1.25, 0, 0]},
             {text: 'Far', pos: [-2.1, 0, 0]},
         ];
+
+        this.rendererService.setFpsAveragingWindow(100);
     }
 
     ngAfterViewInit(): void {
@@ -80,10 +88,17 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
             this.camPositionControl.patchValue(selectedPos.text);
             this.pointNumberControl.patchValue(selectedPoints.points);
         }, 0);
+
+        this.rendererService.nextFrame.pipe(takeUntil(this.destroyed$)).subscribe(() => {
+            this.renderer.render();
+        })
     }
 
     ngOnDestroy(): void {
         this.renderer.removeAllNodes();
+        this.renderer.render();
+        this.destroyed$.next();
+        this.destroyed$.complete();
     }
 
     camPosChange(e: MatSelectChange) {
@@ -92,14 +107,15 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
     }
 
     setCam(pos: Array<number>) {
-        this.renderer.camera.setEyePosition(pos);
+        this.renderer.camera.setOrientation(pos, [0,0,0], [0,0,-1]);
+
     }
 
     pointNumberChange(e: MatSelectChange) {
         const selectedPreset = this.pointPresets.find(p => p.points === e.value) || this.pointPresets[0];
         setTimeout(() => {
             this.addSphere(selectedPreset);
-        }, 0)
+        }, 10);
     }
 
     addSphere(preset: { points: number, size: number }) {
