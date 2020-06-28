@@ -38,7 +38,24 @@ import { RendererService } from '../../../../services/renderer.service';
                     <mat-expansion-panel-header>
                         <mat-panel-title>Main settings</mat-panel-title>
                     </mat-expansion-panel-header>
-                    some settings here
+
+                    <mat-slide-toggle 
+                            [color]="'primary'"
+                            [checked]="renderer.options.highQuality" 
+                            (change)="renderer.options.highQuality = $event.checked"
+                    >High-quality splats</mat-slide-toggle>
+
+                    <mat-slide-toggle
+                            [color]="'primary'"
+                            [checked]="renderer.options.backfaceCulling"
+                            (change)="renderer.options.backfaceCulling = $event.checked"
+                    >Backface culling</mat-slide-toggle>
+
+                    <mat-slide-toggle
+                            [color]="'primary'"
+                            [checked]="renderer.light.headlight"
+                            (change)="renderer.light.headlight = $event.checked"
+                    >Enable headlight</mat-slide-toggle>                    
                 </mat-expansion-panel>
 
                 <mat-expansion-panel>

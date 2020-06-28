@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { FirstPersonController } from 'web-surfels';
 import { OrbitAnimationController } from 'web-surfels';
-import { HeadlightController } from 'web-surfels';
 import { Renderer } from 'web-surfels';
 import { RenderingStats } from 'web-surfels';
 import { FpsCounter } from 'web-surfels';
@@ -47,8 +46,8 @@ import { StreetViewStitchingDemo } from './demos/street-view-stitching-demo';
                        (input)="renderer.light.specularShininess = +specularIShininessSlider.value"
                        [value]="renderer.light.specularShininess">
                 <label>
-                    <input #hqCheck type="checkbox" [checked]="headlight.enabled"
-                           (change)="headlight.enabled = hqCheck.checked"> Use Headlight
+                    <input #hqCheck type="checkbox" [checked]="renderer.light.headlight"
+                           (change)="renderer.light.headlight = hqCheck.checked"> Use Headlight
                 </label>
             </div>
 
@@ -224,8 +223,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private fpController: FirstPersonController;
     private orbitAnimation: OrbitAnimationController;
 
-    headlight: HeadlightController;
-
     // demos
     demos: {
         dragon?: DragonInBrowserLodDemo,
@@ -242,8 +239,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.renderer = new Renderer(this.canvasRef.nativeElement);
         this.fpController = new FirstPersonController(this.renderer.camera);
         this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 0, 15000);
-
-        this.headlight = new HeadlightController(this.renderer.light, this.renderer.camera);
 
         setTimeout(() => {
             this.demos = {
@@ -332,8 +327,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         } else {
             this.moveCamera();
         }
-
-        this.headlight.update();
 
         if (this.demos.castle) {
             this.demos.castle.dynamicLod.render();
