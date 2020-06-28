@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import { PointCloudData } from '../data/point-cloud-data';
 import { Camera } from './camera';
 import { DirectionalLight } from './directional-light';
@@ -134,6 +135,11 @@ export class Renderer {
         this.gl.uniform1f(uniforms.splatDepthSizeRatio, this.options.splatDepthSizeRatio);
         this.gl.uniform1f(uniforms.splatDepthEpsilon, this.options.splatDepthEpsilon);
 
+        // lighting
+        if (this.light.headlight) {
+            vec3.copy(this.light.direction, this.camera.viewDirection);
+            vec3.negate(this.light.direction, this.light.direction);
+        }
         this.gl.uniform1i(uniforms.enableLighting, this.light.enabled ? 1 : 0);
         this.gl.uniform3fv(uniforms.lightDirection, this.light.direction);
         this.gl.uniform1f(uniforms.lightAmbientIntensity, this.light.ambientIntensity);
