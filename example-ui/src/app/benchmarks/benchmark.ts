@@ -6,6 +6,7 @@ export class Benchmark {
 
     data: BenchmarkData | null = null;
     running: boolean = false;
+    framesBetweenTwoCamPoints = 200;
 
     constructor(public cameraPath: CameraPath) {
 
@@ -30,16 +31,23 @@ export class Benchmark {
         }
         this.data.record(msPassed, stats);
 
-        const framesBetweenTwoCamPoints = 200;
         const frame = this.data.frameDurations.length;
-        if (frame >= this.cameraPath.points.length * framesBetweenTwoCamPoints) {
+        if (frame >= this.cameraPath.points.length * this.framesBetweenTwoCamPoints) {
             this.running = false;
             return;
         }
 
         // next cam position
-        const pointID = Math.floor(frame / framesBetweenTwoCamPoints);
-        const progress = (frame - pointID * framesBetweenTwoCamPoints) / framesBetweenTwoCamPoints;
+        const pointID = Math.floor(frame / this.framesBetweenTwoCamPoints);
+        const progress = (frame - pointID * this.framesBetweenTwoCamPoints) / this.framesBetweenTwoCamPoints;
         this.cameraPath.setCameraPosition(pointID, progress);
+    }
+
+    getProgress(): number {
+        if (!this.data) {
+            return 0;
+        }
+        const frame = this.data.frameDurations.length;
+        return frame / this.framesBetweenTwoCamPoints;
     }
 }
