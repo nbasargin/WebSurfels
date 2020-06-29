@@ -42,11 +42,12 @@ export class DynamicStreetViewController {
     // todo refactor subgrid to allow input without weights
     private oneWeights = new Float32Array(512 * 256).fill(1);
 
+    private loadingDistFactor: number = 2; // this factor times qualityDist is the loading dist
+
     constructor(
         public renderer: Renderer,
         public loader: StreetViewLoader,
-        public qualityDist: number, // distance within highest quality will be used
-        public loadingDist: number, // distance within all panoramas must be loaded
+        public qualityDist: number, // distance within highest quality will be used and all panoramas must be loaded
         public pointLoadingBudgets: PointBudgets,
         startPanoramaID: string,
     ) {
@@ -287,7 +288,7 @@ export class DynamicStreetViewController {
             const mediumThreshold = 8;
 
             // NEW
-            if (dist < this.loadingDist || this.pointsInMemory < this.pointLoadingBudgets.softMinimum) {
+            if (dist < this.qualityDist * this.loadingDistFactor || this.pointsInMemory < this.pointLoadingBudgets.softMinimum) {
                 // load missing links // todo optimize this (with allLinksLoaded flag)
                 for (const link of node.links) {
                     this.requestPanoramaLoading(link, node.center);
@@ -345,8 +346,8 @@ export class DynamicStreetViewController {
         // check if there are too many points
         if (this.pointsInMemory > this.pointLoadingBudgets.softMaximum) {
             console.log('!!! cleanup, in memory:', this.pointsInMemory, 'max:', this.pointLoadingBudgets.softMaximum);
-            // do a serious cleanup: remove all nodes outside minLoadDist so that
-            // remaining points are below unload threshold
+            // do a serious cleanup:
+            // remove nodes until remaining points are below unload threshold OR all nodes are within qualityDist
             const min = this.pointLoadingBudgets.softMinimum;
             const max = this.pointLoadingBudgets.softMaximum;
             const unloadThreshold = min + (max - min) / 2;
@@ -357,16 +358,12 @@ export class DynamicStreetViewController {
             // sort them
             dists.sort((a, b) => b[1] - a[1]);
 
-            if (dists[0][1] <= this.loadingDist) {
-                console.warn('Points are over max memory budget! Cannot free memory since all nodes are within minimal loading distance!');
-            } else {
-                // remove nodes starting with the most distant ones until there are not too many points or all nodes are within distance
-                for (const [node, dist] of dists) {
-                    if (dist <= this.loadingDist || this.pointsInMemory < unloadThreshold) {
-                        break;
-                    }
-                    this.unloadNode(node);
+            // remove nodes starting with the most distant ones until there are not too many points or all nodes are within distance
+            for (const [node, dist] of dists) {
+                if (dist <= this.qualityDist * this.loadingDistFactor || this.pointsInMemory < unloadThreshold) {
+                    break;
                 }
+                this.unloadNode(node);
             }
         }
 
