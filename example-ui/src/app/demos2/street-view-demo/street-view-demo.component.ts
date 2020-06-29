@@ -170,7 +170,7 @@ export class StreetViewDemoComponent implements OnDestroy {
     }
 
     ngOnDestroy(): void {
-        // this.dynamicLod.destroy();
+        this.controller.destroy();
         this.renderer.removeAllNodes();
         this.renderer.render();
         this.destroyed$.next();
