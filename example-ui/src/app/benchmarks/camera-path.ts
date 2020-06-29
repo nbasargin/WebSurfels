@@ -7,9 +7,7 @@ export class CameraPath {
     }
 
     setCameraPosition(startPointID: number, progress: number = 0) {
-        if (startPointID >= this.points.length || startPointID < 0) {
-            throw new Error('invalid start point ID ' + startPointID);
-        }
+        startPointID = Math.max(0, Math.min(Math.floor(startPointID), this.points.length - 1));
 
         const endPointID = Math.min(startPointID + 1, this.points.length - 1);
         const start = this.points[startPointID];
