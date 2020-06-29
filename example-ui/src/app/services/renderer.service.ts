@@ -32,7 +32,7 @@ export class RendererService {
     private minMovementSpeed: number;
     private maxMovementSpeed: number;
 
-    nextFrame: Subject<void> = new Subject();
+    nextFrame: Subject<number> = new Subject(); // emits frame duration in ms
     fps = 0;
 
     constructor() {
@@ -149,7 +149,7 @@ export class RendererService {
         }
 
         // inform listeners
-        this.nextFrame.next();
+        this.nextFrame.next(duration);
     }
 
     updateFirstPersonCam() {
