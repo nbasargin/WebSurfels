@@ -50,6 +50,12 @@ import { RendererService } from '../../services/renderer.service';
                     ></mat-slider>
                 </div>
 
+                <mat-slide-toggle
+                        [color]="'primary'"
+                        [checked]="jitter"
+                        (change)="jitter = $event.checked; updateDisplayedLOD()"
+                >Enable jitter
+                </mat-slide-toggle>
             </ng-container>
         </mat-expansion-panel>
     `,
