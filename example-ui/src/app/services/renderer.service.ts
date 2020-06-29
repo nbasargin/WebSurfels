@@ -28,10 +28,16 @@ export class RendererService {
     private fpController: FirstPersonController;
     // private orbitAnimation: OrbitAnimationController;
     private controlMode: ControlMode = 'first-person';
-    private movementSpeed: number = 0.5;
+    private movementSpeed: number;
+    private minMovementSpeed: number;
+    private maxMovementSpeed: number;
 
     nextFrame: Subject<void> = new Subject();
     fps = 0;
+
+    constructor() {
+        this.setMovementSpeed(0.5);
+    }
 
     createRenderer(canvas: HTMLCanvasElement, resizeTo: HTMLElement) {
         if (this.renderer) {
@@ -72,6 +78,8 @@ export class RendererService {
 
     setMovementSpeed(speed: number) {
         this.movementSpeed = speed;
+        this.minMovementSpeed = speed / 100;
+        this.maxMovementSpeed = speed * 200;
     }
 
     // event processing
@@ -109,7 +117,7 @@ export class RendererService {
         } else {
             this.movementSpeed /= factor;
         }
-        this.movementSpeed = Math.max(0.01, Math.min(100, this.movementSpeed));
+        this.movementSpeed = Math.max(this.minMovementSpeed, Math.min(this.maxMovementSpeed, this.movementSpeed));
     }
 
     private renderLoop(timestamp) {

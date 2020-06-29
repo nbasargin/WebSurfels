@@ -84,7 +84,7 @@ export class LodConstructionDemoComponent implements OnDestroy {
         this.rendererService.setControlMode('first-person');
         this.rendererService.setMovementSpeed(0.005);
         this.renderer.camera.setOrientation([-0.05, 0.2, 0.2], [0, 0.12, 0], [0, 1, 0]);
-        this.renderer.camera.setClippingDist(0.01, 100);
+        this.renderer.camera.setClippingDist(0.001, 100);
 
         this.rendererService.nextFrame.pipe(takeUntil(this.destroyed$)).subscribe(() => {
             this.renderer.render();
