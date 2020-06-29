@@ -115,6 +115,20 @@ import { RendererService } from '../../../../services/renderer.service';
                                     (input)="renderer.options.splatDepthSizeRatio = $event.value"
                         ></mat-slider>
                     </div>
+                    
+                    <button *ngIf="!enableDevTools" mat-button color="primary" style="width: 100%" (click)="enableDevTools = true">
+                        Enable Dev Tools
+                    </button>
+                    
+                </mat-expansion-panel>
+                
+                <mat-expansion-panel *ngIf="enableDevTools">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>Dev Tools</mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <button mat-raised-button color="primary" style="width: 100%" (click)="logCameraPosition()">
+                        Log camera position
+                    </button>
                 </mat-expansion-panel>
 
             </ng-container>
@@ -127,11 +141,17 @@ export class MainSettingsComponent {
 
     settingsVisible = false;
     morePerfData = false;
+    enableDevTools = false;
 
     renderer: Renderer;
 
     constructor(public rendererService: RendererService) {
         this.renderer = rendererService.getRenderer();
+    }
+
+    logCameraPosition() {
+        console.log('Camera eye:', this.renderer.camera.eye);
+        console.log('Camera view direction:', this.renderer.camera.viewDirection);
     }
 
 }
