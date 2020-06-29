@@ -1,4 +1,4 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { RendererService } from '../../services/renderer.service';
 
 import { Renderer } from 'web-surfels';
@@ -12,14 +12,11 @@ import { Renderer } from 'web-surfels';
     `,
     styleUrls: ['./street-view-demo.component.scss']
 })
-export class StreetViewDemoComponent implements AfterViewInit {
+export class StreetViewDemoComponent {
 
     private renderer: Renderer;
 
     constructor(private rendererService: RendererService) {
-    }
-
-    ngAfterViewInit(): void {
         this.renderer = this.rendererService.getRenderer();
     }
 

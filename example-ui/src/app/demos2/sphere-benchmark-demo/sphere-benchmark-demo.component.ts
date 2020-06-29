@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Subject } from 'rxjs';
@@ -47,7 +47,7 @@ import { DummyData, Renderer } from 'web-surfels';
     `,
     styleUrls: ['./sphere-benchmark-demo.component.scss']
 })
-export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
+export class SphereBenchmarkDemoComponent implements OnDestroy {
 
     private renderer: Renderer;
     private destroyed$: Subject<void> = new Subject();
@@ -73,9 +73,7 @@ export class SphereBenchmarkDemoComponent implements AfterViewInit, OnDestroy {
             {text: 'Near', pos: [-1.25, 0, 0]},
             {text: 'Far', pos: [-2.1, 0, 0]},
         ];
-    }
 
-    ngAfterViewInit(): void {
         this.renderer = this.rendererService.getRenderer();
         const selectedPos = this.camPositions[1];
         const selectedPoints = this.pointPresets[2];
