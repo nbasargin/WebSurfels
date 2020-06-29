@@ -1,7 +1,9 @@
 import { Component, OnDestroy } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { MatSelectChange } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { vec3 } from '../../../../../web-surfels/lib/esm/index';
+import { vec3 } from 'web-surfels';
 import { Benchmark } from '../../benchmarks/benchmark';
 import { CameraPath } from '../../benchmarks/camera-path';
 import { RendererService } from '../../services/renderer.service';
@@ -17,6 +19,7 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
             </mat-expansion-panel-header>
             <div>
                 Reconstructing urban environments from Google Street View panoramas.
+                The demo loads panorama data, constructs local point sets and aligns them into a global point cloud.
             </div>
         </mat-expansion-panel>
 
@@ -28,7 +31,7 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
                 Something went wrong with loading the root panorama.
                 Try reloading the page.
             </div>
-        </mat-expansion-panel>        
+        </mat-expansion-panel>
 
         <mat-expansion-panel *ngIf="!controller.errorLoadingRoot">
             <mat-expansion-panel-header>
@@ -40,46 +43,59 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
                     [color]="'primary'"
                     [checked]="!controller.pauseLoading"
                     (change)="controller.pauseLoading = !$event.checked"
-            >Enable loading</mat-slide-toggle>
-            
+            >Enable loading
+            </mat-slide-toggle>
+
             <div matTooltip="Highest quality will be chosen for panoramas within this distance.
-                                More distant panoramas are rendered in lower quality.">
-                Quality distance:              
-                <mat-slider 
+                             More distant panoramas are rendered in lower quality.
+                             Also affects the radius within new panoramas must be loaded.">
+                Quality distance:
+                <mat-slider
                         style="width: 100%"
-                            [value]="controller.qualityDist"
-                            [color]="'primary'" [min]="20" [max]="150" [step]="10"
-                            [tickInterval]="10" thumbLabel
-                            (input)="controller.qualityDist = $event.value"
-                ></mat-slider>                
-            </div>
-            <div matTooltip="All panoramas within this distance will be loaded if available.">
-                Loading distance:
-                <mat-slider style="width: 100%"
-                            [value]="controller.loadingDist"
-                            [color]="'primary'" [min]="40" [max]="300" [step]="10"
-                            [tickInterval]="10" thumbLabel
-                            (input)="controller.loadingDist = $event.value"
+                        [value]="controller.qualityDist"
+                        [color]="'primary'" [min]="20" [max]="150" [step]="10"
+                        [tickInterval]="10" thumbLabel
+                        (input)="controller.qualityDist = $event.value"
                 ></mat-slider>
             </div>
-            
+
             <div>
-                Memory Limits
+                <mat-form-field>
+                    <mat-label>Memory Limits</mat-label>
+                    <mat-select [formControl]="memoryLimitControl" (selectionChange)="memoryLimitChange($event)">
+                        <mat-option *ngFor="let limit of memoryLimits"
+                                    [value]="limit.text">
+                            {{limit.text}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                Point budget: {{controller.pointLoadingBudgets.softMinimum / 1e6}} - {{controller.pointLoadingBudgets.softMaximum / 1e6}} million.
+                <div *ngIf="!moreAboutPointLoading">
+                    <div class="more-info-link" (click)="moreAboutPointLoading = true">more...</div>                    
+                </div>
+                <div *ngIf="moreAboutPointLoading">
+                    Load panoramas until at least {{controller.pointLoadingBudgets.softMinimum / 1e6}}
+                    million points are in memory. Remove the most distant panoramas when there are more than
+                    {{controller.pointLoadingBudgets.softMaximum / 1e6}} million points.
+                    Always load panoramas next to the current camera position (might even exceed the point budget).
+                    <div class="more-info-link" (click)="moreAboutPointLoading = false">less...</div>
+                </div>
+                         
             </div>
-            
         </mat-expansion-panel>
 
         <mat-expansion-panel *ngIf="controller.hasNetworkErrors()" [expanded]="true">
             <mat-expansion-panel-header>
                 <mat-panel-title>Network Errors!</mat-panel-title>
-            </mat-expansion-panel-header>            
+            </mat-expansion-panel-header>
             <div>
                 <span style="color: red">
                     There are network errors! Is the server connection fine and all required data available?    
-                </span>                
+                </span>
                 <button mat-raised-button color="warn" style="width: 100%"
                         (click)="controller.forgetPreviousNetworkErrors()"
-                >Forget Errors & Retry</button>
+                >Forget Errors & Retry
+                </button>
             </div>
         </mat-expansion-panel>
     `,
@@ -91,6 +107,7 @@ export class StreetViewDemoComponent implements OnDestroy {
     private destroyed$: Subject<void> = new Subject();
 
     controller: DynamicStreetViewController;
+    moreAboutPointLoading = false;
 
     benchmark: Benchmark;
     datasets = {
@@ -108,6 +125,14 @@ export class StreetViewDemoComponent implements OnDestroy {
         }
     };
 
+    memoryLimits: Array<{ text: string, min: number, max: number }> = [
+        {text: 'Low', min: 5e6, max: 10e6},
+        {text: 'Medium', min: 25e6, max: 50e6},
+        {text: 'High', min: 50e6, max: 100e6},
+        {text: 'Extra High', min: 100e6, max: 120e6},
+    ];
+    memoryLimitControl = new FormControl();
+
     constructor(private rendererService: RendererService) {
         this.rendererService.setFpsAveragingWindow(20);
         this.rendererService.setControlMode('first-person');
@@ -124,7 +149,7 @@ export class StreetViewDemoComponent implements OnDestroy {
         // const api = new GoogleStreetViewApi();
         const api = new LocalStreetViewApi(`http://localhost:5000/gsv/${data.path}`);
         const loader = new StreetViewLoader(api, 0.4, 1.5);
-        this.controller = new DynamicStreetViewController(this.renderer, loader, 50, 100, {
+        this.controller = new DynamicStreetViewController(this.renderer, loader, 50, {
             softMinimum: 10_000_000,
             softMaximum: 50_000_000
         }, data.startID);
@@ -135,6 +160,13 @@ export class StreetViewDemoComponent implements OnDestroy {
             this.rendererService.setControlMode(this.benchmark.running ? 'disabled' : 'first-person');
             this.controller.render();
         });
+
+        setTimeout(() => {
+            const selectedLimit = this.memoryLimits[0];
+            this.memoryLimitControl.patchValue(selectedLimit.text);
+            this.controller.pointLoadingBudgets.softMinimum = selectedLimit.min;
+            this.controller.pointLoadingBudgets.softMaximum = selectedLimit.max;
+        }, 0);
     }
 
     ngOnDestroy(): void {
@@ -143,6 +175,12 @@ export class StreetViewDemoComponent implements OnDestroy {
         this.renderer.render();
         this.destroyed$.next();
         this.destroyed$.complete();
+    }
+
+    memoryLimitChange(e: MatSelectChange) {
+        const selectedLimit = this.memoryLimits.find(l => l.text === e.value) || this.memoryLimits[0];
+        this.controller.pointLoadingBudgets.softMinimum = selectedLimit.min;
+        this.controller.pointLoadingBudgets.softMaximum = selectedLimit.max;
     }
 
     private setUpBenchmark() {
