@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -49,6 +50,7 @@ import { SphereBenchmarkDemoComponent } from './demos2/sphere-benchmark-demo/sph
         MatSelectModule,
         MatSlideToggleModule,
         MatSliderModule,
+        MatTooltipModule,
     ],
     providers: [],
     bootstrap: [MainComponent]
