@@ -27,6 +27,7 @@ export class DynamicStreetViewController {
     private requested: Map<string, Point3d> = new Map();
     private loading: Set<string> = new Set();
     private errors: Map<string, number> = new Map();
+    private destroyed: boolean = false;
 
     private streetViewNodes: Map<string, DynamicStreetViewNode> = new Map();
     private visiblePanoramas: number = 0; // keep track how many potentially visible panoramas there are
@@ -53,6 +54,9 @@ export class DynamicStreetViewController {
     ) {
         // asynchronously load base panorama and set camera orientation
         loader.loadPanorama(startPanoramaID).then(basePanorama => {
+            if (this.destroyed) {
+                return;
+            }
             const pos = basePanorama.worldPosition;
             this.basePanoWorldPosition = pos;
             const up = vec3.fromValues(pos.x, pos.y, pos.z);
@@ -75,6 +79,13 @@ export class DynamicStreetViewController {
 
     hasNetworkErrors(): boolean {
         return this.errors.size > 0;
+    }
+
+    destroy() {
+        if (this.destroyed) {
+            return;
+        }
+        this.destroyed = true;
     }
 
     /**
@@ -109,6 +120,9 @@ export class DynamicStreetViewController {
         // console.log('!! start loading', id);
         this.loading.add(id);
         this.loader.loadPanorama(id).then(pano => {
+            if (this.destroyed) {
+                return;
+            }
             this.loading.delete(pano.id);
             this.completePanoramaLoading(pano);
         }).catch(error => {
@@ -274,6 +288,10 @@ export class DynamicStreetViewController {
     //
 
     render(): RenderingStats {
+        if (this.destroyed) {
+            throw new Error('Calling render on destroyed DynamicStreetViewController!');
+        }
+
         const renderList: Array<RendererNode> = [];
         const cam = this.renderer.camera.eye;
         let visiblePanoramas = 0;
