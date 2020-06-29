@@ -21,11 +21,11 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
 
         <mat-expansion-panel *ngIf="dynamicLod.errorLoadingRoot" [expanded]="true">
             <mat-expansion-panel-header>
-                <mat-panel-title>Loading Error!</mat-panel-title>
+                <mat-panel-title>Initialization Error!</mat-panel-title>
             </mat-expansion-panel-header>
             <div>
                 Something went wrong with loading the root node.
-                Base URL is set to {{baseUrl}}. 
+                Try reloading the page.
             </div>
         </mat-expansion-panel>
 
