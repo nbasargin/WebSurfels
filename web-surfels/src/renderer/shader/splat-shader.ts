@@ -2,50 +2,50 @@ import { WebGLUtils } from '../web-gl-utils';
 
 export const quadVS = `
     #version 300 es
-    
+
     // adapted from http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
     // expecting normalized axis (length of 1)
     mat3 rotation_matrix(vec3 axis, float angle) {
         float s = -sin(angle);
         float c = cos(angle);
         float oc = 1.0 - c;
-    
+
         return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
                     oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
                     oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
     }
-    
+
     in vec3 pos;
     in float size;
     in vec3 color;
-    in vec3 normal; 
+    in vec3 normal;
     in vec3 quadVertex;
 
-    uniform vec3 uEyePos; 
+    uniform vec3 uEyePos;
     uniform mat4 uModelViewMatrix;
     uniform mat4 uModelViewMatrixIT;
     uniform mat4 uProjectionMatrix;
     uniform bool uDepthPass;
     uniform float uSizeScale;
-    
+
     // lighting
     uniform bool uEnableLighting;
     uniform vec3 uLightDir;
     uniform float uLightAmbientIntensity;
     uniform float uLightSpecularIntensity;
     uniform float uLightSpecularShininess;
-    
+
     // splatting depth
     uniform float uSplatDepthSizeRatio; // multiplied with point size to determine base splatting depth
     uniform float uSplatDepthEpsilon;   // added to base splatting depth during depth pass to reduce numerical issues
-    
+
     out highp vec2 uv;
     flat out vec3 v_color;
-    
+
     void main() {
         vec3 point_normal = normal;
         vec3 quad_normal = vec3(0.0, 0.0, 1.0);
-        
+
 		vec3 rot_axis = cross(quad_normal, point_normal);
 		if (length(rot_axis) == 0.0) {
 		    rot_axis = vec3(1.0, 0.0, 0.0);
@@ -57,21 +57,17 @@ export const quadVS = `
 		
 		mat3 rot_mat = rotation_matrix(rot_axis, rot_angle);
 		
-		vec3 vertex_pos = pos + rot_mat * quadVertex * world_point_size;		
-        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0); 
-        
+		vec3 vertex_pos = pos + rot_mat * quadVertex * world_point_size;	
+		if (uDepthPass) {
+		    // move splats back from the camera to define the splatting interval
+		    vec3 view_direction = normalize(vertex_pos - uEyePos);
+		    vertex_pos += view_direction * world_point_size * uSplatDepthSizeRatio;
+		}		
+			
+        gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0);
         uv = quadVertex.xy * 2.0;
-        
-        if (uDepthPass) {            
-            // simplified version of depth pass would be "vertex_pos += normalize(vertex_pos - uEyePos) * dist"
-            // it can lead to projected shape distortion when camera is very close
-            // therefore, a version that preserves shape is used below
-            vec3 view_direction = normalize(vertex_pos - uEyePos);
-            vertex_pos += view_direction * world_point_size * uSplatDepthSizeRatio;
-            vec4 new = uProjectionMatrix * uModelViewMatrix * vec4(vertex_pos, 1.0);
-            gl_Position.z = new.z * (gl_Position.w / new.w) + uSplatDepthEpsilon;
-                      
-        } else {        
+
+        if (!uDepthPass) {
             // Gouraud shading
             if (uEnableLighting) {
                 // uLightAmbientIntensity is the minimal received light
@@ -82,11 +78,11 @@ export const quadVS = `
                 // specular: add light color (white)
                 vec3 view_direction_to_center = normalize(pos - uEyePos);
                 vec3 reflect_direction = reflect(light_dir, normal);
-                float specular = uLightSpecularIntensity * pow(max(dot(view_direction_to_center, reflect_direction), 0.0), uLightSpecularShininess);            
+                float specular = uLightSpecularIntensity * pow(max(dot(view_direction_to_center, reflect_direction), 0.0), uLightSpecularShininess);
                 v_color = color * diffuse + vec3(1.0, 1.0, 1.0) * specular;
             } else {
                 v_color = color;
-            }     
+            }
         }
     }
 `.trim();
