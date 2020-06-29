@@ -88,6 +88,7 @@ export class SphereBenchmarkDemoComponent implements OnDestroy {
         this.rendererService.setFpsAveragingWindow(20);
         this.rendererService.setControlMode('first-person');
         this.rendererService.setMovementSpeed(0.05);
+        this.renderer.camera.setClippingDist(0.1, 10000);
 
         this.rendererService.nextFrame.pipe(takeUntil(this.destroyed$)).subscribe(() => {
             this.renderer.render();
