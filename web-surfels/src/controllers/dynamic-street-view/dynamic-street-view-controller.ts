@@ -22,6 +22,7 @@ export class DynamicStreetViewController {
     pointsInMemory = 0;
 
     pauseLoading = false;
+    errorLoadingRoot = false;
 
     private requested: Map<string, Point3d> = new Map();
     private loading: Set<string> = new Set();
@@ -59,6 +60,7 @@ export class DynamicStreetViewController {
             this.completePanoramaLoading(basePanorama);
         }).catch(error => {
             console.error(error);
+            this.errorLoadingRoot = true;
         });
     }
 
