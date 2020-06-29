@@ -22,8 +22,11 @@ export class DynamicLodController {
         nodesDrawn: 0,
     };
 
+    errorLoadingRoot = false;
+
     private root: DynamicLodNode;
     private frameCounter: number = 0;
+    private destroyed: boolean = false;
 
     constructor(
         public renderer: Renderer,
@@ -35,11 +38,12 @@ export class DynamicLodController {
             this.root = this.addLodNode(rootLod);
         }).catch(error => {
             console.error('Could not load root node', error);
+            this.errorLoadingRoot = true;
         });
     }
 
     render() {
-        if (!this.root) {
+        if (!this.root || this.destroyed) {
             return;
         }
         const renderList: Array<RendererNode> = [];
@@ -93,6 +97,18 @@ export class DynamicLodController {
         }
     }
 
+    destroy() {
+        if (this.destroyed) {
+            return;
+        }
+        this.destroyed = true;
+        if (this.root) {
+            this.unloadChildrenOf(this.root);
+        }
+        this.removeLodNode(this.root);
+        this.root.state = DynamicLodNodeState.UNLOADED;
+    }
+
     private async loadChildrenOf(parent: DynamicLodNode) {
         if (parent.state !== DynamicLodNodeState.CHILDREN_NEED_TO_BE_LOADED) {
             return;
@@ -103,12 +119,18 @@ export class DynamicLodController {
             for (const childID of parent.childIDs) {
                 const lodNodePromise = this.loader.loadNode(childID);
                 const dynamicNodePromise = lodNodePromise.then(lodNode => {
+                    if (this.destroyed) {
+                        return null as any as DynamicLodNode; // do not add data to renderer when already destroyed
+                    }
                     return this.addLodNode(lodNode);
                 });
                 promises2.push(dynamicNodePromise);
             }
 
             const dynamicChildLods = await Promise.all(promises2);
+            if (this.destroyed) {
+                return;
+            }
             if (parent.state !== DynamicLodNodeState.CHILDREN_LOADING) {
                 // discard children if loading was cancelled (e.g. node was unloaded)
                 for (const childLod of dynamicChildLods) {
