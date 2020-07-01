@@ -70,18 +70,21 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
-                Point budget: {{controller.pointLoadingBudgets.softMinimum / 1e6}} - {{controller.pointLoadingBudgets.softMaximum / 1e6}} million.
-                <div *ngIf="!moreAboutPointLoading">
-                    <div class="more-info-link" (click)="moreAboutPointLoading = true">more...</div>                    
+                <div>
+                    Point budget: {{controller.pointLoadingBudgets.softMinimum / 1e6}}
+                    - {{controller.pointLoadingBudgets.softMaximum / 1e6}} million.
                 </div>
-                <div *ngIf="moreAboutPointLoading">
+                <div *ngIf="!moreAboutPointLoading">
+                    <div class="more-info-link" (click)="moreAboutPointLoading = true">more...</div>
+                </div>
+                <div *ngIf="moreAboutPointLoading" style="margin-top: 5px; color: #737373">
                     Load panoramas until at least {{controller.pointLoadingBudgets.softMinimum / 1e6}}
                     million points are in memory. Remove the most distant panoramas when there are more than
                     {{controller.pointLoadingBudgets.softMaximum / 1e6}} million points.
                     Always load panoramas next to the current camera position (might even exceed the point budget).
                     <div class="more-info-link" (click)="moreAboutPointLoading = false">less...</div>
                 </div>
-                         
+
             </div>
         </mat-expansion-panel>
 
