@@ -54,13 +54,13 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
             </mat-expansion-panel-header>
 
             <mat-radio-group [formControl]="controlModeControl" (change)="setControlMode($event.value)" [disabled]="benchmark.running">
-                <mat-radio-button value="first-person">First-person controls</mat-radio-button><br>
+                <mat-radio-button value="first-person">First-person (WASD)</mat-radio-button><br>
                 <mat-radio-button value="orbit-animation">Orbit animation</mat-radio-button><br>
                 <mat-radio-button value="disabled">Benchmark</mat-radio-button>
             </mat-radio-group>
             
             <div *ngIf="controlModeControl.value === 'first-person'" style="margin-top: 5px">
-                Movement speed: {{this.rendererService.getMovementSpeed().toLocaleString('en-us')}}<br>
+                Movement speed: {{rendererService.getMovementSpeed().toLocaleString('en-us')}}<br>
                 <span style="color: gray">
                     Change movement speed with the mouse scroll wheel. 
                 </span>

@@ -1,4 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
+import { FormControl } from '@angular/forms';
 
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
@@ -56,8 +57,26 @@ import { RendererService } from '../../services/renderer.service';
                 </mat-slide-toggle>
             </ng-container>
         </mat-expansion-panel>
+
+        <mat-expansion-panel [disabled]="loading || loadingError" [expanded]="!(loading || loadingError)">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Controller</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <mat-radio-group [formControl]="controlModeControl" (change)="rendererService.setControlMode($event.value)">
+                <mat-radio-button value="first-person">First-person (WASD)</mat-radio-button><br>
+                <mat-radio-button value="orbit-animation">Orbit animation</mat-radio-button>
+            </mat-radio-group>
+
+            <div *ngIf="controlModeControl.value === 'first-person'" style="margin-top: 5px">
+                Movement speed: {{rendererService.getMovementSpeed().toLocaleString('en-us')}}<br>
+                <span style="color: gray">
+                    Change movement speed with the mouse scroll wheel. 
+                </span>
+            </div>
+        </mat-expansion-panel>
         
-        <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel [expanded]="loading || loadingError">
             <mat-expansion-panel-header>
                 <mat-panel-title>{{loading ? 'Loading...' : (loadingError ? 'Loading Error!' : 'Data Loaded')}}</mat-panel-title>
             </mat-expansion-panel-header>            
@@ -93,7 +112,9 @@ export class LodConstructionDemoComponent implements OnDestroy {
     loadingSteps: Array<string> = [];
     loadingError: boolean = false;
 
-    constructor(private rendererService: RendererService) {
+    controlModeControl = new FormControl();
+
+    constructor(public rendererService: RendererService) {
         this.renderer = this.rendererService.getRenderer();
         this.loadDragon().catch(error => {
             this.loadingError = true;
@@ -102,10 +123,13 @@ export class LodConstructionDemoComponent implements OnDestroy {
         });
 
         this.rendererService.setFpsAveragingWindow(20);
-        this.rendererService.setControlMode('first-person');
+        this.rendererService.setControlMode('orbit-animation');
+        this.controlModeControl.patchValue('orbit-animation');
         this.rendererService.setMovementSpeed(0.005);
         this.renderer.camera.setOrientation([-0.05, 0.2, 0.2], [0, 0.12, 0], [0, 1, 0]);
         this.renderer.camera.setClippingDist(0.001, 100);
+
+        this.rendererService.setOrbitAnimation(0.15, 0.2, 0.22, 25000, 0.12);
 
         this.rendererService.nextFrame.pipe(takeUntil(this.destroyed$)).subscribe(() => {
             this.renderer.render();
