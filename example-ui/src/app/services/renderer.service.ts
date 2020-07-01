@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { FirstPersonController, FpsCounter, Renderer } from 'web-surfels';
+import { FirstPersonController, FpsCounter, OrbitAnimationController, Renderer } from 'web-surfels';
 
 export type ControlMode = 'disabled' | 'first-person' | 'orbit-animation';
 
@@ -26,7 +26,7 @@ export class RendererService {
 
     private pressedKeys: Set<string> = new Set();
     private fpController: FirstPersonController;
-    // private orbitAnimation: OrbitAnimationController;
+    private orbitAnimation: OrbitAnimationController;
     private controlMode: ControlMode = 'first-person';
     private movementSpeed: number;
     private minMovementSpeed: number;
@@ -47,6 +47,7 @@ export class RendererService {
         this.renderer = new Renderer(canvas);
         this.resizeTo = resizeTo;
         this.fpController = new FirstPersonController(this.renderer.camera);
+        this.orbitAnimation = new OrbitAnimationController(this.renderer.camera, 30, 100, 30, 0, 100000);
 
         setTimeout(() => {
             this.renderLoop(0);
@@ -80,6 +81,18 @@ export class RendererService {
         this.movementSpeed = speed;
         this.minMovementSpeed = speed / 100;
         this.maxMovementSpeed = speed * 200;
+    }
+
+    getMovementSpeed() {
+        return this.movementSpeed;
+    }
+
+    setOrbitAnimation(minDistance: number, maxDistance: number, cameraElevation: number, rotationDuration: number, targetElevation = 0) {
+        this.orbitAnimation.minDistance = minDistance;
+        this.orbitAnimation.maxDistance = maxDistance;
+        this.orbitAnimation.cameraElevation = cameraElevation;
+        this.orbitAnimation.rotationDuration = rotationDuration;
+        this.orbitAnimation.targetElevation = targetElevation;
     }
 
     // event processing
@@ -135,7 +148,7 @@ export class RendererService {
         // canvas size
         const c = this.renderer.canvas;
         const bb = this.resizeTo.getBoundingClientRect();
-        const resolution = window.devicePixelRatio || 1;
+        const resolution = Math.min(2, window.devicePixelRatio || 1); // limit resolution to 2 for high dpi screens
         const width = Math.round(bb.width * resolution);
         const height = Math.round(bb.height * resolution);
         if (c.width !== width || c.height !== height) {
@@ -146,6 +159,8 @@ export class RendererService {
         // control
         if (this.controlMode === 'first-person') {
             this.updateFirstPersonCam();
+        } else if (this.controlMode === 'orbit-animation') {
+            this.orbitAnimation.animate(duration);
         }
 
         // inform listeners

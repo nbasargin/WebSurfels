@@ -58,6 +58,13 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
                 <mat-radio-button value="orbit-animation">Orbit animation</mat-radio-button><br>
                 <mat-radio-button value="disabled">Benchmark</mat-radio-button>
             </mat-radio-group>
+            
+            <div *ngIf="controlModeControl.value === 'first-person'" style="margin-top: 5px">
+                Movement speed: {{this.rendererService.getMovementSpeed().toLocaleString('en-us')}}<br>
+                <span style="color: gray">
+                    Change movement speed with the mouse scroll wheel. 
+                </span>
+            </div>
 
         </mat-expansion-panel>
 
@@ -110,11 +117,12 @@ export class LodTreeDemoComponent implements OnDestroy {
 
     controlModeControl = new FormControl();
 
-    constructor(private rendererService: RendererService) {
+    constructor(public rendererService: RendererService) {
         this.rendererService.setFpsAveragingWindow(20);
         this.rendererService.setControlMode('orbit-animation');
         this.controlModeControl.patchValue('orbit-animation');
         this.rendererService.setMovementSpeed(0.5);
+        this.rendererService.setOrbitAnimation(30, 100, 30, 100000);
 
         this.renderer = this.rendererService.getRenderer();
         this.renderer.camera.setClippingDist(0.1, 10000);
