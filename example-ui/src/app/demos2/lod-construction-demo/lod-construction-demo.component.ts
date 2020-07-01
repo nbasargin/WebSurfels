@@ -33,14 +33,11 @@ import { RendererService } from '../../services/renderer.service';
             </div>
         </mat-expansion-panel>
 
-        <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel [disabled]="loading || loadingError">
             <mat-expansion-panel-header>
-                <mat-panel-title>{{loading ? 'Loading...' : 'Settings'}}</mat-panel-title>
+                <mat-panel-title>Settings</mat-panel-title>
             </mat-expansion-panel-header>
-            <ng-container *ngIf="loading">
-                Check the browser console for progress or error messages.
-            </ng-container>
-            <ng-container *ngIf="!loading">
+            <ng-container>
                 <div>
                     LOD level:
                     <mat-slider style="width: 100%"
@@ -59,6 +56,20 @@ import { RendererService } from '../../services/renderer.service';
                 </mat-slide-toggle>
             </ng-container>
         </mat-expansion-panel>
+        
+        <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header>
+                <mat-panel-title>{{loading ? 'Loading...' : (loadingError ? 'Loading Error!' : 'Data Loaded')}}</mat-panel-title>
+            </mat-expansion-panel-header>            
+            <div *ngIf="loadingError" style="margin-bottom: 10px; color: red">
+                Loading error! Check the browser console for details.
+            </div>            
+            <div>Loading & Processing Timing:</div>
+            <ul>
+                <li *ngFor="let step of loadingSteps">{{step}}</li>    
+            </ul>            
+        </mat-expansion-panel>
+        
     `,
     styleUrls: ['./lod-construction-demo.component.scss']
 })
@@ -77,9 +88,16 @@ export class LodConstructionDemoComponent implements OnDestroy {
     private lodRoot: WeightedLodNode;
     private lodRootJitter: WeightedLodNode;
 
+    loadingSteps: Array<string> = [];
+    loadingError: boolean = false;
+
     constructor(private rendererService: RendererService) {
         this.renderer = this.rendererService.getRenderer();
-        this.loadDragon();
+        this.loadDragon().catch(error => {
+            this.loadingError = true;
+            this.loading = false;
+            console.error(error);
+        });
 
         this.rendererService.setFpsAveragingWindow(20);
         this.rendererService.setControlMode('first-person');
@@ -100,50 +118,59 @@ export class LodConstructionDemoComponent implements OnDestroy {
         this.destroyed$.complete();
     }
 
-    private loadDragon() {
+    private async loadDragon() {
         const resolution: number = 32;
         const maxDepth: number = 10;
 
-        Timing.measure();
-        console.log('Loading point cloud...');
         // dropbox url 'https://www.dl.dropboxusercontent.com/s/9inx5f1n5sm2cp8/stanford_dragon.ply?dl=1';
         const url = (!environment.production ? 'http://localhost:5000' : '') + '/point-clouds/stanford_dragon.ply';
-        BinaryXHR.get(url).then(buffer => {
-            return parse(buffer, PLYLoader);
-        }).then(rawData => {
-            console.log('Data loaded in', Timing.measure(), 'ms, preprocessing...');
 
-            if (!this.active) {
-                console.log('Cancel preprocessing since this component is no longer active.');
-                return;
-            }
+        Timing.measure();
+        const buffer = await BinaryXHR.get(url);
+        this.loadingSteps.push(`Loading: ${Timing.measure()} ms`);
 
-            const data: PointCloudData = {
-                positions: rawData.attributes.POSITION.value,
-                sizes: new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3)).fill(0.0015),
-                normals: rawData.attributes.NORMAL.value,
-                colors: new Float32Array(rawData.attributes.COLOR_0.value).map(c => c / 255),
-            };
-            console.log('Data preprocessed in', Timing.measure(), 'ms, building octree...');
+        const rawData = await parse(buffer, PLYLoader);
+        this.loadingSteps.push(`Parsing: ${Timing.measure()} ms`);
 
-            const bb = BoundingBox.create(data.positions);
-            const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
-            octree.addData(data);
-            console.log('Octree created in', Timing.measure(), 'ms, constructing LOD...');
+        if (!this.active) {
+            console.log('Cancel preprocessing since this component is no longer active');
+            return;
+        }
 
-            this.treeDepth = octree.root.getDepth() - 1;
-            this.lodRoot = octree.buildLod(0);
-            console.log('LOD constructed in', Timing.measure(), 'ms, creating another octree and LOD with jitter...');
+        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        Timing.measure();
 
-            // now with jitter
-            octree.addData(data);
-            this.lodRootJitter = octree.buildLod(1);
-            console.log('Octree and LOD with jitter created in', Timing.measure());
+        const data: PointCloudData = {
+            positions: rawData.attributes.POSITION.value,
+            sizes: new Float32Array(Math.floor(rawData.attributes.POSITION.value.length / 3)).fill(0.0015),
+            normals: rawData.attributes.NORMAL.value,
+            colors: new Float32Array(rawData.attributes.COLOR_0.value).map(c => c / 255),
+        };
+        this.loadingSteps.push(`Preprocessing: ${Timing.measure()} ms`);
 
-            this.updateDisplayedLOD();
-            this.loading = false;
+        const bb = BoundingBox.create(data.positions);
+        const octree = new OctreeLodBuilder(bb, resolution, maxDepth);
+        octree.addData(data);
+        this.loadingSteps.push(`Octree creation: ${Timing.measure()} ms`);
 
-        });
+        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        Timing.measure();
+
+        this.treeDepth = octree.root.getDepth() - 1;
+        this.lodRoot = octree.buildLod(0);
+        this.loadingSteps.push(`LOD construction: ${Timing.measure()} ms`);
+
+        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        Timing.measure();
+
+        // now with jitter
+        octree.addData(data);
+        this.lodRootJitter = octree.buildLod(1);
+        this.loadingSteps.push(`Octree and LOD with jitter creation: ${Timing.measure()} ms`);
+
+        this.updateDisplayedLOD();
+        this.loading = false;
+
     }
 
     updateDisplayedLOD() {
