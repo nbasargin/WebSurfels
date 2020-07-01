@@ -4,6 +4,7 @@ import { MatSelectChange } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { vec3 } from 'web-surfels';
+import { environment } from '../../../environments/environment';
 import { Benchmark } from '../../benchmarks/benchmark';
 import { CameraPath } from '../../benchmarks/camera-path';
 import { RendererService } from '../../services/renderer.service';
@@ -115,6 +116,10 @@ export class StreetViewDemoComponent implements OnDestroy {
             path: 'paris25k',
             startID: 'PxH7e1kCSV7p728tziDR_w'
         },
+        paris5k: {
+            path: 'paris5k',
+            startID: 'LeNISulEnNszX0Mm91hi9A'
+        },
         manhattan25k: {
             path: 'manhattan25k',
             startID: 'jdYd3nY9wyIGeb8l_zAYBA',
@@ -144,10 +149,11 @@ export class StreetViewDemoComponent implements OnDestroy {
 
         this.renderer.light.ambientIntensity = 1;
 
-        const data = this.datasets.paris25k;
+        const data = this.datasets.paris5k; // environment.production ? this.datasets.paris5k : this.datasets.paris25k;
+        const baseURL = (!environment.production ? 'http://localhost:5000' : '') + '/gsv/';
 
         // const api = new GoogleStreetViewApi();
-        const api = new LocalStreetViewApi(`http://localhost:5000/gsv/${data.path}`);
+        const api = new LocalStreetViewApi(baseURL + data.path);
         const loader = new StreetViewLoader(api, 0.4, 1.5);
         this.controller = new DynamicStreetViewController(this.renderer, loader, 50, {
             softMinimum: 10_000_000,
