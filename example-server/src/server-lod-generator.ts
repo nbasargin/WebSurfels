@@ -29,6 +29,17 @@ async function writeLodNode(node: LodNode, folderPath: string, isRootNode: boole
     }
 }
 
+function clipLodTreeDepth(node: LodNode, depthLimit: number) {
+    if (depthLimit <= 1) {
+        node.childIDs = [];
+        node.children = [];
+    } else {
+        for (const child of node.children) {
+            clipLodTreeDepth(child, depthLimit - 1);
+        }
+    }
+}
+
 async function generateLod() {
     console.log(Timing.measure(), 'starting');
 
