@@ -23,7 +23,7 @@ export class OctreeLodBuilder {
         for (let i = 0; i < data.positions.length / 3; i++) {
             this.root.addPoint(data, i);
         }
-        console.log(`Added data to octree. The tree now has ${this.root.getNumberOfNodes()} nodes and a total depth of ${this.root.getDepth()}.`);
+        // console.log(`Added data to octree. The tree now has ${this.root.getNumberOfNodes()} nodes and a total depth of ${this.root.getDepth()}.`);
     }
 
     buildLod(jitter: number = 0): WeightedLodNode {

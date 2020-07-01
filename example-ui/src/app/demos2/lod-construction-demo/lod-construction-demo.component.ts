@@ -133,7 +133,7 @@ export class LodConstructionDemoComponent implements OnDestroy {
         this.loadingSteps.push(`Parsing: ${Timing.measure()} ms`);
 
         if (!this.active) {
-            console.log('Cancel preprocessing since this component is no longer active');
+            // console.log('Cancel preprocessing since this component is no longer active');
             return;
         }
 
