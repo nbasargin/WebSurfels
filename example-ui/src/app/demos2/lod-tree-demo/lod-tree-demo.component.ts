@@ -1,10 +1,11 @@
 import { Component, OnDestroy } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Benchmark } from '../../benchmarks/benchmark';
 import { CameraPath } from '../../benchmarks/camera-path';
-import { RendererService } from '../../services/renderer.service';
+import { ControlMode, RendererService } from '../../services/renderer.service';
 
 import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels';
 
@@ -47,7 +48,20 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
             </div>
         </mat-expansion-panel>
 
-        <mat-expansion-panel *ngIf="!dynamicLod.errorLoadingRoot">
+        <mat-expansion-panel *ngIf="!dynamicLod.errorLoadingRoot" [expanded]="true">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Controller</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <mat-radio-group [formControl]="controlModeControl" (change)="setControlMode($event.value)" [disabled]="benchmark.running">
+                <mat-radio-button value="first-person">First-person controls</mat-radio-button><br>
+                <mat-radio-button value="orbit-animation">Orbit animation</mat-radio-button><br>
+                <mat-radio-button value="disabled">Benchmark</mat-radio-button>
+            </mat-radio-group>
+
+        </mat-expansion-panel>
+
+        <mat-expansion-panel *ngIf="!dynamicLod.errorLoadingRoot && controlModeControl.value === 'disabled'" [expanded]="true">
             <mat-expansion-panel-header>
                 <mat-panel-title>Benchmark</mat-panel-title>
             </mat-expansion-panel-header>
@@ -73,6 +87,11 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
                     (click)="benchmark.startBenchmark()"
             >{{benchmark.data ? 'Restart' : 'Start'}} Benchmark</button>
             
+            <button mat-raised-button color="warn" style="width: 100%; margin-bottom: 3px"
+                    *ngIf="benchmark.running"
+                    (click)="benchmark.abortBenchmark()"
+            >Abort Benchmark</button>
+            
         </mat-expansion-panel>
         
     `,
@@ -89,9 +108,12 @@ export class LodTreeDemoComponent implements OnDestroy {
 
     benchmark: Benchmark;
 
+    controlModeControl = new FormControl();
+
     constructor(private rendererService: RendererService) {
         this.rendererService.setFpsAveragingWindow(20);
-        this.rendererService.setControlMode('first-person');
+        this.rendererService.setControlMode('orbit-animation');
+        this.controlModeControl.patchValue('orbit-animation');
         this.rendererService.setMovementSpeed(0.5);
 
         this.renderer = this.rendererService.getRenderer();
@@ -104,7 +126,6 @@ export class LodTreeDemoComponent implements OnDestroy {
         this.setUpBenchmark();
 
         this.rendererService.nextFrame.pipe(takeUntil(this.destroyed$)).subscribe((msPassed) => {
-            this.rendererService.setControlMode(this.benchmark.running ? 'disabled' : 'first-person');
             this.dynamicLod.render();
             if (this.benchmark.running) {
                 this.benchmark.record(msPassed, this.renderer.stats);
@@ -124,6 +145,13 @@ export class LodTreeDemoComponent implements OnDestroy {
         const startPointID = Math.floor(sliderValue);
         const progress = sliderValue - startPointID;
         this.benchmark.cameraPath.setCameraPosition(startPointID, progress);
+    }
+
+    setControlMode(mode: ControlMode) {
+        this.rendererService.setControlMode(mode);
+        if (mode ==='disabled') {
+            this.setCamPos(this.benchmark.getProgress());
+        }
     }
 
     private setUpBenchmark() {

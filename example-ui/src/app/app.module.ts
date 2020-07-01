@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSliderModule } from '@angular/material/slider';
@@ -51,6 +52,7 @@ import { SphereBenchmarkDemoComponent } from './demos2/sphere-benchmark-demo/sph
         MatSlideToggleModule,
         MatSliderModule,
         MatTooltipModule,
+        MatRadioModule,
     ],
     providers: [],
     bootstrap: [MainComponent]

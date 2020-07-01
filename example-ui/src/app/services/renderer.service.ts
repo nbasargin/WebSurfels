@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { FirstPersonController, FpsCounter, Renderer } from 'web-surfels';
 
-type ControlMode = 'disabled' | 'first-person' | 'orbit-animation';
+export type ControlMode = 'disabled' | 'first-person' | 'orbit-animation';
 
 /**
  * This service is responsible for:

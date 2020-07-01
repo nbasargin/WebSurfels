@@ -17,12 +17,16 @@ export class Benchmark {
         this.data = new BenchmarkData();
     }
 
+    abortBenchmark() {
+        this.running = false;
+    }
+
     exportBenchmarkResults() {
         if (!this.data) {
             return;
         }
         this.data.exportData();
-        this.data = null;
+        // this.data = null;
     }
 
     record(msPassed: number, stats: RenderingStats) {
