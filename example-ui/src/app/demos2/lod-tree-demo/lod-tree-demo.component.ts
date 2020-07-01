@@ -85,7 +85,7 @@ export class LodTreeDemoComponent implements OnDestroy {
 
     readonly baseUrl: string = environment.production ? '/lod/neuschwanstein-depth5/' : 'http://localhost:5000/lod/neuschwanstein-depth9/';
     dynamicLod: DynamicLodController;
-    initialSizeThreshold = 1.4;
+    initialSizeThreshold = 1.1;
 
     benchmark: Benchmark;
 

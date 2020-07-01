@@ -11,7 +11,7 @@ import { RendererService } from '../../../../services/renderer.service';
             </div>
 
             <ng-container *ngIf="settingsVisible">
-                <mat-expansion-panel>
+                <mat-expansion-panel [expanded]="true">
                     <mat-expansion-panel-header>
                         <mat-panel-title>Performance Info</mat-panel-title>
                     </mat-expansion-panel-header>
@@ -139,7 +139,7 @@ import { RendererService } from '../../../../services/renderer.service';
 })
 export class MainSettingsComponent {
 
-    settingsVisible = false;
+    settingsVisible = true;
     morePerfData = false;
     enableDevTools = false;
 
