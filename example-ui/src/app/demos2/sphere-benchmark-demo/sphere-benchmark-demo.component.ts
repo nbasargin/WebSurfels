@@ -44,6 +44,24 @@ import { DummyData, Renderer } from 'web-surfels';
                 </mat-select>
             </mat-form-field>
         </mat-expansion-panel>
+
+        <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Controller</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <mat-radio-group [formControl]="controlModeControl" (change)="rendererService.setControlMode($event.value)">
+                <mat-radio-button value="first-person">First-person (WASD)</mat-radio-button><br>
+                <mat-radio-button value="orbit-animation">Orbit animation</mat-radio-button>
+            </mat-radio-group>
+
+            <div *ngIf="controlModeControl.value === 'first-person'" style="margin-top: 5px">
+                Movement speed: {{rendererService.getMovementSpeed().toLocaleString('en-us')}}<br>
+                <span style="color: gray">
+                    Change movement speed with the mouse scroll wheel. 
+                </span>
+            </div>
+        </mat-expansion-panel>
     `,
     styleUrls: ['./sphere-benchmark-demo.component.scss']
 })
@@ -57,8 +75,9 @@ export class SphereBenchmarkDemoComponent implements OnDestroy {
 
     camPositionControl = new FormControl();
     pointNumberControl = new FormControl();
+    controlModeControl = new FormControl();
 
-    constructor(private rendererService: RendererService) {
+    constructor(public rendererService: RendererService) {
         // sphere surface = 4 pi R^2 = 4 pi    (R = 1 here)
         // Goal: N * splat area = 4 * sphere surface
         // N * pi * (splat size / 2)^2 = 4 * 4 pi
@@ -86,9 +105,11 @@ export class SphereBenchmarkDemoComponent implements OnDestroy {
         }, 0);
 
         this.rendererService.setFpsAveragingWindow(20);
-        this.rendererService.setControlMode('first-person');
+        this.rendererService.setControlMode('orbit-animation');
+        this.controlModeControl.patchValue('orbit-animation');
         this.rendererService.setMovementSpeed(0.05);
         this.renderer.camera.setClippingDist(0.1, 10000);
+        this.rendererService.setOrbitAnimation(2.2, 3, 0, 25000);
 
         this.rendererService.nextFrame.pipe(takeUntil(this.destroyed$)).subscribe(() => {
             this.renderer.render();
