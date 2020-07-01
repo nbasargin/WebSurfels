@@ -43,8 +43,8 @@ function clipLodTreeDepth(node: LodNode, depthLimit: number) {
 async function generateLod() {
     const dataset = {
         inputFile: '3drm_neuschwanstein.ply',
-        lodDepthLimit: 5,
-        outFolder: 'neuschwanstein-depth5'
+        lodDepthLimit: 9,
+        outFolder: 'neuschwanstein-depth9'
     };
 
     Timing.measure();
@@ -76,7 +76,7 @@ async function generateLod() {
     console.log(Timing.measure(), 'ms to compute LOD');
 
     clipLodTreeDepth(lod, dataset.lodDepthLimit);
-    console.log(Timing.measure(), 'ms to clop the LOD tree to maxDepth =', dataset.lodDepthLimit);
+    console.log(Timing.measure(), 'ms to crop the LOD tree to maxDepth =', dataset.lodDepthLimit);
     console.log('start writing to disk');
 
     const folderPath = '../data/lod/' + dataset.outFolder + '/';
