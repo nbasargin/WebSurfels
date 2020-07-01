@@ -63,11 +63,13 @@ import { RendererService } from '../../services/renderer.service';
             </mat-expansion-panel-header>            
             <div *ngIf="loadingError" style="margin-bottom: 10px; color: red">
                 Loading error! Check the browser console for details.
+            </div>
+            <div>
+                <div *ngIf="!loadingError">Loading & Processing Timing:</div>
+                <ul>
+                    <li *ngFor="let step of loadingSteps">{{step}}</li>
+                </ul>                
             </div>            
-            <div>Loading & Processing Timing:</div>
-            <ul>
-                <li *ngFor="let step of loadingSteps">{{step}}</li>    
-            </ul>            
         </mat-expansion-panel>
         
     `,

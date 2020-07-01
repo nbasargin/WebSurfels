@@ -7,3 +7,17 @@
   right: 0;
   pointer-events: none;
 }
+
+.go-home-icon {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: 300px;
+  pointer-events: auto;
+}
+
+@media only screen and (max-width: 630px) {
+  .go-home-icon {
+    transform: scale(0.5) translateX(-50%) translateY(50%);
+  }
+}
