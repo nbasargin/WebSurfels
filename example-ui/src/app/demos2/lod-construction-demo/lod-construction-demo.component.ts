@@ -15,6 +15,7 @@ import {
     Timing,
     WeightedLodNode
 } from 'web-surfels';
+import { environment } from '../../../environments/environment';
 
 import { RendererService } from '../../services/renderer.service';
 
@@ -105,7 +106,8 @@ export class LodConstructionDemoComponent implements OnDestroy {
 
         Timing.measure();
         console.log('Loading point cloud...');
-        const url = 'https://www.dl.dropboxusercontent.com/s/9inx5f1n5sm2cp8/stanford_dragon.ply?dl=1';
+        // dropbox url 'https://www.dl.dropboxusercontent.com/s/9inx5f1n5sm2cp8/stanford_dragon.ply?dl=1';
+        const url = (!environment.production ? 'http://localhost:5000' : '') + '/point-clouds/stanford_dragon.ply';
         BinaryXHR.get(url).then(buffer => {
             return parse(buffer, PLYLoader);
         }).then(rawData => {

@@ -1,6 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 import { Benchmark } from '../../benchmarks/benchmark';
 import { CameraPath } from '../../benchmarks/camera-path';
 import { RendererService } from '../../services/renderer.service';
@@ -82,7 +83,7 @@ export class LodTreeDemoComponent implements OnDestroy {
     private readonly renderer: Renderer;
     private destroyed$: Subject<void> = new Subject();
 
-    readonly baseUrl: string = 'http://localhost:5000/lod/';
+    readonly baseUrl: string = environment.production ? '/lod/neuschwanstein-depth5/' : 'http://localhost:5000/lod/neuschwanstein-depth9/';
     dynamicLod: DynamicLodController;
     initialSizeThreshold = 1.4;
 
