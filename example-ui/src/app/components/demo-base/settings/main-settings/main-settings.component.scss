@@ -2,7 +2,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 250px;
+  width: 300px;
   pointer-events: auto;
 }
 
@@ -20,4 +20,10 @@
   color: blue;
   cursor: pointer;
   user-select: none;
+}
+
+@media only screen and (max-width: 630px) {
+  .main-settings {
+    transform: scale(0.5) translateX(50%) translateY(-50%);
+  }
 }
