@@ -41,13 +41,20 @@ function clipLodTreeDepth(node: LodNode, depthLimit: number) {
 }
 
 async function generateLod() {
-    console.log(Timing.measure(), 'starting');
+    const dataset = {
+        inputFile: '3drm_neuschwanstein.ply',
+        lodDepthLimit: 5,
+        outFolder: 'neuschwanstein-depth5'
+    };
 
-    const castleFile = await FileIO.readFile('../data/point-clouds/3drm_neuschwanstein.ply');
-    console.log(Timing.measure(), 'file was loaded');
+    Timing.measure();
+    console.log('starting');
+
+    const castleFile = await FileIO.readFile('../data/point-clouds/' + dataset.inputFile);
+    console.log(Timing.measure(), 'ms to load the file');
 
     const rawData = await parse(castleFile, PLYLoader);
-    console.log(Timing.measure(), 'ply format parsed');
+    console.log(Timing.measure(), 'ms to parse ply format');
 
     const data = {
         positions: rawData.attributes.POSITION.value,
@@ -55,22 +62,26 @@ async function generateLod() {
         normals: rawData.attributes.NORMAL.value,
         colors: new Float32Array(rawData.attributes.COLOR_0.value).map(c => c / 255),
     };
-    console.log(Timing.measure(), 'data pre-processing done');
+    console.log(Timing.measure(), 'ms for data preprocessing');
 
     const bb = BoundingBox.create(data.positions);
-    console.log(Timing.measure(), 'bounding box computed');
+    console.log(Timing.measure(), 'ms for bounding box computation');
 
     const octree = new OctreeLodBuilder(bb, 128, 10);
     octree.addData(data);
     const numNodes = octree.root.getNumberOfNodes();
-    console.log(Timing.measure(), 'octree created');
+    console.log(Timing.measure(), 'ms for octree construction');
 
     const lod = octree.buildLod(1);
-    console.log(Timing.measure(), 'lod computed, start writing to disk');
+    console.log(Timing.measure(), 'ms to compute LOD');
 
-    const folderPath = '../data/lod/';
+    clipLodTreeDepth(lod, dataset.lodDepthLimit);
+    console.log(Timing.measure(), 'ms to clop the LOD tree to maxDepth =', dataset.lodDepthLimit);
+    console.log('start writing to disk');
+
+    const folderPath = '../data/lod/' + dataset.outFolder + '/';
     writeLodTreeToFiles(lod, folderPath, Math.floor(numNodes / 20)).then(() => {
-        console.log(Timing.measure(), 'done writing lod');
+        console.log(Timing.measure(), 'ms to write LOD nodes to disk');
     }).catch(err => {
         console.log('error writing lod', err);
     });
