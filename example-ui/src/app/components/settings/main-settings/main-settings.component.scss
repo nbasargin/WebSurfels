@@ -4,6 +4,10 @@
   right: 10px;
   width: 300px;
   pointer-events: auto;
+
+  max-height: calc(100% - 10px);
+  overflow: auto;
+  scrollbar-width: thin;
 }
 
 .main-settings-icon-wrapper {
