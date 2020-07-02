@@ -15,20 +15,28 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
             <mat-expansion-panel-header>
                 <mat-panel-title>About Street View</mat-panel-title>
             </mat-expansion-panel-header>
-            <div>
-                Reconstructing urban environments from Google Street View panoramas.
+            <p>
+                This demo reconstructs urban environments from Google Street View panoramas.
                 The demo loads panorama data, constructs local point sets and aligns them into a global point cloud.
-            </div>
+            </p>
+            <p>
+                The Street View API is not public and can change change at any time.
+                Therefore, this demo uses cached data obtained from Google servers as of June 2020.
+            </p>
+            <p>
+                Data credit: 
+                <a href="https://www.google.com/streetview/">Google Steet View</a>
+            </p>
         </mat-expansion-panel>
 
         <mat-expansion-panel *ngIf="controller.errorLoadingRoot" [expanded]="true">
             <mat-expansion-panel-header>
                 <mat-panel-title>Initialization Error!</mat-panel-title>
             </mat-expansion-panel-header>
-            <div>
+            <span style="color: red">
                 Something went wrong with loading the root panorama.
                 Try reloading the page.
-            </div>
+            </span>
         </mat-expansion-panel>
 
         <mat-expansion-panel *ngIf="!controller.errorLoadingRoot">
