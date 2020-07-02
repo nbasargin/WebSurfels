@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { RendererService } from '../../services/renderer.service';
+import { ControlMode, RendererService } from '../../services/renderer.service';
 
 import { DummyData, Renderer } from 'web-surfels';
 
@@ -12,30 +12,23 @@ import { DummyData, Renderer } from 'web-surfels';
     template: `
         <mat-expansion-panel>
             <mat-expansion-panel-header>
-                <mat-panel-title>About Sphere Benchmark</mat-panel-title>
+                <mat-panel-title>About Sphere Demo</mat-panel-title>
             </mat-expansion-panel-header>
-            <div>
-                Use this benchmark to evaluate the limits of rendering performance.
-            </div>
+            <p>
+                Use this demo to benchmark and evaluate the limits of rendering performance.
+            </p>
+            <p>
+                All points are placed in a single renderer node to reduce the number of draw calls.
+            </p>
         </mat-expansion-panel>
 
         <mat-expansion-panel>
             <mat-expansion-panel-header>
-                <mat-panel-title>Settings</mat-panel-title>
+                <mat-panel-title>Point Number</mat-panel-title>
             </mat-expansion-panel-header>
 
-            <mat-form-field>
-                <mat-label>Camera Position</mat-label>
-                <mat-select [formControl]="camPositionControl" (selectionChange)="camPosChange($event)">
-                    <mat-option *ngFor="let position of camPositions"
-                                [value]="position.text">
-                        {{position.text}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-
-            <mat-form-field>
-                <mat-label>Number of points</mat-label>
+            <mat-form-field style="width: 100%">
+                <mat-label>Set the number of rendered points</mat-label>
                 <mat-select [formControl]="pointNumberControl" (selectionChange)="pointNumberChange($event)">
                     <mat-option *ngFor="let preset of pointPresets"
                                 [value]="preset.points">
@@ -47,12 +40,14 @@ import { DummyData, Renderer } from 'web-surfels';
 
         <mat-expansion-panel [expanded]="true">
             <mat-expansion-panel-header>
-                <mat-panel-title>Controller</mat-panel-title>
+                <mat-panel-title>Camera</mat-panel-title>
             </mat-expansion-panel-header>
 
-            <mat-radio-group [formControl]="controlModeControl" (change)="rendererService.setControlMode($event.value)">
+            <mat-radio-group [formControl]="controlModeControl" (change)="setCamControl($event.value)">
                 <mat-radio-button value="first-person">First-person (WASD)</mat-radio-button><br>
-                <mat-radio-button value="orbit-animation">Orbit animation</mat-radio-button>
+                <mat-radio-button value="orbit-animation">Orbit animation</mat-radio-button><br>
+                <mat-radio-button value="far">Far View</mat-radio-button><br>
+                <mat-radio-button value="near">Near View</mat-radio-button>
             </mat-radio-group>
 
             <div *ngIf="controlModeControl.value === 'first-person'" style="margin-top: 5px">
@@ -90,7 +85,7 @@ export class SphereBenchmarkDemoComponent implements OnDestroy {
 
         this.camPositions = [
             {text: 'Near', pos: [-1.25, 0, 0]},
-            {text: 'Far', pos: [-2.1, 0, 0]},
+            {text: 'Far', pos: []},
         ];
 
         this.renderer = this.rendererService.getRenderer();
@@ -130,6 +125,20 @@ export class SphereBenchmarkDemoComponent implements OnDestroy {
 
     setCam(pos: Array<number>) {
         this.renderer.camera.setOrientation(pos, [0,0,0], [0,0,-1]);
+    }
+
+    setCamControl(mode: 'near' | 'far' | ControlMode) {
+        switch (mode) {
+            case 'near':
+                this.setCam([-1.25, 0, 0]);
+                mode = 'disabled';
+                break;
+            case 'far':
+                this.setCam([-2.1, 0, 0]);
+                mode = 'disabled';
+                break;
+        }
+        this.rendererService.setControlMode(mode);
     }
 
     pointNumberChange(e: MatSelectChange) {

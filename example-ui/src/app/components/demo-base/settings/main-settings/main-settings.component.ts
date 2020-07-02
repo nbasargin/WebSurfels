@@ -34,7 +34,7 @@ import { RendererService } from '../../../../services/renderer.service';
                     </div>
                 </mat-expansion-panel>
 
-                <mat-expansion-panel>
+                <mat-expansion-panel [expanded]="true">
                     <mat-expansion-panel-header>
                         <mat-panel-title>Main settings</mat-panel-title>
                     </mat-expansion-panel-header>
@@ -43,7 +43,7 @@ import { RendererService } from '../../../../services/renderer.service';
                             [color]="'primary'"
                             [checked]="renderer.options.highQuality"
                             (change)="renderer.options.highQuality = $event.checked"
-                    >High-quality splats
+                    >High-quality color blending
                     </mat-slide-toggle>
 
                     <mat-slide-toggle
