@@ -4,21 +4,34 @@ import { Component } from '@angular/core';
     selector: 'app-demo-selection',
     template: `
         <div class="main-overview-header">
-            WebSurfels Demo
+            WebSurfels Demos
         </div>
-        <div class="main-overview-demos">
-            <span>
-                <a [routerLink]="['./demo/lod-tree']">LOD Tree</a>
-            </span>
-            <span>
-                <a [routerLink]="['./demo/lod-construction']">LOD Construction</a>
-            </span>
-            <span>
-                <a [routerLink]="['./demo/street-view']">Street View</a>
-            </span>
-            <span>
-                <a [routerLink]="['./demo/sphere-benchmark']">Sphere Benchmark</a>
-            </span>
+        
+        <div class="main-grid">
+            <div class="demo-block">
+                <a [routerLink]="['./demo/lod-tree']" class="demo-block-content">
+                    <mat-icon class="demo-icon">grid_on</mat-icon>
+                    <div>LOD Tree</div>
+                </a>
+            </div>
+            <div class="demo-block">
+                <a [routerLink]="['./demo/lod-construction']" class="demo-block-content">
+                    <mat-icon class="demo-icon">construction</mat-icon>
+                    <div>LOD Construction</div>
+                </a>
+            </div>
+            <div class="demo-block">
+                <a [routerLink]="['./demo/street-view']" class="demo-block-content">
+                    <mat-icon class="demo-icon">map</mat-icon>
+                    <div>Street View</div>
+                </a>
+            </div>
+            <div class="demo-block">
+                <a [routerLink]="['./demo/sphere-benchmark']" class="demo-block-content">
+                    <mat-icon class="demo-icon">lens</mat-icon>
+                    <div>Sphere</div>
+                </a>
+            </div>
         </div>
     `,
     styleUrls: ['./demo-selection.component.scss']
