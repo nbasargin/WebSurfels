@@ -61,7 +61,7 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
                 <mat-panel-title>Camera</mat-panel-title>
             </mat-expansion-panel-header>
 
-            <mat-radio-group [formControl]="controlModeControl" (change)="setControlMode($event.value)" [disabled]="benchmark.running">
+            <mat-radio-group [formControl]="controlModeControl" (change)="setControlMode($event.value)">
                 <mat-radio-button value="first-person">First-person (WASD)</mat-radio-button><br>
                 <mat-radio-button value="orbit-animation">Orbit animation</mat-radio-button><br>
                 <mat-radio-button value="disabled">Benchmark</mat-radio-button>
@@ -105,7 +105,7 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
             <button mat-raised-button color="warn" style="width: 100%; margin-bottom: 3px"
                     *ngIf="benchmark.running"
                     (click)="benchmark.abortBenchmark()"
-            >Abort Benchmark</button>
+            >Stop Benchmark</button>
             
         </mat-expansion-panel>
         
@@ -164,6 +164,10 @@ export class LodTreeDemoComponent implements OnDestroy {
     }
 
     setControlMode(mode: ControlMode) {
+        if (this.benchmark.running && mode !== 'disabled') {
+            this.benchmark.abortBenchmark();
+        }
+
         this.rendererService.setControlMode(mode);
         if (mode ==='disabled') {
             this.setCamPos(this.benchmark.getProgress());
