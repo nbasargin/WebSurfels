@@ -13,7 +13,7 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
     template: `
         <mat-expansion-panel>
             <mat-expansion-panel-header>
-                <mat-panel-title>About Street View</mat-panel-title>
+                <mat-panel-title>About Street View Demo</mat-panel-title>
             </mat-expansion-panel-header>
             <p>
                 This demo reconstructs urban environments from Google Street View panoramas.
@@ -41,7 +41,7 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
 
         <mat-expansion-panel *ngIf="!controller.errorLoadingRoot">
             <mat-expansion-panel-header>
-                <mat-panel-title>Settings</mat-panel-title>
+                <mat-panel-title>Loading Preferences</mat-panel-title>
             </mat-expansion-panel-header>
 
             <mat-slide-toggle
@@ -95,7 +95,7 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
 
         <mat-expansion-panel *ngIf="!controller.errorLoadingRoot" [expanded]="true">
             <mat-expansion-panel-header>
-                <mat-panel-title>Controller</mat-panel-title>
+                <mat-panel-title>Camera</mat-panel-title>
             </mat-expansion-panel-header>
 
             <mat-radio-group [formControl]="controlModeControl" (change)="rendererService.setControlMode($event.value)">

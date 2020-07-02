@@ -14,30 +14,38 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
     template: `
         <mat-expansion-panel>
             <mat-expansion-panel-header>
-                <mat-panel-title>About LOD Tree</mat-panel-title>
+                <mat-panel-title>About LOD Tree Demo</mat-panel-title>
             </mat-expansion-panel-header>
-            <div>
-                Streaming a preprocessed LOD tree from a server.
-            </div>
+            <p>
+                This demo renders a LOD tree created from a large dataset with more than 30 million of points.
+            </p>
+            <p>
+                Data preprocessing is done on the server.
+                The resulting LOD nodes are streamed to the browser depending on the camera position and the selected quality.
+            </p>            
+            <p>
+                Data credit:
+                <a href="https://www.in.tum.de/">TUM Department of Informatics</a>
+            </p>
         </mat-expansion-panel>
 
         <mat-expansion-panel *ngIf="dynamicLod.errorLoadingRoot" [expanded]="true">
             <mat-expansion-panel-header>
                 <mat-panel-title>Initialization Error!</mat-panel-title>
             </mat-expansion-panel-header>
-            <div>
+            <span style="color: red">
                 Something went wrong with loading the root node.
                 Try reloading the page.
-            </div>
+            </span>
         </mat-expansion-panel>
 
         <mat-expansion-panel *ngIf="!dynamicLod.errorLoadingRoot">
             <mat-expansion-panel-header>
-                <mat-panel-title>Performance / Quality</mat-panel-title>
+                <mat-panel-title>Loading Preferences</mat-panel-title>
             </mat-expansion-panel-header>
 
             <div>
-                Size threshold:
+                Node size threshold for rendering:
                 <mat-slider style="width: 100%"
                             [value]="dynamicLod.sizeThreshold"
                             [color]="'primary'" [max]="3.1" [min]="0.1" [step]="0.1"
@@ -50,7 +58,7 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
 
         <mat-expansion-panel *ngIf="!dynamicLod.errorLoadingRoot" [expanded]="true">
             <mat-expansion-panel-header>
-                <mat-panel-title>Controller</mat-panel-title>
+                <mat-panel-title>Camera</mat-panel-title>
             </mat-expansion-panel-header>
 
             <mat-radio-group [formControl]="controlModeControl" (change)="setControlMode($event.value)" [disabled]="benchmark.running">

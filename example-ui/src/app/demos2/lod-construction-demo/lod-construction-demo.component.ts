@@ -26,7 +26,7 @@ import { RendererService } from '../../services/renderer.service';
     template: `
         <mat-expansion-panel>
             <mat-expansion-panel-header>
-                <mat-panel-title>About LOD Construction</mat-panel-title>
+                <mat-panel-title>About LOD Construction Demo</mat-panel-title>
             </mat-expansion-panel-header>
             <div>
                 This demo loads a point cloud from a PLY file, constructs an octree and generates LOD representations.
@@ -36,7 +36,7 @@ import { RendererService } from '../../services/renderer.service';
 
         <mat-expansion-panel [disabled]="loading || loadingError">
             <mat-expansion-panel-header>
-                <mat-panel-title>Settings</mat-panel-title>
+                <mat-panel-title>Level-of-Detail Selection</mat-panel-title>
             </mat-expansion-panel-header>
             <ng-container>
                 <div>
@@ -60,7 +60,7 @@ import { RendererService } from '../../services/renderer.service';
 
         <mat-expansion-panel [disabled]="loading || loadingError" [expanded]="!(loading || loadingError)">
             <mat-expansion-panel-header>
-                <mat-panel-title>Controller</mat-panel-title>
+                <mat-panel-title>Camera</mat-panel-title>
             </mat-expansion-panel-header>
 
             <mat-radio-group [formControl]="controlModeControl" (change)="rendererService.setControlMode($event.value)">
