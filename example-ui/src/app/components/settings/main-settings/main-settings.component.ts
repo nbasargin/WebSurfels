@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Renderer } from 'web-surfels';
-import { RendererService } from '../../../../services/renderer.service';
+import { RendererService } from '../../../services/renderer.service';
 
 @Component({
     selector: 'app-main-settings',
