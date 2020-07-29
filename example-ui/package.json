@@ -2,7 +2,7 @@
   "name": "web-surfels-example-ui",
   "version": "0.0.0",
   "scripts": {
-    "build": "ng build --prod"
+    "build": "ng build --prod --base-href https://nbasargin.github.io/WebSurfels-Demo/"
   },
   "private": true,
   "dependencies": {
