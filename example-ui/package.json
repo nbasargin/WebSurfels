@@ -16,8 +16,8 @@
     "@angular/platform-browser": "~9.1.11",
     "@angular/platform-browser-dynamic": "~9.1.11",
     "@angular/router": "~9.1.11",
-    "@loaders.gl/core": "^2.0.2",
-    "@loaders.gl/ply": "^2.0.2",
+    "@loaders.gl/core": "~2.0.2",
+    "@loaders.gl/ply": "~2.0.2",
     "rxjs": "~6.5.5",
     "zone.js": "~0.10.2"
   },
