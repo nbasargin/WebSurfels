@@ -117,7 +117,8 @@ export class LodTreeDemoComponent implements OnDestroy {
     private readonly renderer: Renderer;
     private destroyed$: Subject<void> = new Subject();
 
-    readonly baseUrl: string = environment.production ? '/lod/neuschwanstein-depth5/' : 'http://localhost:5000/lod/neuschwanstein-depth9/';
+    // 'lod/neuschwanstein-depth5/' contains a reduced resolution, full resolution used to be in 'lod/neuschwanstein-depth9/'
+    readonly baseUrl: string = environment.baseUrl + 'lod/neuschwanstein-depth5/';
     dynamicLod: DynamicLodController;
     initialSizeThreshold = 1.1;
 

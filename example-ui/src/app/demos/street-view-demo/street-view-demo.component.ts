@@ -177,7 +177,7 @@ export class StreetViewDemoComponent implements OnDestroy {
         this.renderer.light.ambientIntensity = 1;
 
         const data = this.datasets.paris5k; // environment.production ? this.datasets.paris5k : this.datasets.paris25k;
-        const baseURL = (!environment.production ? 'http://localhost:5000' : '') + '/gsv/';
+        const baseURL = environment.baseUrl + 'gsv/';
 
         // const api = new GoogleStreetViewApi();
         const api = new LocalStreetViewApi(baseURL + data.path);

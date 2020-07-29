@@ -149,7 +149,7 @@ export class LodConstructionDemoComponent implements OnDestroy {
         const maxDepth: number = 10;
 
         // dropbox url 'https://www.dl.dropboxusercontent.com/s/9inx5f1n5sm2cp8/stanford_dragon.ply?dl=1';
-        const url = (!environment.production ? 'http://localhost:5000' : '') + '/point-clouds/stanford_dragon.ply';
+        const url = environment.baseUrl + 'point-clouds/stanford_dragon.ply';
 
         Timing.measure();
         const buffer = await BinaryXHR.get(url);
