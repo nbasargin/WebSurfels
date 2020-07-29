@@ -104,9 +104,9 @@ export class DynamicLodController {
         this.destroyed = true;
         if (this.root) {
             this.unloadChildrenOf(this.root);
+            this.removeLodNode(this.root);
+            this.root.state = DynamicLodNodeState.UNLOADED;
         }
-        this.removeLodNode(this.root);
-        this.root.state = DynamicLodNodeState.UNLOADED;
     }
 
     private async loadChildrenOf(parent: DynamicLodNode) {
