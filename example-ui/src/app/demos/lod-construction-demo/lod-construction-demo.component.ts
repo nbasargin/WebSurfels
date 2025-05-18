@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
@@ -112,7 +112,7 @@ export class LodConstructionDemoComponent implements OnDestroy {
     loadingSteps: Array<string> = [];
     loadingError: boolean = false;
 
-    controlModeControl = new FormControl();
+    controlModeControl = new UntypedFormControl();
 
     constructor(public rendererService: RendererService) {
         this.renderer = this.rendererService.getRenderer();

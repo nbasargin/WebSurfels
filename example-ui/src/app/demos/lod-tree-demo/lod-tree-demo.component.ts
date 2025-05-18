@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -124,7 +124,7 @@ export class LodTreeDemoComponent implements OnDestroy {
 
     benchmark: Benchmark;
 
-    controlModeControl = new FormControl();
+    controlModeControl = new UntypedFormControl();
 
     constructor(public rendererService: RendererService) {
         this.rendererService.setFpsAveragingWindow(20);

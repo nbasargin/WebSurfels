@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -161,8 +161,8 @@ export class StreetViewDemoComponent implements OnDestroy {
         {text: 'High', min: 50e6, max: 100e6},
         {text: 'Extra High', min: 100e6, max: 120e6},
     ];
-    memoryLimitControl = new FormControl();
-    controlModeControl = new FormControl();
+    memoryLimitControl = new UntypedFormControl();
+    controlModeControl = new UntypedFormControl();
 
     constructor(public rendererService: RendererService) {
         this.rendererService.setFpsAveragingWindow(20);

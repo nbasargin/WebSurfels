@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -68,9 +68,9 @@ export class SphereBenchmarkDemoComponent implements OnDestroy {
     pointPresets: Array<{ points: number, size: number }>;
     camPositions: Array<{ pos: Array<number>, text: string }>;
 
-    camPositionControl = new FormControl();
-    pointNumberControl = new FormControl();
-    controlModeControl = new FormControl();
+    camPositionControl = new UntypedFormControl();
+    pointNumberControl = new UntypedFormControl();
+    controlModeControl = new UntypedFormControl();
 
     constructor(public rendererService: RendererService) {
         // sphere surface = 4 pi R^2 = 4 pi    (R = 1 here)
