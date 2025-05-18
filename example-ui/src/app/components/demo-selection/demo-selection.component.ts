@@ -34,7 +34,8 @@ import { Component } from '@angular/core';
             </div>
         </div>
     `,
-    styleUrls: ['./demo-selection.component.scss']
+    styleUrls: ['./demo-selection.component.scss'],
+    standalone: false
 })
 export class DemoSelectionComponent {
 

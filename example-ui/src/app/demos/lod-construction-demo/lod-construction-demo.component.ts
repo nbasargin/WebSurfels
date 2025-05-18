@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 
 import { PLYLoader } from '@loaders.gl/ply';
 import { parse } from '@loaders.gl/core';
@@ -40,13 +40,10 @@ import { RendererService } from '../../services/renderer.service';
             </mat-expansion-panel-header>
             <ng-container>
                 <div>
-                    LOD level:
-                    <mat-slider style="width: 100%"
-                                [value]="lodLevel"
-                                [color]="'primary'" [max]="treeDepth" [step]="1"
-                                [tickInterval]="1" thumbLabel
-                                (input)="lodLevel = $event.value; updateDisplayedLOD()"
-                    ></mat-slider>
+                    LOD level:                    
+                    <mat-slider class="slider" min="0" [max]="treeDepth" step="1" discrete>
+                        <input matSliderThumb [value]="lodLevel" (input)="lodLevel = $event.target.value; updateDisplayedLOD()">
+                    </mat-slider>
                 </div>
 
                 <mat-slide-toggle
@@ -92,7 +89,8 @@ import { RendererService } from '../../services/renderer.service';
         </mat-expansion-panel>
         
     `,
-    styleUrls: ['./lod-construction-demo.component.scss']
+    styleUrls: ['./lod-construction-demo.component.scss'],
+    standalone: false
 })
 export class LodConstructionDemoComponent implements OnDestroy {
 
@@ -112,7 +110,7 @@ export class LodConstructionDemoComponent implements OnDestroy {
     loadingSteps: Array<string> = [];
     loadingError: boolean = false;
 
-    controlModeControl = new FormControl();
+    controlModeControl = new UntypedFormControl();
 
     constructor(public rendererService: RendererService) {
         this.renderer = this.rendererService.getRenderer();
@@ -163,7 +161,7 @@ export class LodConstructionDemoComponent implements OnDestroy {
             return;
         }
 
-        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        await new Promise<void>(resolve => setTimeout(() => {resolve()}, 20));
         Timing.measure();
 
         const data: PointCloudData = {
@@ -179,14 +177,14 @@ export class LodConstructionDemoComponent implements OnDestroy {
         octree.addData(data);
         this.loadingSteps.push(`Octree creation: ${Timing.measure()} ms`);
 
-        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        await new Promise<void>(resolve => setTimeout(() => {resolve()}, 20));
         Timing.measure();
 
         this.treeDepth = octree.root.getDepth() - 1;
         this.lodRoot = octree.buildLod(0);
         this.loadingSteps.push(`LOD construction: ${Timing.measure()} ms`);
 
-        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        await new Promise<void>(resolve => setTimeout(() => {resolve()}, 20));
         Timing.measure();
 
         // now with jitter

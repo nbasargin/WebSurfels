@@ -12,7 +12,8 @@ import { Component } from '@angular/core';
             </ng-container>          
         </div>
     `,
-    styleUrls: ['./demo-settings.component.scss']
+    styleUrls: ['./demo-settings.component.scss'],
+    standalone: false
 })
 export class DemoSettingsComponent {
 

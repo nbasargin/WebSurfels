@@ -54,3 +54,8 @@ mat-expansion-panel:not(:last-child) {
 mat-radio-button {
   margin-bottom: 5px;
 }
+
+.mat-mdc-slider.slider {
+  width: 100%;
+  margin: 0;
+}

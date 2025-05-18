@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -55,14 +55,11 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
             <div matTooltip="Highest quality will be chosen for panoramas within this distance.
                              More distant panoramas are rendered in lower quality.
                              Also affects the radius within new panoramas must be loaded.">
-                Quality distance:
-                <mat-slider
-                        style="width: 100%"
-                        [value]="controller.qualityDist"
-                        [color]="'primary'" [min]="20" [max]="150" [step]="10"
-                        [tickInterval]="10" thumbLabel
-                        (input)="controller.qualityDist = $event.value"
-                ></mat-slider>
+                Quality distance: {{controller.qualityDist}}
+                
+                <mat-slider class="slider" min="20" [max]="150" step="10" discrete>
+                    <input matSliderThumb  [value]="controller.qualityDist" (input)="controller.qualityDist = $event.target.value">
+                </mat-slider>
             </div>
 
             <div>
@@ -126,7 +123,8 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
             </div>
         </mat-expansion-panel>
     `,
-    styleUrls: ['./street-view-demo.component.scss']
+    styleUrls: ['./street-view-demo.component.scss'],
+    standalone: false
 })
 export class StreetViewDemoComponent implements OnDestroy {
 
@@ -161,8 +159,8 @@ export class StreetViewDemoComponent implements OnDestroy {
         {text: 'High', min: 50e6, max: 100e6},
         {text: 'Extra High', min: 100e6, max: 120e6},
     ];
-    memoryLimitControl = new FormControl();
-    controlModeControl = new FormControl();
+    memoryLimitControl = new UntypedFormControl();
+    controlModeControl = new UntypedFormControl();
 
     constructor(public rendererService: RendererService) {
         this.rendererService.setFpsAveragingWindow(20);
