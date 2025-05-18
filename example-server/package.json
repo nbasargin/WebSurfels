@@ -17,7 +17,7 @@
     "typescript": "~3.8.3"
   },
   "dependencies": {
-    "serve": "^11.3.0",
+    "serve": "^14.2.4",
     "@loaders.gl/core": "^2.0.2",
     "@loaders.gl/ply": "^2.0.2"
   }
