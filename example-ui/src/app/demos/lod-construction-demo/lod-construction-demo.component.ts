@@ -40,13 +40,10 @@ import { RendererService } from '../../services/renderer.service';
             </mat-expansion-panel-header>
             <ng-container>
                 <div>
-                    LOD level:
-                    <mat-slider style="width: 100%"
-                                [value]="lodLevel"
-                                [color]="'primary'" [max]="treeDepth" [step]="1"
-                                [tickInterval]="1" thumbLabel
-                                (input)="lodLevel = $event.value; updateDisplayedLOD()"
-                    ></mat-slider>
+                    LOD level:                    
+                    <mat-slider class="slider" min="0" [max]="treeDepth" step="1" discrete>
+                        <input matSliderThumb [value]="lodLevel" (input)="lodLevel = $event.target.value; updateDisplayedLOD()">
+                    </mat-slider>
                 </div>
 
                 <mat-slide-toggle

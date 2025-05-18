@@ -45,13 +45,10 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
             </mat-expansion-panel-header>
 
             <div>
-                Node size threshold for rendering:
-                <mat-slider style="width: 100%"
-                            [value]="dynamicLod.sizeThreshold"
-                            [color]="'primary'" [max]="3.1" [min]="0.1" [step]="0.1"
-                            [tickInterval]="5" thumbLabel
-                            (input)="dynamicLod.sizeThreshold = $event.value"
-                ></mat-slider>
+                Node size threshold for rendering:                
+                <mat-slider class="slider" min="0.1" max="3.1" step="0.1" discrete>
+                    <input matSliderThumb [value]="dynamicLod.sizeThreshold" (input)="dynamicLod.sizeThreshold = $event.target.value">
+                </mat-slider>
                 Higher threshold accepts larger and less detailed nodes, increases performance and reduces quality.
             </div>
         </mat-expansion-panel>
@@ -82,14 +79,10 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
             </mat-expansion-panel-header>
             
             <div>
-                {{benchmark.running ? 'Benchmark Progress:' : 'Camera path preview:'}}                     
-                <mat-slider style="width: 100%"
-                            [disabled]="benchmark.running"
-                            [value]="benchmark.getProgress()"
-                            [color]="'primary'" [min]="0" [max]="benchmark.cameraPath.points.length" [step]="0.1"
-                            [tickInterval]="10" thumbLabel
-                            (input)="setCamPos($event.value)"
-                ></mat-slider>
+                {{benchmark.running ? 'Benchmark Progress:' : 'Camera path preview:'}}
+                <mat-slider class="slider" min="0" [max]="benchmark.cameraPath.points.length" step="0.1" discrete [disabled]="benchmark.running">
+                    <input matSliderThumb [value]="benchmark.getProgress()" (input)="setCamPos($event.target.value)">
+                </mat-slider>
             </div>
 
             <button mat-raised-button color="primary" style="width: 100%; margin-bottom: 3px"
@@ -159,6 +152,7 @@ export class LodTreeDemoComponent implements OnDestroy {
     }
 
     setCamPos(sliderValue: number) {
+        console.log('Slider value:', sliderValue);
         const startPointID = Math.floor(sliderValue);
         const progress = sliderValue - startPointID;
         this.benchmark.cameraPath.setCameraPosition(startPointID, progress);

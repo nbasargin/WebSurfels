@@ -55,14 +55,11 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
             <div matTooltip="Highest quality will be chosen for panoramas within this distance.
                              More distant panoramas are rendered in lower quality.
                              Also affects the radius within new panoramas must be loaded.">
-                Quality distance:
-                <mat-slider
-                        style="width: 100%"
-                        [value]="controller.qualityDist"
-                        [color]="'primary'" [min]="20" [max]="150" [step]="10"
-                        [tickInterval]="10" thumbLabel
-                        (input)="controller.qualityDist = $event.value"
-                ></mat-slider>
+                Quality distance: {{controller.qualityDist}}
+                
+                <mat-slider class="slider" min="20" [max]="150" step="10" discrete>
+                    <input matSliderThumb  [value]="controller.qualityDist" (input)="controller.qualityDist = $event.target.value">
+                </mat-slider>
             </div>
 
             <div>
