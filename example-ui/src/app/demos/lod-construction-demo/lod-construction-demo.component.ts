@@ -163,7 +163,7 @@ export class LodConstructionDemoComponent implements OnDestroy {
             return;
         }
 
-        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        await new Promise<void>(resolve => setTimeout(() => {resolve()}, 20));
         Timing.measure();
 
         const data: PointCloudData = {
@@ -179,14 +179,14 @@ export class LodConstructionDemoComponent implements OnDestroy {
         octree.addData(data);
         this.loadingSteps.push(`Octree creation: ${Timing.measure()} ms`);
 
-        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        await new Promise<void>(resolve => setTimeout(() => {resolve()}, 20));
         Timing.measure();
 
         this.treeDepth = octree.root.getDepth() - 1;
         this.lodRoot = octree.buildLod(0);
         this.loadingSteps.push(`LOD construction: ${Timing.measure()} ms`);
 
-        await new Promise(resolve => setTimeout(() => {resolve()}, 20));
+        await new Promise<void>(resolve => setTimeout(() => {resolve()}, 20));
         Timing.measure();
 
         // now with jitter
