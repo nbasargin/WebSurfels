@@ -123,7 +123,8 @@ import { DynamicStreetViewController, LocalStreetViewApi, Renderer, StreetViewLo
             </div>
         </mat-expansion-panel>
     `,
-    styleUrls: ['./street-view-demo.component.scss']
+    styleUrls: ['./street-view-demo.component.scss'],
+    standalone: false
 })
 export class StreetViewDemoComponent implements OnDestroy {
 

@@ -58,7 +58,8 @@ import { DummyData, Renderer } from 'web-surfels';
             </div>
         </mat-expansion-panel>
     `,
-    styleUrls: ['./sphere-benchmark-demo.component.scss']
+    styleUrls: ['./sphere-benchmark-demo.component.scss'],
+    standalone: false
 })
 export class SphereBenchmarkDemoComponent implements OnDestroy {
 

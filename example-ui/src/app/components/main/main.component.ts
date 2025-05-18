@@ -10,7 +10,8 @@ import { RendererService } from '../../services/renderer.service';
         </div>
         <router-outlet></router-outlet>        
     `,
-    styleUrls: ['./main.component.scss']
+    styleUrls: ['./main.component.scss'],
+    standalone: false
 })
 export class MainComponent implements OnInit {
 

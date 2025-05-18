@@ -103,7 +103,8 @@ import { vec3, DynamicLodController, Renderer, XhrLodLoader } from 'web-surfels'
         </mat-expansion-panel>
         
     `,
-    styleUrls: ['./lod-tree-demo.component.scss']
+    styleUrls: ['./lod-tree-demo.component.scss'],
+    standalone: false
 })
 export class LodTreeDemoComponent implements OnDestroy {
 

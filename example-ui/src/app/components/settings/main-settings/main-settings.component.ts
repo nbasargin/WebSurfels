@@ -124,7 +124,8 @@ import { RendererService } from '../../../services/renderer.service';
 
         </div>
     `,
-    styleUrls: ['./main-settings.component.scss']
+    styleUrls: ['./main-settings.component.scss'],
+    standalone: false
 })
 export class MainSettingsComponent {
 

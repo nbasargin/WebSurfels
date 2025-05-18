@@ -14,7 +14,8 @@ import { Router } from '@angular/router';
             </div>
         </div>
     `,
-    styleUrls: ['./demo-base.component.scss']
+    styleUrls: ['./demo-base.component.scss'],
+    standalone: false
 })
 export class DemoBaseComponent {
 

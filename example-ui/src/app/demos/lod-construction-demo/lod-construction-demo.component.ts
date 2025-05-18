@@ -89,7 +89,8 @@ import { RendererService } from '../../services/renderer.service';
         </mat-expansion-panel>
         
     `,
-    styleUrls: ['./lod-construction-demo.component.scss']
+    styleUrls: ['./lod-construction-demo.component.scss'],
+    standalone: false
 })
 export class LodConstructionDemoComponent implements OnDestroy {
 
