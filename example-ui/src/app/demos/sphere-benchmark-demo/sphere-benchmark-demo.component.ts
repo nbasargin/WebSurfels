@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatSelectChange } from '@angular/material/select';
+import { MatLegacySelectChange as MatSelectChange } from '@angular/material/legacy-select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ControlMode, RendererService } from '../../services/renderer.service';
