@@ -42,9 +42,9 @@ function clipLodTreeDepth(node: LodNode, depthLimit: number) {
 
 async function generateLod() {
     const dataset = {
-        inputFile: '3drm_neuschwanstein.ply',
-        lodDepthLimit: 9,
-        outFolder: 'neuschwanstein-depth9'
+        inputFile: 'stanford_dragon.ply',
+        lodDepthLimit: 5,
+        outFolder: 'stanford_dragon-depth5'
     };
 
     Timing.measure();

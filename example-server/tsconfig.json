@@ -3,6 +3,7 @@
         "strictNullChecks": true,
         "module": "commonjs",
         "moduleResolution": "node",
+        "esModuleInterop": true,
         "target": "es2017",
         "noImplicitAny": false,
         "sourceMap": false,
